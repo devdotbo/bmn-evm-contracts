@@ -37,17 +37,19 @@ fi
 # Run the test script
 echo -e "\n${BLUE}Running cross-chain test script...${NC}"
 # Capture both stdout and stderr, and check for successful completion message
-# Using -q to suppress solc warnings
 # Note: The "transaction to address without code" warning is expected - we're pre-funding the escrow
 OUTPUT=$(forge script script/TestLiveChains.s.sol \
     --rpc-url http://localhost:8545 \
     --broadcast \
     --slow \
-    -q \
     -vvv 2>&1)
 
 # Filter out expected warnings but keep the rest
-echo "$OUTPUT" | grep -v "Warning: Multi chain deployment is still under development" | grep -v "Error: IO error: not a terminal" || echo "$OUTPUT"
+# Using multiple grep -v to remove various warning types while preserving actual errors
+echo "$OUTPUT" | grep -v "Warning: Multi chain deployment is still under development" \
+    | grep -v "Error: IO error: not a terminal" \
+    | grep -v "Warning: EIP-3855" \
+    | grep -v "contains a transaction to .* which does not contain any code" || echo "$OUTPUT"
 
 # Check if the test completed successfully by looking for the completion message
 if echo "$OUTPUT" | grep -q "Cross-Chain Swap Test Complete!"; then
