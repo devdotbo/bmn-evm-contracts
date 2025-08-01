@@ -36,13 +36,17 @@ fi
 
 # Run the test script
 echo -e "\n${BLUE}Running cross-chain test script...${NC}"
-forge script script/TestLiveChains.s.sol \
+# Capture both stdout and stderr, and check for successful completion message
+OUTPUT=$(forge script script/TestLiveChains.s.sol \
     --rpc-url http://localhost:8545 \
     --broadcast \
     --slow \
-    -vvv
+    -vvv 2>&1)
 
-if [ $? -eq 0 ]; then
+echo "$OUTPUT"
+
+# Check if the test completed successfully by looking for the completion message
+if echo "$OUTPUT" | grep -q "Cross-Chain Swap Test Complete!"; then
     echo -e "\n${GREEN}✓ Cross-chain atomic swap test completed successfully!${NC}"
     
     # Optional: Check final balances
