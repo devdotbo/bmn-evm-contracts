@@ -160,3 +160,12 @@ Some 1inch dependencies are not in the submodules. Temporary stub files were cre
 - `lib/limit-order-settlement/contracts/extensions/ResolverValidationExtension.sol`
 
 These are minimal implementations for compilation. For production, use proper 1inch implementations.
+
+### Expected Test Warnings
+When running cross-chain tests, you may see these warnings which are expected and can be ignored:
+
+1. **"Multi chain deployment is still under development"** - Informational warning from Forge about multi-chain features
+2. **"Script contains transaction to address without code"** - Expected behavior when pre-funding escrow addresses before deployment
+3. **"IO error: not a terminal"** - Occurs when Forge runs in non-interactive script mode
+
+The test scripts are configured to suppress or filter these warnings while keeping important error messages visible.
