@@ -1,0 +1,27 @@
+{
+  "name": "bmn-evm-contracts",
+  "version": "1.0.0",
+  "description": "A trustless cross-chain atomic swap protocol that eliminates traditional bridge risks by using hash timelock contracts (HTLC) and deterministic escrow addresses.",
+  "homepage": "https://github.com/devdotbo/bmn-evm-contracts#readme",
+  "bugs": {
+    "url": "https://github.com/devdotbo/bmn-evm-contracts/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devdotbo/bmn-evm-contracts.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "mprocs": "mprocs"
+  },
+  "devDependencies": {
+    "mprocs": "^0.7.3"
+  }
+}
