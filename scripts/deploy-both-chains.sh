@@ -7,6 +7,15 @@ BLUE='\033[0;34m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
+# Load environment variables
+if [ -f .env ]; then
+    source .env
+else
+    echo -e "${RED}Error: .env file not found!${NC}"
+    echo "Please create a .env file based on .env.example"
+    exit 1
+fi
+
 # Wait for chains to be ready
 echo -e "${BLUE}Waiting for chains to be ready...${NC}"
 while ! nc -z localhost 8545 || ! nc -z localhost 8546; do
@@ -20,7 +29,7 @@ mkdir -p deployments
 
 # Deploy on Chain A
 echo -e "\n${BLUE}Deploying contracts on Chain A...${NC}"
-forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8545 --broadcast --slow
+forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8545 --broadcast --slow --private-key $DEPLOYER_PRIVATE_KEY
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}Deployment on Chain A failed!${NC}"
@@ -29,7 +38,7 @@ fi
 
 # Deploy on Chain B
 echo -e "\n${BLUE}Deploying contracts on Chain B...${NC}"
-forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8546 --broadcast --slow
+forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8546 --broadcast --slow --private-key $DEPLOYER_PRIVATE_KEY
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}Deployment on Chain B failed!${NC}"

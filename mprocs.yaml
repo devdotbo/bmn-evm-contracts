@@ -18,8 +18,7 @@ procs:
     shell: "./scripts/deploy-both-chains.sh"
     # Manual start - run after chains are ready
     autostart: false
-    env:
-      PRIVATE_KEY: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+    # Private key should be loaded from .env file
   
   fund-accounts:
     shell: "./scripts/fund-accounts.sh"

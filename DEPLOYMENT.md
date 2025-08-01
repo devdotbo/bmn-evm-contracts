@@ -66,7 +66,7 @@ All test accounts use Anvil's default private keys:
 
 **Deployer (Account 0):**
 - Address: `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
-- Private Key: `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`
+- Private Key: See `.env` file (copy from `.env.example` for local development)
 
 **Alice (Account 1):**
 - Address: `0x70997970C51812dc3A010C7d01b50e0d17dc79C8`
@@ -133,13 +133,14 @@ If you need to deploy contracts manually:
 anvil --port 8545 --chain-id 1337 &
 anvil --port 8546 --chain-id 1338 &
 
+# Load environment variables
+source .env
+
 # Deploy to Chain A
-PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
-forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8545 --broadcast
+forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8545 --broadcast --private-key $DEPLOYER_PRIVATE_KEY
 
 # Deploy to Chain B
-PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
-forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8546 --broadcast
+forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8546 --broadcast --private-key $DEPLOYER_PRIVATE_KEY
 ```
 
 ## Troubleshooting

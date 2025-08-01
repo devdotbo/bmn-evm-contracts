@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ SECURITY WARNING
+
+**NEVER commit sensitive data to the repository!**
+
+- Private keys, API keys, passwords, and secrets must ALWAYS be stored in `.env` files
+- Use `.env.example` files with placeholder values to document required environment variables
+- Ensure `.env` is in `.gitignore` (already configured)
+- All scripts should read sensitive data from environment variables, not hardcoded values
+- Even test/development keys should follow this practice to maintain good security habits
+
 ## Important Instructions
 
 **ALWAYS commit changes immediately after making them, one file at a time.** This ensures clean commit history and prevents loss of work.
@@ -35,9 +45,8 @@ forge fmt --check       # Check formatting without changes
 # Start multi-chain test environment (2 Anvil instances)
 ./scripts/multi-chain-setup.sh
 
-# Deploy to local chain
-PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
-forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8545 --broadcast
+# Deploy to local chain (ensure .env file exists with DEPLOYER_PRIVATE_KEY)
+source .env && forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8545 --broadcast --private-key $DEPLOYER_PRIVATE_KEY
 
 # Run resolver (in separate terminal)
 node scripts/resolver.js

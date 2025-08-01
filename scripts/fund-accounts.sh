@@ -10,10 +10,20 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}Bridge-Me-Not Account Funding${NC}"
 echo "============================="
 
+# Load environment variables
+if [ -f .env ]; then
+    source .env
+else
+    echo -e "${RED}Error: .env file not found!${NC}"
+    echo "Please create a .env file based on .env.example"
+    exit 1
+fi
+
 # Default accounts
 ALICE="0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
 BOB="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
-DEPLOYER_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+# Use DEPLOYER_PRIVATE_KEY from .env file
+DEPLOYER_KEY="$DEPLOYER_PRIVATE_KEY"
 
 # Function to check if port is in use
 check_port() {
