@@ -1,4 +1,5 @@
 @openzeppelin/=lib/openzeppelin-contracts/
+@1inch/solidity-utils/=lib/solidity-utils/
 openzeppelin-contracts/=lib/openzeppelin-contracts/
 solidity-utils/=lib/solidity-utils/
 limit-order-protocol/=lib/limit-order-protocol/
