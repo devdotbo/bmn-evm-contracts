@@ -115,7 +115,7 @@ contract EscrowFactoryTest is CrossChainHelper {
         
         // Expect event
         vm.expectEmit(true, true, true, true);
-        emit DstEscrowCreated(expectedEscrow, hashlock, alice.toAddress());
+        emit DstEscrowCreated(expectedEscrow, hashlock, Address.wrap(uint160(alice)));
         
         // Create escrow with safety deposit
         factory.createDstEscrow{value: DEFAULT_SAFETY_DEPOSIT}(
