@@ -92,6 +92,8 @@ fi
 
 # Get token addresses
 TOKEN_A_CHAIN_A=$(cat deployments/chainA.json | grep -o '"tokenA": "[^"]*"' | cut -d'"' -f4)
+TOKEN_B_CHAIN_A=$(cat deployments/chainA.json | grep -o '"tokenB": "[^"]*"' | cut -d'"' -f4)
+TOKEN_A_CHAIN_B=$(cat deployments/chainB.json | grep -o '"tokenA": "[^"]*"' | cut -d'"' -f4)
 TOKEN_B_CHAIN_B=$(cat deployments/chainB.json | grep -o '"tokenB": "[^"]*"' | cut -d'"' -f4)
 
 # Fund ETH
@@ -166,6 +168,53 @@ if [ "$FUND_TOKENS" = true ]; then
         echo -e "${GREEN}✓ Minted ${AMOUNT_TOKENS} TKB to Bob on Chain B${NC}"
     else
         echo -e "${RED}✗ Failed to mint TKB to Bob${NC}"
+    fi
+    
+    # Complete token distribution on Chain A
+    echo -e "Chain A: Minting ${AMOUNT_TOKENS} TKB to Alice..."
+    cast send $TOKEN_B_CHAIN_A "$MINT_SIG" $ALICE $AMOUNT_WEI \
+        --private-key $DEPLOYER_KEY --rpc-url http://localhost:8545 > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Minted ${AMOUNT_TOKENS} TKB to Alice on Chain A${NC}"
+    else
+        echo -e "${RED}✗ Failed to mint TKB to Alice on Chain A${NC}"
+    fi
+    
+    echo -e "Chain A: Minting ${AMOUNT_TOKENS} TKB to Bob..."
+    cast send $TOKEN_B_CHAIN_A "$MINT_SIG" $BOB $AMOUNT_WEI \
+        --private-key $DEPLOYER_KEY --rpc-url http://localhost:8545 > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Minted ${AMOUNT_TOKENS} TKB to Bob on Chain A${NC}"
+    else
+        echo -e "${RED}✗ Failed to mint TKB to Bob on Chain A${NC}"
+    fi
+    
+    # Complete token distribution on Chain B
+    echo -e "Chain B: Minting ${AMOUNT_TOKENS} TKA to Alice..."
+    cast send $TOKEN_A_CHAIN_B "$MINT_SIG" $ALICE $AMOUNT_WEI \
+        --private-key $DEPLOYER_KEY --rpc-url http://localhost:8546 > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Minted ${AMOUNT_TOKENS} TKA to Alice on Chain B${NC}"
+    else
+        echo -e "${RED}✗ Failed to mint TKA to Alice on Chain B${NC}"
+    fi
+    
+    echo -e "Chain B: Minting ${AMOUNT_TOKENS} TKA to Bob..."
+    cast send $TOKEN_A_CHAIN_B "$MINT_SIG" $BOB $AMOUNT_WEI \
+        --private-key $DEPLOYER_KEY --rpc-url http://localhost:8546 > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Minted ${AMOUNT_TOKENS} TKA to Bob on Chain B${NC}"
+    else
+        echo -e "${RED}✗ Failed to mint TKA to Bob on Chain B${NC}"
+    fi
+    
+    echo -e "Chain B: Minting ${AMOUNT_TOKENS} TKB to Alice..."
+    cast send $TOKEN_B_CHAIN_B "$MINT_SIG" $ALICE $AMOUNT_WEI \
+        --private-key $DEPLOYER_KEY --rpc-url http://localhost:8546 > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Minted ${AMOUNT_TOKENS} TKB to Alice on Chain B${NC}"
+    else
+        echo -e "${RED}✗ Failed to mint TKB to Alice on Chain B${NC}"
     fi
 fi
 
