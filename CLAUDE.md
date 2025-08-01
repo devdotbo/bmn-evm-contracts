@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Important Instructions
+
+**ALWAYS commit changes immediately after making them, one file at a time.** This ensures clean commit history and prevents loss of work.
+
 ## Essential Commands
 
 ### Build and Compilation
@@ -122,3 +126,28 @@ Timelocks are packed into a single uint256 with stages:
 - Deployer: `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
 - Alice (Account 1): `0x70997970C51812dc3A010C7d01b50e0d17dc79C8`
 - Bob/Resolver (Account 2): `0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC`
+
+## Related Projects
+
+### bmn-evm-resolver
+The resolver implementation is in a separate Deno/TypeScript project at `../bmn-evm-resolver`.
+
+Key components:
+- **Contract ABIs**: Copied from `out/` after building
+- **Chain Configuration**: Local Anvil instances on ports 8545 (Chain A) and 8546 (Chain B)
+- **Implementation**: Bob (resolver) monitors orders and executes swaps, Alice (test client) creates orders
+
+### Building for Resolver
+When contracts are updated:
+1. Run `forge build` to generate new ABIs
+2. Copy required ABIs to resolver: `cp out/<Contract>.sol/<Contract>.json ../bmn-evm-resolver/abis/`
+3. Key ABIs needed: EscrowFactory, EscrowSrc, EscrowDst, TokenMock, LimitOrderProtocol, IERC20
+
+## Known Issues
+
+### Missing Dependencies
+Some 1inch dependencies are not in the submodules. Temporary stub files were created:
+- `lib/limit-order-settlement/contracts/extensions/BaseExtension.sol`
+- `lib/limit-order-settlement/contracts/extensions/ResolverValidationExtension.sol`
+
+These are minimal implementations for compilation. For production, use proper 1inch implementations.
