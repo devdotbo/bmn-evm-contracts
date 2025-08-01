@@ -1,14 +1,14 @@
 # Bridge-Me-Not Multi-Chain Development Environment
 procs:
   chain-a:
-    shell: "anvil --port 8545 --chain-id 1337 --accounts 10 --balance 10000"
+    shell: "anvil --port 8545 --chain-id 1337 --accounts 10 --balance 10000 --hardfork shanghai"
     env:
       CHAIN_NAME: "Chain A (Source)"
     # Auto-start chain when mprocs starts
     autostart: true
   
   chain-b:
-    shell: "anvil --port 8546 --chain-id 1338 --accounts 10 --balance 10000"
+    shell: "anvil --port 8546 --chain-id 1338 --accounts 10 --balance 10000 --hardfork shanghai"
     env:
       CHAIN_NAME: "Chain B (Destination)"
     # Auto-start chain when mprocs starts
