@@ -12,3 +12,9 @@ docs/
 
 # Dotenv file
 .env
+
+# Chain logs
+chain-*.log
+
+# Broadcast artifacts
+broadcast/
