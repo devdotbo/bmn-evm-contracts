@@ -39,6 +39,18 @@ procs:
   test-live-chains:
     shell: "./scripts/test-live-chains.sh"
     autostart: false
+  
+  test-live-swap:
+    shell: "./scripts/test-live-swap.sh"
+    autostart: false
+  
+  test-live-swap-verbose:
+    shell: "VERBOSE=true ./scripts/test-live-swap.sh"
+    autostart: false
+  
+  test-live-swap-debug:
+    shell: "./scripts/test-live-swap-debug.sh"
+    autostart: false
 
 # Configuration for better log visibility
 scrollback: 5000
