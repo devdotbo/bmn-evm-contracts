@@ -222,9 +222,10 @@ contract TestLiveChains is Script {
         IERC20(chainB.tokenB).approve(chainB.factory, SWAP_AMOUNT);
         
         // Create escrow with safety deposit
+        // Add 30 second buffer to account for cross-chain timing differences
         EscrowFactory(chainB.factory).createDstEscrow{value: SAFETY_DEPOSIT}(
             dstImmutables,
-            block.timestamp + SRC_CANCELLATION_START
+            block.timestamp + SRC_CANCELLATION_START + 30
         );
         
         console.log("Destination escrow created by Bob:");
