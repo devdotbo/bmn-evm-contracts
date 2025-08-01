@@ -6,6 +6,7 @@ import { console } from "forge-std/console.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import { IOrderMixin, LimitOrderProtocol } from "limit-order-protocol/contracts/LimitOrderProtocol.sol";
 import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
+import { MakerTraits } from "limit-order-protocol/contracts/libraries/MakerTraitsLib.sol";
 
 import { IBaseEscrow } from "../contracts/interfaces/IBaseEscrow.sol";
 import { IEscrowFactory } from "../contracts/interfaces/IEscrowFactory.sol";
@@ -113,13 +114,13 @@ contract TestLiveChains is Script {
         // Create order data
         IOrderMixin.Order memory order = IOrderMixin.Order({
             salt: uint256(keccak256(abi.encodePacked(block.timestamp, "test"))),
-            maker: chainA.alice,
-            receiver: chainA.alice,
-            makerAsset: chainA.tokenA,
-            takerAsset: chainA.tokenA, // Same token for simplicity in testing
+            maker: Address.wrap(uint160(chainA.alice)),
+            receiver: Address.wrap(uint160(chainA.alice)),
+            makerAsset: Address.wrap(uint160(chainA.tokenA)),
+            takerAsset: Address.wrap(uint160(chainA.tokenA)), // Same token for simplicity in testing
             makingAmount: SWAP_AMOUNT,
             takingAmount: SWAP_AMOUNT,
-            makerTraits: 0
+            makerTraits: MakerTraits.wrap(0)
         });
         
         // In real implementation, this would interact with the limit order protocol
@@ -148,9 +149,9 @@ contract TestLiveChains is Script {
         IBaseEscrow.Immutables memory dstImmutables = IBaseEscrow.Immutables({
             orderHash: orderHash,
             hashlock: hashlock,
-            maker: chainA.bob.toAddress(), // Bob is maker on dst
-            taker: chainA.alice.toAddress(), // Alice is taker on dst
-            token: chainB.tokenB.toAddress(),
+            maker: Address.wrap(uint160(chainA.bob)), // Bob is maker on dst
+            taker: Address.wrap(uint160(chainA.alice)), // Alice is taker on dst
+            token: Address.wrap(uint160(chainB.tokenB)),
             amount: SWAP_AMOUNT,
             safetyDeposit: SAFETY_DEPOSIT,
             timelocks: createTimelocks()
@@ -225,9 +226,9 @@ contract TestLiveChains is Script {
         IBaseEscrow.Immutables memory dstImmutables = IBaseEscrow.Immutables({
             orderHash: orderHash,
             hashlock: hashlock,
-            maker: chainA.bob.toAddress(),
-            taker: chainA.alice.toAddress(),
-            token: chainB.tokenB.toAddress(),
+            maker: Address.wrap(uint160(chainA.bob)),
+            taker: Address.wrap(uint160(chainA.alice)),
+            token: Address.wrap(uint160(chainB.tokenB)),
             amount: SWAP_AMOUNT,
             safetyDeposit: SAFETY_DEPOSIT,
             timelocks: createTimelocks()
@@ -261,9 +262,9 @@ contract TestLiveChains is Script {
         return IBaseEscrow.Immutables({
             orderHash: orderHash,
             hashlock: hashlock,
-            maker: chainA.alice.toAddress(),
-            taker: chainA.bob.toAddress(),
-            token: chainA.tokenA.toAddress(),
+            maker: Address.wrap(uint160(chainA.alice)),
+            taker: Address.wrap(uint160(chainA.bob)),
+            token: Address.wrap(uint160(chainA.tokenA)),
             amount: SWAP_AMOUNT,
             safetyDeposit: SAFETY_DEPOSIT,
             timelocks: createTimelocks()
