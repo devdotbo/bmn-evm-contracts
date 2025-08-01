@@ -1,0 +1,44 @@
+# Bridge-Me-Not Multi-Chain Development Environment
+procs:
+  chain-a:
+    shell: "anvil --port 8545 --chain-id 1337 --accounts 10 --balance 10000"
+    env:
+      CHAIN_NAME: "Chain A (Source)"
+    # Auto-start chain when mprocs starts
+    autostart: true
+  
+  chain-b:
+    shell: "anvil --port 8546 --chain-id 1338 --accounts 10 --balance 10000"
+    env:
+      CHAIN_NAME: "Chain B (Destination)"
+    # Auto-start chain when mprocs starts
+    autostart: true
+  
+  deploy-both:
+    shell: "./scripts/deploy-both-chains.sh"
+    # Manual start - run after chains are ready
+    autostart: false
+    env:
+      PRIVATE_KEY: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+  
+  fund-accounts:
+    shell: "./scripts/fund-accounts.sh"
+    autostart: false
+  
+  check-deployment:
+    shell: "./scripts/check-deployment.sh"
+    autostart: false
+  
+  watch-status:
+    shell: "watch -n 5 ./scripts/check-deployment.sh"
+    autostart: false
+
+# Configuration for better log visibility
+scrollback: 5000
+proc_list_width: 25
+mouse_scroll_speed: 5
+
+# Custom keybindings (optional)
+keymap_procs:
+  <C-q>: { c: quit }
+  <C-s>: { c: start-proc }
