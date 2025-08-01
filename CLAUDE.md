@@ -32,6 +32,10 @@ forge test -vvv         # Run tests with detailed output
 forge test --match-test <TestName>    # Run specific test
 forge test --match-contract <Contract> # Test specific contract
 forge coverage          # Generate coverage report
+
+# Live chain testing (affects real balances)
+./scripts/test-live-swap.sh    # Run full cross-chain swap test on live chains
+./scripts/test-live-chains.sh  # Run fork-based test (doesn't affect real balances)
 ```
 
 ### Code Quality
@@ -160,6 +164,20 @@ Some 1inch dependencies are not in the submodules. Temporary stub files were cre
 - `lib/limit-order-settlement/contracts/extensions/ResolverValidationExtension.sol`
 
 These are minimal implementations for compilation. For production, use proper 1inch implementations.
+
+### Test Script Comparison
+
+**Live Chain Tests** (`test-live-swap.sh` + `LiveTestChains.s.sol`):
+- Affects real chain balances
+- Uses direct RPC connections without forks
+- Best for testing actual protocol behavior
+- Requires running Anvil chains via mprocs
+
+**Fork-based Tests** (`test-live-chains.sh` + `TestLiveChains.s.sol`):
+- Uses Forge's fork functionality 
+- Does not affect real chain balances
+- Isolated test environment
+- Good for development/debugging
 
 ### Expected Test Warnings
 When running cross-chain tests, you may see these warnings which are expected and can be ignored:
