@@ -12,7 +12,7 @@
 	url = https://github.com/1inch/limit-order-protocol
 [submodule "lib/limit-order-settlement"]
 	path = lib/limit-order-settlement
-	url = https://github.com/1inch/limit-order-settlement
+	url = https://github.com/devdotbo/limit-order-settlement
 [submodule "lib/murky"]
 	path = lib/murky
 	url = https://github.com/dmfxyz/murky
