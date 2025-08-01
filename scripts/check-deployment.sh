@@ -84,8 +84,8 @@ if check_port 8545 && check_port 8546; then
         
         if [ ! -z "$TOKEN_A_CHAIN_A" ]; then
             # Token A on Chain A
-            ALICE_TKA=$(cast call $TOKEN_A_CHAIN_A "balanceOf(address)(uint256)" $ALICE --rpc-url http://localhost:8545 2>/dev/null)
-            BOB_TKA=$(cast call $TOKEN_A_CHAIN_A "balanceOf(address)(uint256)" $BOB --rpc-url http://localhost:8545 2>/dev/null)
+            ALICE_TKA=$(cast call $TOKEN_A_CHAIN_A "balanceOf(address)(uint256)" $ALICE --rpc-url http://localhost:8545 2>/dev/null | awk '{print $1}')
+            BOB_TKA=$(cast call $TOKEN_A_CHAIN_A "balanceOf(address)(uint256)" $BOB --rpc-url http://localhost:8545 2>/dev/null | awk '{print $1}')
             
             if [ ! -z "$ALICE_TKA" ]; then
                 echo -e "    Chain A - Alice TKA: ${GREEN}$(cast from-wei $ALICE_TKA)${NC}"
@@ -95,8 +95,8 @@ if check_port 8545 && check_port 8546; then
         
         if [ ! -z "$TOKEN_B_CHAIN_B" ]; then
             # Token B on Chain B
-            ALICE_TKB=$(cast call $TOKEN_B_CHAIN_B "balanceOf(address)(uint256)" $ALICE --rpc-url http://localhost:8546 2>/dev/null)
-            BOB_TKB=$(cast call $TOKEN_B_CHAIN_B "balanceOf(address)(uint256)" $BOB --rpc-url http://localhost:8546 2>/dev/null)
+            ALICE_TKB=$(cast call $TOKEN_B_CHAIN_B "balanceOf(address)(uint256)" $ALICE --rpc-url http://localhost:8546 2>/dev/null | awk '{print $1}')
+            BOB_TKB=$(cast call $TOKEN_B_CHAIN_B "balanceOf(address)(uint256)" $BOB --rpc-url http://localhost:8546 2>/dev/null | awk '{print $1}')
             
             if [ ! -z "$ALICE_TKB" ]; then
                 echo -e "    Chain B - Alice TKB: ${GREEN}$(cast from-wei $ALICE_TKB)${NC}"
