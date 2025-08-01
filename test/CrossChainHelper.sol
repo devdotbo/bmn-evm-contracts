@@ -180,9 +180,9 @@ contract CrossChainHelper is Test {
         return IBaseEscrow.Immutables({
             orderHash: orderHash,
             hashlock: hashlock,
-            maker: maker.toAddress(),
-            taker: taker.toAddress(),
-            token: token.toAddress(),
+            maker: Address.wrap(uint160(maker)),
+            taker: Address.wrap(uint160(taker)),
+            token: Address.wrap(uint160(token)),
             amount: amount,
             safetyDeposit: safetyDeposit,
             timelocks: timelocks
@@ -206,9 +206,9 @@ contract CrossChainHelper is Test {
         return IBaseEscrow.Immutables({
             orderHash: orderHash,
             hashlock: hashlock,
-            maker: taker.toAddress(),  // Taker becomes maker on dst
-            taker: maker.toAddress(),  // Maker becomes taker on dst
-            token: token.toAddress(),
+            maker: Address.wrap(uint160(taker)),  // Taker becomes maker on dst
+            taker: Address.wrap(uint160(maker)),  // Maker becomes taker on dst
+            token: Address.wrap(uint160(token)),
             amount: amount,
             safetyDeposit: safetyDeposit,
             timelocks: timelocks
