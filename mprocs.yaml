@@ -35,6 +35,10 @@ procs:
   clean:
     shell: "./scripts/cleanup.sh"
     autostart: false
+  
+  test-live-chains:
+    shell: "./scripts/test-live-chains.sh"
+    autostart: false
 
 # Configuration for better log visibility
 scrollback: 5000
