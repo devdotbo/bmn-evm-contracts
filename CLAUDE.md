@@ -185,5 +185,54 @@ When running cross-chain tests, you may see these warnings which are expected an
 1. **"Multi chain deployment is still under development"** - Informational warning from Forge about multi-chain features
 2. **"Script contains transaction to address without code"** - Expected behavior when pre-funding escrow addresses before deployment
 3. **"IO error: not a terminal"** - Occurs when Forge runs in non-interactive script mode
+4. **"Warning: EIP-3855 is not supported"** - Occurs if chains don't have `--hardfork shanghai` enabled
 
 The test scripts are configured to suppress or filter these warnings while keeping important error messages visible.
+
+### Troubleshooting Token Balance Issues
+
+If running test scripts doesn't change token balances as expected:
+
+#### 1. Verify Script Selection
+- Use `test-live-swap.sh` (affects real chains) not `test-live-chains.sh` (uses forks)
+- Fork-based tests create isolated environments that don't affect actual chain state
+
+#### 2. Check Prerequisites
+```bash
+# Verify chains are running
+nc -z localhost 8545 && nc -z localhost 8546
+
+# Check deployments exist
+ls -la deployments/
+
+# Verify initial token balances
+./scripts/check-deployment.sh
+```
+
+#### 3. Debug with Enhanced Scripts
+```bash
+# Run with full error visibility
+VERBOSE=true ./scripts/test-live-swap.sh
+
+# Use debug version with extensive logging
+./scripts/test-live-swap-debug.sh
+
+# Test individual steps
+./scripts/test-single-step.sh create-order
+./scripts/test-single-step.sh check-balances
+```
+
+#### 4. Common Issues and Solutions
+- **Silent transaction failures**: Use VERBOSE=true to see full output
+- **Account funding**: Ensure Alice has TKA on Chain A, Bob has TKB on Chain B
+- **Gas issues**: Check accounts have sufficient ETH for transactions
+- **Chain connectivity**: Verify both Anvil instances are running with correct hardfork
+- **State file corruption**: Delete `deployments/test-state.json` and restart
+
+#### 5. Expected Balance Changes
+```
+Initial:  Alice: 1000 TKA, 100 TKB | Bob: 500 TKA, 1000 TKB
+Final:    Alice: 990 TKA, 110 TKB  | Bob: 510 TKA, 990 TKB
+```
+
+If balances don't change, the issue is likely with transaction broadcasting or escrow logic.
