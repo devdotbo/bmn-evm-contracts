@@ -217,6 +217,7 @@ contract LiveTestChains is Script {
         string memory json = vm.readFile(STATE_FILE);
         bytes32 orderHash = vm.parseJsonBytes32(json, ".orderHash");
         bytes32 hashlock = vm.parseJsonBytes32(json, ".hashlock");
+        uint256 srcDeployTime = vm.parseJsonUint(json, ".srcDeployTime");
 
         IBaseEscrow.Immutables memory dstImmutables = IBaseEscrow.Immutables({
             orderHash: orderHash,
@@ -237,7 +238,7 @@ contract LiveTestChains is Script {
         // Create escrow with safety deposit
         EscrowFactory(chainB.factory).createDstEscrow{value: SAFETY_DEPOSIT}(
             dstImmutables,
-            block.timestamp + SRC_CANCELLATION_START + 30
+            srcDeployTime + SRC_CANCELLATION_START
         );
         
         vm.stopBroadcast();
@@ -247,7 +248,21 @@ contract LiveTestChains is Script {
         address dstEscrow = EscrowFactory(chainB.factory).addressOfEscrowDst(dstImmutables);
 
         console.log("Destination escrow created at:", dstEscrow);
-        console.log("Update STATE_FILE manually with dstEscrow address for next steps");
+        
+        // Update state file with dstEscrow address
+        string memory updatedState = string.concat(
+            '{',
+            '"secret": "', vm.toString(bytes32(vm.parseJsonBytes32(json, ".secret"))), '",',
+            '"hashlock": "', vm.toString(hashlock), '",',
+            '"orderHash": "', vm.toString(orderHash), '",',
+            '"timestamp": ', vm.toString(vm.parseJsonUint(json, ".timestamp")), ',',
+            '"srcEscrow": "', vm.toString(vm.parseJsonAddress(json, ".srcEscrow")), '",',
+            '"srcDeployTime": ', vm.toString(srcDeployTime), ',',
+            '"dstEscrow": "', vm.toString(dstEscrow), '"',
+            '}'
+        );
+        vm.writeFile(STATE_FILE, updatedState);
+        console.log("State file updated with dstEscrow address");
     }
 
     function withdrawSrc() internal {
@@ -301,9 +316,7 @@ contract LiveTestChains is Script {
         bytes32 secret = vm.parseJsonBytes32(json, ".secret");
         bytes32 orderHash = vm.parseJsonBytes32(json, ".orderHash");
         bytes32 hashlock = vm.parseJsonBytes32(json, ".hashlock");
-
-        // Note: You need to manually add dstEscrow to state file after step 3
-        console.log("Make sure dstEscrow address is in state file!");
+        address dstEscrow = vm.parseJsonAddress(json, ".dstEscrow");
 
         IBaseEscrow.Immutables memory dstImmutables = IBaseEscrow.Immutables({
             orderHash: orderHash,
@@ -315,8 +328,6 @@ contract LiveTestChains is Script {
             safetyDeposit: SAFETY_DEPOSIT,
             timelocks: createTimelocks().setDeployedAt(block.timestamp)
         });
-
-        address dstEscrow = EscrowFactory(chainB.factory).addressOfEscrowDst(dstImmutables);
 
         vm.startBroadcast(BOB_KEY);
         
