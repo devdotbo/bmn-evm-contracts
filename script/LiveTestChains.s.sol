@@ -421,12 +421,23 @@ contract LiveTestChains is Script {
         // Calculate the offset needed to reach srcCancellationTimestamp
         // The factory will do: currentTimestamp + offset = dstCancellationTimestamp
         // We need: dstCancellationTimestamp < srcCancellationTimestamp
-        // So: currentTimestamp + offset < srcCancellationTimestamp
-        // Therefore: offset < srcCancellationTimestamp - currentTimestamp
-        // Subtract extra buffer to account for potential block time drift during tx execution
         
-        uint256 maxOffset = srcCancellationTimestamp > (currentTimestamp + 10) ? 
-            srcCancellationTimestamp - currentTimestamp - 10 : 0;
+        // If chains are significantly out of sync, use a minimal offset
+        if (srcCancellationTimestamp <= currentTimestamp) {
+            console.log("ERROR: Source cancellation is in the past relative to destination chain!");
+            // Use minimal offset
+            uint256 adjustedDstCancellation = 60; // 1 minute
+            console.log("Using minimal DST_CANCELLATION:", adjustedDstCancellation);
+            packed |= uint256(uint32(DST_WITHDRAWAL_START)) << 128;
+            packed |= uint256(uint32(DST_PUBLIC_WITHDRAWAL_START)) << 160;
+            packed |= uint256(uint32(adjustedDstCancellation)) << 192;
+            return Timelocks.wrap(packed);
+        }
+        
+        // Calculate safe offset with generous buffer
+        uint256 buffer = 30; // 30 second buffer for block time variations
+        uint256 maxOffset = srcCancellationTimestamp - currentTimestamp > buffer ? 
+            srcCancellationTimestamp - currentTimestamp - buffer : 60;
         
         // Use the minimum of our desired offset and the maximum allowed
         uint256 adjustedDstCancellation = DST_CANCELLATION_START < maxOffset ? 
