@@ -7,6 +7,7 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 import { IOrderMixin, LimitOrderProtocol, IWETH } from "limit-order-protocol/contracts/LimitOrderProtocol.sol";
 import { TokenMock } from "solidity-utils/contracts/mocks/TokenMock.sol";
 import { EscrowFactory } from "../contracts/EscrowFactory.sol";
+import { TestEscrowFactory } from "../contracts/test/TestEscrowFactory.sol";
 
 contract LocalDeploy is Script {
     struct DeploymentData {
@@ -49,16 +50,17 @@ contract LocalDeploy is Script {
         LimitOrderProtocol lop = new LimitOrderProtocol(IWETH(address(0)));
         console.log("Limit Order Protocol:", address(lop));
 
-        // Deploy Escrow Factory
-        EscrowFactory factory = new EscrowFactory(
+        // Deploy Test Escrow Factory for local testing
+        // Using TestEscrowFactory to allow direct source escrow creation
+        EscrowFactory factory = new TestEscrowFactory(
             address(lop),
-            feeToken,
-            accessToken,
+            IERC20(address(feeToken)),
+            IERC20(address(accessToken)),
             deployer, // owner
-            604800,   // 7 days rescue delay
-            604800    // 7 days rescue delay
+            604800,   // 7 days rescue delay (uint32)
+            604800    // 7 days rescue delay (uint32)
         );
-        console.log("Escrow Factory:", address(factory));
+        console.log("Test Escrow Factory:", address(factory));
 
         // Test accounts
         address alice = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8; // Anvil account 1
