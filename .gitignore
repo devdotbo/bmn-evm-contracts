@@ -8,7 +8,7 @@ out/
 /broadcast/**/dry-run/
 
 # Docs
-docs/
+# docs/  # Documentation should be tracked
 
 # Dotenv file
 .env
