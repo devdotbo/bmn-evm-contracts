@@ -173,32 +173,34 @@ contract LiveTestChains is Script {
         require(success, "Failed to pre-fund safety deposit");
         vm.stopBroadcast();
         
-        // For live testing, we need to actually deploy the escrow contract
-        // In production, the factory would do this via the limit order protocol
+        // For live testing, we'll simulate the limit order protocol flow
+        // The factory must deploy the escrow for immutables validation to work
         
-        // We'll use the factory's internal deployment mechanism
         vm.startBroadcast(ALICE_KEY);
         
-        // First, we need to simulate what the factory would do
+        // First, transfer tokens to the factory (simulating limit order protocol)
+        IERC20(chainA.tokenA).transfer(chainA.factory, SWAP_AMOUNT);
+        
+        vm.stopBroadcast();
+        
+        // Now simulate the factory deploying the escrow
+        // We use vm.startPrank to maintain factory context throughout deployment
+        vm.startPrank(chainA.factory);
+        
         bytes32 salt = srcImmutables.hashMem();
         address impl = EscrowFactory(chainA.factory).ESCROW_SRC_IMPLEMENTATION();
         
-        // Deploy using Clones library (same as factory would)
+        // Deploy from factory address - this ensures proper immutables validation
         address escrow = Clones.cloneDeterministic(impl, salt);
         
         console.log("Source escrow deployed at:", escrow);
-        console.log("Expected escrow was:", expectedEscrow);
-        console.log("(Difference is due to deploying from Alice's address instead of factory)");
+        require(escrow == expectedEscrow, "Escrow address mismatch");
         
-        vm.stopBroadcast();
+        // Transfer tokens from factory to escrow
+        IERC20(chainA.tokenA).transfer(escrow, SWAP_AMOUNT);
         
-        // Update expectedEscrow to actual deployed address for the rest of the test
-        expectedEscrow = escrow;
+        vm.stopPrank();
         
-        // Transfer tokens to escrow
-        vm.startBroadcast(ALICE_KEY);
-        IERC20(chainA.tokenA).transfer(expectedEscrow, SWAP_AMOUNT);
-        vm.stopBroadcast();
 
         // Update state file - read existing JSON and add new fields
         json = vm.readFile(STATE_FILE);
@@ -211,7 +213,7 @@ contract LiveTestChains is Script {
         
         string memory updatedJson = string.concat(
             string(existingJson),
-            ',\n  "srcEscrow": "', vm.toString(expectedEscrow), '",',
+            ',\n  "srcEscrow": "', vm.toString(escrow), '",',
             '\n  "srcDeployTime": ', vm.toString(block.timestamp),
             '\n}'
         );
