@@ -157,6 +157,13 @@ When contracts are updated:
 2. Copy required ABIs to resolver: `cp out/<Contract>.sol/<Contract>.json ../bmn-evm-resolver/abis/`
 3. Key ABIs needed: EscrowFactory, EscrowSrc, EscrowDst, TokenMock, LimitOrderProtocol, IERC20
 
+### TestEscrowFactory for Development
+For local testing, we deploy `TestEscrowFactory` instead of the regular `EscrowFactory`:
+- Allows direct source escrow creation without going through the limit order protocol
+- Useful for testing escrow functionality in isolation
+- **DO NOT USE IN PRODUCTION** - bypasses security checks
+- Deployed automatically by `LocalDeploy.s.sol` for local chains
+
 ## Known Issues
 
 ### Missing Dependencies
