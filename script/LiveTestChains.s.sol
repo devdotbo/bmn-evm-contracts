@@ -12,6 +12,7 @@ import { Clones } from "openzeppelin-contracts/contracts/proxy/Clones.sol";
 import { IBaseEscrow } from "../contracts/interfaces/IBaseEscrow.sol";
 import { IEscrowFactory } from "../contracts/interfaces/IEscrowFactory.sol";
 import { EscrowFactory } from "../contracts/EscrowFactory.sol";
+import { TestEscrowFactory } from "../contracts/test/TestEscrowFactory.sol";
 import { Timelocks, TimelocksLib } from "../contracts/libraries/TimelocksLib.sol";
 import { ImmutablesLib } from "../contracts/libraries/ImmutablesLib.sol";
 
@@ -167,37 +168,24 @@ contract LiveTestChains is Script {
         // Get expected escrow address
         address expectedEscrow = EscrowFactory(chainA.factory).addressOfEscrowSrc(srcImmutables);
         
-        // Pre-fund safety deposit
-        vm.startBroadcast(ALICE_KEY);
-        (bool success,) = expectedEscrow.call{value: SAFETY_DEPOSIT}("");
-        require(success, "Failed to pre-fund safety deposit");
-        vm.stopBroadcast();
-        
-        // For live testing, we'll create the escrow through the factory's post-interaction
-        // This requires simulating what the limit order protocol would do
-        
-        // The factory expects to be called through the limit order protocol
-        // For testing, we'll directly invoke the factory's _postInteraction
-        // But this is internal, so we need a workaround
-        
-        // Actually, let's use a simpler approach for testing:
-        // We'll accept that the escrow address will be different and adjust our test
+        // Use TestEscrowFactory to create source escrow
+        TestEscrowFactory testFactory = TestEscrowFactory(chainA.factory);
         
         vm.startBroadcast(ALICE_KEY);
         
-        // Deploy a minimal proxy manually from Alice's address
-        bytes32 salt = srcImmutables.hashMem();
-        address impl = EscrowFactory(chainA.factory).ESCROW_SRC_IMPLEMENTATION();
+        // Approve factory to take tokens
+        IERC20(chainA.tokenA).approve(chainA.factory, SWAP_AMOUNT);
         
-        address escrow = Clones.cloneDeterministic(impl, salt);
+        // Create source escrow through test factory
+        address escrow = testFactory.createSrcEscrowForTesting(srcImmutables, SWAP_AMOUNT);
         
         console.log("Source escrow deployed at:", escrow);
-        console.log("(Test deployment from Alice, not factory)");
+        console.log("Expected escrow address:", expectedEscrow);
+        require(escrow == expectedEscrow, "Escrow address mismatch!");
         
-        // Transfer both tokens and safety deposit to escrow
-        IERC20(chainA.tokenA).transfer(escrow, SWAP_AMOUNT);
-        (bool success2,) = escrow.call{value: SAFETY_DEPOSIT}("");
-        require(success2, "Failed to send safety deposit to escrow");
+        // Send safety deposit to escrow
+        (bool success,) = escrow.call{value: SAFETY_DEPOSIT}("");
+        require(success, "Failed to send safety deposit to escrow");
         
         vm.stopBroadcast();
         
