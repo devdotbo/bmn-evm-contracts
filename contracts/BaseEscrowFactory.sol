@@ -134,7 +134,8 @@ abstract contract BaseEscrowFactory is IEscrowFactory, BaseExtension, ResolverVa
         IBaseEscrow.Immutables memory immutables = dstImmutables;
         immutables.timelocks = immutables.timelocks.setDeployedAt(block.timestamp);
         // Check that the escrow cancellation will start not later than the cancellation time on the source chain.
-        if (immutables.timelocks.get(TimelocksLib.Stage.DstCancellation) > srcCancellationTimestamp) revert InvalidCreationTime();
+        // Allow for TIMESTAMP_TOLERANCE to handle reasonable timestamp drift between chains.
+        if (immutables.timelocks.get(TimelocksLib.Stage.DstCancellation) > srcCancellationTimestamp + TIMESTAMP_TOLERANCE) revert InvalidCreationTime();
 
         bytes32 salt = immutables.hashMem();
         address escrow = _deployEscrow(salt, msg.value, ESCROW_DST_IMPLEMENTATION);
