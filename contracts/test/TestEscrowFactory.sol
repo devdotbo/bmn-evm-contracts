@@ -53,7 +53,7 @@ contract TestEscrowFactory is EscrowFactory {
         
         // If prefunding is requested, transfer tokens to the escrow
         if (prefundAmount > 0) {
-            IERC20(Address.unwrap(immutables.token)).safeTransferFrom(msg.sender, escrow, prefundAmount);
+            IERC20(address(uint160(Address.unwrap(immutables.token)))).safeTransferFrom(msg.sender, escrow, prefundAmount);
         }
         
         // Emit the event as if it was created normally
@@ -85,7 +85,7 @@ contract TestEscrowFactory is EscrowFactory {
         
         // Transfer tokens from factory to escrow
         // This simulates what would happen in postInteraction
-        IERC20(Address.unwrap(immutables.token)).safeTransfer(escrow, immutables.amount);
+        IERC20(address(uint160(Address.unwrap(immutables.token)))).safeTransfer(escrow, immutables.amount);
         
         // Emit the event
         DstImmutablesComplement memory complement = DstImmutablesComplement({
