@@ -46,14 +46,14 @@ contract TestLiveChains is Script {
     uint256 constant SWAP_AMOUNT = 10 ether;
     uint256 constant SAFETY_DEPOSIT = 0.01 ether;
     
-    // Timelock configuration (in seconds)
+    // Timelock configuration (in seconds) - optimized for 1-second block time
     uint256 constant SRC_WITHDRAWAL_START = 0;
-    uint256 constant SRC_PUBLIC_WITHDRAWAL_START = 300; // 5 minutes
-    uint256 constant SRC_CANCELLATION_START = 600; // 10 minutes
-    uint256 constant SRC_PUBLIC_CANCELLATION_START = 900; // 15 minutes
+    uint256 constant SRC_PUBLIC_WITHDRAWAL_START = 10; // 10 seconds
+    uint256 constant SRC_CANCELLATION_START = 30; // 30 seconds
+    uint256 constant SRC_PUBLIC_CANCELLATION_START = 45; // 45 seconds
     uint256 constant DST_WITHDRAWAL_START = 0;
-    uint256 constant DST_PUBLIC_WITHDRAWAL_START = 300; // 5 minutes
-    uint256 constant DST_CANCELLATION_START = 600; // 10 minutes
+    uint256 constant DST_PUBLIC_WITHDRAWAL_START = 10; // 10 seconds
+    uint256 constant DST_CANCELLATION_START = 30; // 30 seconds
 
     // Private keys (Anvil defaults)
     uint256 constant ALICE_KEY = 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d;
