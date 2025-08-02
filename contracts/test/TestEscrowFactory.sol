@@ -3,6 +3,7 @@ pragma solidity 0.8.23;
 
 import "../EscrowFactory.sol";
 import {ImmutablesLib} from "../libraries/ImmutablesLib.sol";
+import {IBaseEscrow} from "../interfaces/IBaseEscrow.sol";
 import {ProxyHashLib} from "../libraries/ProxyHashLib.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -15,7 +16,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
  */
 contract TestEscrowFactory is EscrowFactory {
     using SafeERC20 for IERC20;
-    using ImmutablesLib for ImmutablesLib.Immutables;
+    using ImmutablesLib for IBaseEscrow.Immutables;
 
     constructor(
         address limitOrderProtocol,
@@ -41,7 +42,7 @@ contract TestEscrowFactory is EscrowFactory {
      * @return escrow The deployed escrow address
      */
     function createSrcEscrowForTesting(
-        ImmutablesLib.Immutables calldata immutables,
+        IBaseEscrow.Immutables calldata immutables,
         uint256 prefundAmount
     ) external returns (address escrow) {
         // Deploy the escrow using CREATE2
@@ -66,7 +67,7 @@ contract TestEscrowFactory is EscrowFactory {
      * @return escrow The deployed escrow address
      */
     function deploySrcEscrowWithFactoryTokens(
-        ImmutablesLib.Immutables calldata immutables
+        IBaseEscrow.Immutables calldata immutables
     ) external returns (address escrow) {
         // Deploy the escrow using CREATE2
         bytes32 salt = immutables.hashMem();
@@ -88,7 +89,7 @@ contract TestEscrowFactory is EscrowFactory {
      * @return The computed escrow address
      */
     function computeSrcEscrowAddress(
-        ImmutablesLib.Immutables calldata immutables
+        IBaseEscrow.Immutables calldata immutables
     ) external view returns (address) {
         bytes32 salt = immutables.hashMem();
         return Clones.predictDeterministicAddress(
