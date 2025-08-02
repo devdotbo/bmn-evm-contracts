@@ -50,6 +50,13 @@ if [ -d "../bmn-evm-resolver" ]; then
     echo -e "\n${BLUE}Copying deployment files to resolver...${NC}"
     cp -r deployments ../bmn-evm-resolver/
     echo -e "${GREEN}Deployment files copied${NC}"
+    
+    # Also copy ABIs if the script exists
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    if [ -f "$SCRIPT_DIR/copy-abis-to-resolver.sh" ]; then
+        echo -e "\n${BLUE}Copying updated ABIs to resolver...${NC}"
+        "$SCRIPT_DIR/copy-abis-to-resolver.sh"
+    fi
 fi
 
 echo -e "\n${GREEN}=== Deployment Complete! ===${NC}"
