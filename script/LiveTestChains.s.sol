@@ -219,6 +219,13 @@ contract LiveTestChains is Script {
         bytes32 hashlock = vm.parseJsonBytes32(json, ".hashlock");
         uint256 srcDeployTime = vm.parseJsonUint(json, ".srcDeployTime");
 
+        // Calculate time elapsed since source escrow deployment
+        uint256 timeElapsed = block.timestamp > srcDeployTime ? block.timestamp - srcDeployTime : 0;
+        
+        // Create timelocks adjusted for destination chain
+        // Ensure DST_CANCELLATION aligns with SRC_CANCELLATION
+        Timelocks adjustedTimelocks = createTimelocksForDst(timeElapsed);
+        
         IBaseEscrow.Immutables memory dstImmutables = IBaseEscrow.Immutables({
             orderHash: orderHash,
             hashlock: hashlock,
@@ -227,7 +234,7 @@ contract LiveTestChains is Script {
             token: Address.wrap(uint160(chainB.tokenB)),
             amount: SWAP_AMOUNT,
             safetyDeposit: SAFETY_DEPOSIT,
-            timelocks: createTimelocks()
+            timelocks: adjustedTimelocks
         });
 
         vm.startBroadcast(BOB_KEY);
@@ -376,6 +383,27 @@ contract LiveTestChains is Script {
         packed |= uint256(uint32(DST_WITHDRAWAL_START)) << 128;
         packed |= uint256(uint32(DST_PUBLIC_WITHDRAWAL_START)) << 160;
         packed |= uint256(uint32(DST_CANCELLATION_START)) << 192;
+        
+        return Timelocks.wrap(packed);
+    }
+
+    function createTimelocksForDst(uint256 timeElapsed) internal pure returns (Timelocks) {
+        uint256 packed = 0;
+        
+        // Source timelocks remain the same
+        packed |= uint256(uint32(SRC_WITHDRAWAL_START));
+        packed |= uint256(uint32(SRC_PUBLIC_WITHDRAWAL_START)) << 32;
+        packed |= uint256(uint32(SRC_CANCELLATION_START)) << 64;
+        packed |= uint256(uint32(SRC_PUBLIC_CANCELLATION_START)) << 96;
+        
+        // Adjust destination timelocks to account for time elapsed
+        // This ensures DST_CANCELLATION aligns with SRC_CANCELLATION in absolute time
+        uint256 adjustedDstCancellation = DST_CANCELLATION_START > timeElapsed ? 
+            DST_CANCELLATION_START - timeElapsed : 0;
+        
+        packed |= uint256(uint32(DST_WITHDRAWAL_START)) << 128;
+        packed |= uint256(uint32(DST_PUBLIC_WITHDRAWAL_START)) << 160;
+        packed |= uint256(uint32(adjustedDstCancellation)) << 192;
         
         return Timelocks.wrap(packed);
     }
