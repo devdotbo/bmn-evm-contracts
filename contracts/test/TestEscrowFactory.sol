@@ -57,7 +57,15 @@ contract TestEscrowFactory is EscrowFactory {
         }
         
         // Emit the event as if it was created normally
-        emit SrcEscrowCreated(escrow, Address.unwrap(immutables.taker));
+        // Need to create the complement data for the event
+        DstImmutablesComplement memory complement = DstImmutablesComplement({
+            maker: immutables.maker,
+            amount: immutables.amount, // In testing, we use 1:1 ratio
+            token: immutables.token, // Same token for simplicity
+            safetyDeposit: immutables.safetyDeposit,
+            chainId: block.chainid
+        });
+        emit SrcEscrowCreated(immutables, complement);
         
         return escrow;
     }
@@ -80,7 +88,14 @@ contract TestEscrowFactory is EscrowFactory {
         IERC20(Address.unwrap(immutables.token)).safeTransfer(escrow, immutables.amount);
         
         // Emit the event
-        emit SrcEscrowCreated(escrow, Address.unwrap(immutables.taker));
+        DstImmutablesComplement memory complement = DstImmutablesComplement({
+            maker: immutables.maker,
+            amount: immutables.amount,
+            token: immutables.token,
+            safetyDeposit: immutables.safetyDeposit,
+            chainId: block.chainid
+        });
+        emit SrcEscrowCreated(immutables, complement);
         
         return escrow;
     }
