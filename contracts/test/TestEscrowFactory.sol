@@ -19,22 +19,18 @@ contract TestEscrowFactory is EscrowFactory {
 
     constructor(
         address limitOrderProtocol,
-        address dai,
-        address accessToken,
-        address feeToken,
+        IERC20 feeToken,
+        IERC20 accessToken,
         address owner,
-        address weth,
-        address permit2,
-        address daiWethOracle
+        uint32 rescueDelaySrc,
+        uint32 rescueDelayDst
     ) EscrowFactory(
         limitOrderProtocol,
-        dai,
-        accessToken,
         feeToken,
+        accessToken,
         owner,
-        weth,
-        permit2,
-        daiWethOracle
+        rescueDelaySrc,
+        rescueDelayDst
     ) {}
 
     /**
