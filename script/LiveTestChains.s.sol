@@ -272,13 +272,21 @@ contract LiveTestChains is Script {
             );
         }
         
+        // Capture the deployment timestamp after the transaction
+        uint256 deployTimestamp = block.timestamp;
+        
         vm.stopBroadcast();
 
-        // Update timelocks for address calculation
-        dstImmutables.timelocks = dstImmutables.timelocks.setDeployedAt(block.timestamp);
+        // Calculate the deployed escrow address using the actual deployment timestamp
+        // The factory uses block.timestamp when calling setDeployedAt internally
+        dstImmutables.timelocks = dstImmutables.timelocks.setDeployedAt(deployTimestamp);
         address dstEscrow = EscrowFactory(chainB.factory).addressOfEscrowDst(dstImmutables);
-
-        console.log("Destination escrow created at:", dstEscrow);
+        
+        console.log("Destination escrow calculated at:", dstEscrow);
+        
+        // Verify escrow was deployed correctly
+        require(dstEscrow.code.length > 0, "Destination escrow not deployed");
+        console.log("Escrow code verified, length:", dstEscrow.code.length);
         
         // Debug: show what the destination cancellation time will be
         uint256 dstCancellationTime = dstImmutables.timelocks.get(TimelocksLib.Stage.DstCancellation);
@@ -294,7 +302,7 @@ contract LiveTestChains is Script {
             '"srcEscrow": "', vm.toString(vm.parseJsonAddress(json, ".srcEscrow")), '",',
             '"srcDeployTime": ', vm.toString(srcDeployTime), ',',
             '"dstEscrow": "', vm.toString(dstEscrow), '",',
-            '"dstDeployTime": ', vm.toString(block.timestamp),
+            '"dstDeployTime": ', vm.toString(deployTimestamp),
             '}'
         );
         vm.writeFile(STATE_FILE, updatedState);
@@ -369,7 +377,7 @@ contract LiveTestChains is Script {
             orderHash: orderHash,
             hashlock: hashlock,
             maker: Address.wrap(uint160(chainB.bob)), // Bob is maker on destination
-            taker: Address.wrap(uint160(chainA.alice)), // Alice is taker on destination
+            taker: Address.wrap(uint160(chainB.alice)), // Alice is taker on destination
             token: Address.wrap(uint160(chainB.tokenB)),
             amount: SWAP_AMOUNT,
             safetyDeposit: SAFETY_DEPOSIT,
@@ -378,12 +386,23 @@ contract LiveTestChains is Script {
 
         vm.startBroadcast(ALICE_KEY); // Alice withdraws from destination escrow
         
-        uint256 aliceBalanceBefore = IERC20(chainB.tokenB).balanceOf(chainA.alice);
+        uint256 aliceBalanceBefore = IERC20(chainB.tokenB).balanceOf(chainB.alice);
+        
+        // Debug info
+        console.log("Debug: Escrow address:", dstEscrow);
+        console.log("Debug: Escrow code length:", dstEscrow.code.length);
+        console.log("Debug: Escrow token balance:", IERC20(chainB.tokenB).balanceOf(dstEscrow) / 1e18);
+        console.log("Debug: Current timestamp:", block.timestamp);
+        console.log("Debug: Deploy timestamp:", dstDeployTime);
+        console.log("Debug: Withdrawal start:", dstImmutables.timelocks.get(TimelocksLib.Stage.DstWithdrawal));
+        console.log("Debug: Cancellation start:", dstImmutables.timelocks.get(TimelocksLib.Stage.DstCancellation));
+        console.log("Debug: Calling as Alice:", msg.sender);
+        console.log("Debug: Expected taker:", Address.unwrap(dstImmutables.taker));
         
         // Withdraw (sends tokens to Alice)
         IBaseEscrow(dstEscrow).withdraw(secret, dstImmutables);
         
-        uint256 aliceBalanceAfter = IERC20(chainB.tokenB).balanceOf(chainA.alice);
+        uint256 aliceBalanceAfter = IERC20(chainB.tokenB).balanceOf(chainB.alice);
         
         vm.stopBroadcast();
 
