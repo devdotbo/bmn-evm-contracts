@@ -128,6 +128,7 @@ Timelocks are packed into a single uint256 with stages:
 - Rescue delay (configurable) for stuck funds
 - Access token for resolver participation
 - Timelocks ensure fair cancellation windows
+- Timestamp tolerance (5 minutes) handles chain timestamp drift
 
 ## Configuration
 
@@ -188,6 +189,14 @@ When running cross-chain tests, you may see these warnings which are expected an
 4. **"Warning: EIP-3855 is not supported"** - Occurs if chains don't have `--hardfork shanghai` enabled
 
 The test scripts are configured to suppress or filter these warnings while keeping important error messages visible.
+
+### Timestamp Tolerance
+
+The protocol includes a 5-minute timestamp tolerance to handle chain timestamp drift:
+- Multiple Anvil instances may have different timestamps
+- Production chains can have minor timestamp variations
+- The tolerance is implemented in `BaseEscrowFactory.sol` as `TIMESTAMP_TOLERANCE = 300 seconds`
+- This prevents `InvalidCreationTime` errors while maintaining security
 
 ### Troubleshooting Token Balance Issues
 
