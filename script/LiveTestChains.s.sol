@@ -242,11 +242,12 @@ contract LiveTestChains is Script {
         console.log("srcCancellationTimestamp:", srcDeployTime + SRC_CANCELLATION_START);
         
         // Create standard timelocks - the contract now handles timestamp tolerance
+        // On destination chain: Bob is maker (provides Token B), Alice is taker (withdraws with secret)
         IBaseEscrow.Immutables memory dstImmutables = IBaseEscrow.Immutables({
             orderHash: orderHash,
             hashlock: hashlock,
-            maker: Address.wrap(uint160(chainA.alice)),
-            taker: Address.wrap(uint160(chainA.bob)),
+            maker: Address.wrap(uint160(chainB.bob)), // Bob is maker on destination
+            taker: Address.wrap(uint160(chainA.alice)), // Alice is taker on destination
             token: Address.wrap(uint160(chainB.tokenB)),
             amount: SWAP_AMOUNT,
             safetyDeposit: SAFETY_DEPOSIT,
@@ -283,7 +284,7 @@ contract LiveTestChains is Script {
         uint256 dstCancellationTime = dstImmutables.timelocks.get(TimelocksLib.Stage.DstCancellation);
         console.log("DstCancellation will be at:", dstCancellationTime);
         
-        // Update state file with dstEscrow address
+        // Update state file with dstEscrow address and deployment time
         string memory updatedState = string.concat(
             '{',
             '"secret": "', vm.toString(bytes32(vm.parseJsonBytes32(json, ".secret"))), '",',
@@ -292,7 +293,8 @@ contract LiveTestChains is Script {
             '"timestamp": ', vm.toString(vm.parseJsonUint(json, ".timestamp")), ',',
             '"srcEscrow": "', vm.toString(vm.parseJsonAddress(json, ".srcEscrow")), '",',
             '"srcDeployTime": ', vm.toString(srcDeployTime), ',',
-            '"dstEscrow": "', vm.toString(dstEscrow), '"',
+            '"dstEscrow": "', vm.toString(dstEscrow), '",',
+            '"dstDeployTime": ', vm.toString(block.timestamp),
             '}'
         );
         vm.writeFile(STATE_FILE, updatedState);
@@ -360,19 +362,21 @@ contract LiveTestChains is Script {
         bytes32 orderHash = vm.parseJsonBytes32(json, ".orderHash");
         bytes32 hashlock = vm.parseJsonBytes32(json, ".hashlock");
         address dstEscrow = vm.parseJsonAddress(json, ".dstEscrow");
+        uint256 dstDeployTime = vm.parseJsonUint(json, ".dstDeployTime");
 
+        // On destination chain: Bob is maker, Alice is taker
         IBaseEscrow.Immutables memory dstImmutables = IBaseEscrow.Immutables({
             orderHash: orderHash,
             hashlock: hashlock,
-            maker: Address.wrap(uint160(chainA.alice)),
-            taker: Address.wrap(uint160(chainA.bob)),
+            maker: Address.wrap(uint160(chainB.bob)), // Bob is maker on destination
+            taker: Address.wrap(uint160(chainA.alice)), // Alice is taker on destination
             token: Address.wrap(uint160(chainB.tokenB)),
             amount: SWAP_AMOUNT,
             safetyDeposit: SAFETY_DEPOSIT,
-            timelocks: createTimelocks().setDeployedAt(block.timestamp)
+            timelocks: createTimelocks().setDeployedAt(dstDeployTime)
         });
 
-        vm.startBroadcast(BOB_KEY);
+        vm.startBroadcast(ALICE_KEY); // Alice withdraws from destination escrow
         
         uint256 aliceBalanceBefore = IERC20(chainB.tokenB).balanceOf(chainA.alice);
         
