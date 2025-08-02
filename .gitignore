@@ -19,6 +19,9 @@ chain-*.log
 # Broadcast artifacts
 broadcast/
 
+# mprocs logs
+mprocs.log
+
 # macOS
 .DS_Store
 node_modules
