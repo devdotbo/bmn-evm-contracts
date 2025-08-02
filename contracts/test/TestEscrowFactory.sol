@@ -8,6 +8,7 @@ import {ProxyHashLib} from "../libraries/ProxyHashLib.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Address, AddressLib} from "solidity-utils/contracts/libraries/AddressLib.sol";
 
 /**
  * @title TestEscrowFactory
@@ -17,6 +18,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 contract TestEscrowFactory is EscrowFactory {
     using SafeERC20 for IERC20;
     using ImmutablesLib for IBaseEscrow.Immutables;
+    using AddressLib for Address;
 
     constructor(
         address limitOrderProtocol,
@@ -51,11 +53,11 @@ contract TestEscrowFactory is EscrowFactory {
         
         // If prefunding is requested, transfer tokens to the escrow
         if (prefundAmount > 0) {
-            IERC20(immutables.token).safeTransferFrom(msg.sender, escrow, prefundAmount);
+            IERC20(Address.unwrap(immutables.token)).safeTransferFrom(msg.sender, escrow, prefundAmount);
         }
         
         // Emit the event as if it was created normally
-        emit SrcEscrowCreated(escrow, immutables.taker, immutables);
+        emit SrcEscrowCreated(escrow, Address.unwrap(immutables.taker));
         
         return escrow;
     }
@@ -75,10 +77,10 @@ contract TestEscrowFactory is EscrowFactory {
         
         // Transfer tokens from factory to escrow
         // This simulates what would happen in postInteraction
-        IERC20(immutables.token).safeTransfer(escrow, immutables.amount);
+        IERC20(Address.unwrap(immutables.token)).safeTransfer(escrow, immutables.amount);
         
         // Emit the event
-        emit SrcEscrowCreated(escrow, immutables.taker, immutables);
+        emit SrcEscrowCreated(escrow, Address.unwrap(immutables.taker));
         
         return escrow;
     }
