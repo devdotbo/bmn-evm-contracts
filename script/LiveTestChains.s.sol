@@ -423,9 +423,10 @@ contract LiveTestChains is Script {
         // We need: dstCancellationTimestamp < srcCancellationTimestamp
         // So: currentTimestamp + offset < srcCancellationTimestamp
         // Therefore: offset < srcCancellationTimestamp - currentTimestamp
+        // Subtract extra buffer to account for potential block time drift during tx execution
         
-        uint256 maxOffset = srcCancellationTimestamp > currentTimestamp ? 
-            srcCancellationTimestamp - currentTimestamp - 1 : 0;
+        uint256 maxOffset = srcCancellationTimestamp > (currentTimestamp + 10) ? 
+            srcCancellationTimestamp - currentTimestamp - 10 : 0;
         
         // Use the minimum of our desired offset and the maximum allowed
         uint256 adjustedDstCancellation = DST_CANCELLATION_START < maxOffset ? 
