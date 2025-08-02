@@ -235,10 +235,7 @@ contract LiveTestChains is Script {
         console.log("Time elapsed:", timeElapsed);
         console.log("srcCancellationTimestamp:", srcDeployTime + SRC_CANCELLATION_START);
         
-        // Create timelocks adjusted for destination chain
-        // Ensure DST_CANCELLATION aligns with SRC_CANCELLATION
-        Timelocks adjustedTimelocks = createTimelocksForDst(block.timestamp, srcDeployTime + SRC_CANCELLATION_START);
-        
+        // Create standard timelocks - the contract now handles timestamp tolerance
         IBaseEscrow.Immutables memory dstImmutables = IBaseEscrow.Immutables({
             orderHash: orderHash,
             hashlock: hashlock,
@@ -247,13 +244,8 @@ contract LiveTestChains is Script {
             token: Address.wrap(uint160(chainB.tokenB)),
             amount: SWAP_AMOUNT,
             safetyDeposit: SAFETY_DEPOSIT,
-            timelocks: adjustedTimelocks
+            timelocks: createTimelocks()
         });
-
-        // Debug: verify timelocks are adjusted
-        console.log("Timelocks packed value:", uint256(Timelocks.unwrap(adjustedTimelocks)));
-        console.log("Expected DST_CANCELLATION offset in immutables:", 
-            (uint256(Timelocks.unwrap(adjustedTimelocks)) >> 192) & 0xFFFFFFFF);
 
         vm.startBroadcast(BOB_KEY);
         
@@ -409,49 +401,6 @@ contract LiveTestChains is Script {
         return Timelocks.wrap(packed);
     }
 
-    function createTimelocksForDst(uint256 currentTimestamp, uint256 srcCancellationTimestamp) internal pure returns (Timelocks) {
-        uint256 packed = 0;
-        
-        // Source timelocks remain the same
-        packed |= uint256(uint32(SRC_WITHDRAWAL_START));
-        packed |= uint256(uint32(SRC_PUBLIC_WITHDRAWAL_START)) << 32;
-        packed |= uint256(uint32(SRC_CANCELLATION_START)) << 64;
-        packed |= uint256(uint32(SRC_PUBLIC_CANCELLATION_START)) << 96;
-        
-        // Calculate the offset needed to reach srcCancellationTimestamp
-        // The factory will do: currentTimestamp + offset = dstCancellationTimestamp
-        // We need: dstCancellationTimestamp < srcCancellationTimestamp
-        
-        // If chains are significantly out of sync, use a minimal offset
-        if (srcCancellationTimestamp <= currentTimestamp) {
-            console.log("ERROR: Source cancellation is in the past relative to destination chain!");
-            // Use minimal offset
-            uint256 adjustedDstCancellation = 60; // 1 minute
-            console.log("Using minimal DST_CANCELLATION:", adjustedDstCancellation);
-            packed |= uint256(uint32(DST_WITHDRAWAL_START)) << 128;
-            packed |= uint256(uint32(DST_PUBLIC_WITHDRAWAL_START)) << 160;
-            packed |= uint256(uint32(adjustedDstCancellation)) << 192;
-            return Timelocks.wrap(packed);
-        }
-        
-        // Calculate safe offset with generous buffer
-        uint256 buffer = 30; // 30 second buffer for block time variations
-        uint256 maxOffset = srcCancellationTimestamp - currentTimestamp > buffer ? 
-            srcCancellationTimestamp - currentTimestamp - buffer : 60;
-        
-        // Use the minimum of our desired offset and the maximum allowed
-        uint256 adjustedDstCancellation = DST_CANCELLATION_START < maxOffset ? 
-            DST_CANCELLATION_START : maxOffset;
-            
-        console.log("Max allowed offset:", maxOffset);
-        console.log("Adjusting DST_CANCELLATION to:", adjustedDstCancellation);
-        
-        packed |= uint256(uint32(DST_WITHDRAWAL_START)) << 128;
-        packed |= uint256(uint32(DST_PUBLIC_WITHDRAWAL_START)) << 160;
-        packed |= uint256(uint32(adjustedDstCancellation)) << 192;
-        
-        return Timelocks.wrap(packed);
-    }
 
     function loadDeployment(string memory path) internal view returns (Deployment memory) {
         string memory json = vm.readFile(path);
