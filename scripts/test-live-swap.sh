@@ -5,10 +5,14 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[0;33m'
+MAGENTA='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Configuration
 VERBOSE=${VERBOSE:-false}
+
+# Source timing helpers
+source scripts/timing-helpers.sh
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}Testing Live Cross-Chain Atomic Swap${NC}"
@@ -127,16 +131,32 @@ if [ -z "$DEPLOYER_PRIVATE_KEY" ]; then
 fi
 echo -e "${GREEN}✅ Environment variables configured${NC}"
 
+# Synchronize chain timestamps before starting
+echo -e "\n${BLUE}Synchronizing chain timestamps...${NC}"
+./scripts/sync-chain-timestamps.sh >/dev/null 2>&1 &
+SYNC_PID=$!
+sleep 2
+kill $SYNC_PID 2>/dev/null
+
+# Record test start time
+TEST_START_TIME=$(get_chain_timestamp "http://localhost:8545")
+echo -e "${GREEN}✅ Test starting at timestamp: $TEST_START_TIME${NC}"
+
 # Show initial balances
 echo -e "\n${BLUE}=== INITIAL BALANCES ===${NC}"
 check_chain_balances "Chain A" "http://localhost:8545" ""
 check_chain_balances "Chain B" "http://localhost:8546" ""
+
+# Show initial timing status
+show_timing_status $TEST_START_TIME
 
 # Clean up previous test state
 echo -e "\n${BLUE}Cleaning up previous test state...${NC}"
 rm -f deployments/test-state.json
 
 # Step 1: Create order on Chain A
+echo -e "\n${MAGENTA}=== PHASE 1: Order Creation ===${NC}"
+show_timing_status $TEST_START_TIME
 if ! run_forge_step "Step 1: Creating order on Chain A" "create-order" "http://localhost:8545"; then
     exit 1
 fi
@@ -171,6 +191,8 @@ else
 fi
 
 # Step 2: Create source escrow on Chain A (Alice locks tokens)
+echo -e "\n${MAGENTA}=== PHASE 2: Escrow Creation ===${NC}"
+show_timing_status $TEST_START_TIME
 if ! run_forge_step "Step 2: Creating source escrow on Chain A" "create-src-escrow" "http://localhost:8545" "before-after"; then
     exit 1
 fi
@@ -181,6 +203,9 @@ if ! run_forge_step "Step 3: Creating destination escrow on Chain B" "create-dst
 fi
 
 # Step 4: Withdraw from source escrow on Chain A (Bob gets Alice's tokens)
+echo -e "\n${MAGENTA}=== PHASE 3: Secret Reveal & Withdrawal ===${NC}"
+show_timing_status $TEST_START_TIME
+echo -e "${YELLOW}Note: Withdrawals should complete within the withdrawal window (0-30s)${NC}"
 if ! run_forge_step "Step 4: Withdrawing from source escrow on Chain A" "withdraw-src" "http://localhost:8545" "before-after"; then
     exit 1
 fi
@@ -192,6 +217,7 @@ fi
 
 # Check final balances
 echo -e "\n${BLUE}=== FINAL BALANCES ===${NC}"
+show_timing_status $TEST_START_TIME
 check_chain_balances "Chain A" "http://localhost:8545" ""
 check_chain_balances "Chain B" "http://localhost:8546" ""
 
