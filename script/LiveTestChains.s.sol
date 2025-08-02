@@ -250,6 +250,11 @@ contract LiveTestChains is Script {
             timelocks: adjustedTimelocks
         });
 
+        // Debug: verify timelocks are adjusted
+        console.log("Timelocks packed value:", uint256(Timelocks.unwrap(adjustedTimelocks)));
+        console.log("Expected DST_CANCELLATION offset in immutables:", 
+            (uint256(Timelocks.unwrap(adjustedTimelocks)) >> 192) & 0xFFFFFFFF);
+
         vm.startBroadcast(BOB_KEY);
         
         // Approve tokens
