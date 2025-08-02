@@ -222,6 +222,11 @@ contract LiveTestChains is Script {
         // Calculate time elapsed since source escrow deployment
         uint256 timeElapsed = block.timestamp > srcDeployTime ? block.timestamp - srcDeployTime : 0;
         
+        console.log("Current block.timestamp:", block.timestamp);
+        console.log("srcDeployTime:", srcDeployTime);
+        console.log("Time elapsed:", timeElapsed);
+        console.log("srcCancellationTimestamp:", srcDeployTime + SRC_CANCELLATION_START);
+        
         // Create timelocks adjusted for destination chain
         // Ensure DST_CANCELLATION aligns with SRC_CANCELLATION
         Timelocks adjustedTimelocks = createTimelocksForDst(timeElapsed);
@@ -255,6 +260,10 @@ contract LiveTestChains is Script {
         address dstEscrow = EscrowFactory(chainB.factory).addressOfEscrowDst(dstImmutables);
 
         console.log("Destination escrow created at:", dstEscrow);
+        
+        // Debug: show what the destination cancellation time will be
+        uint256 dstCancellationTime = dstImmutables.timelocks.get(TimelocksLib.Stage.DstCancellation);
+        console.log("DstCancellation will be at:", dstCancellationTime);
         
         // Update state file with dstEscrow address
         string memory updatedState = string.concat(
