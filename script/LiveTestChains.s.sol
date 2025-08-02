@@ -41,7 +41,7 @@ contract LiveTestChains is Script {
 
     // Test configuration
     uint256 constant SWAP_AMOUNT = 10 ether;
-    uint256 constant SAFETY_DEPOSIT = 0.01 ether;
+    uint256 constant SAFETY_DEPOSIT = 0; // Set to 0 for testing without ETH
     
     // Timelock configuration (in seconds)
     uint256 constant SRC_WITHDRAWAL_START = 0;
@@ -183,9 +183,11 @@ contract LiveTestChains is Script {
         console.log("Expected escrow address:", expectedEscrow);
         require(escrow == expectedEscrow, "Escrow address mismatch!");
         
-        // Send safety deposit to escrow
-        (bool success,) = escrow.call{value: SAFETY_DEPOSIT}("");
-        require(success, "Failed to send safety deposit to escrow");
+        // Send safety deposit to escrow (if any)
+        if (SAFETY_DEPOSIT > 0) {
+            (bool success,) = escrow.call{value: SAFETY_DEPOSIT}("");
+            require(success, "Failed to send safety deposit to escrow");
+        }
         
         vm.stopBroadcast();
         
@@ -256,11 +258,18 @@ contract LiveTestChains is Script {
         // Approve tokens
         IERC20(chainB.tokenB).approve(chainB.factory, SWAP_AMOUNT);
         
-        // Create escrow with safety deposit
-        EscrowFactory(chainB.factory).createDstEscrow{value: SAFETY_DEPOSIT}(
-            dstImmutables,
-            srcDeployTime + SRC_CANCELLATION_START
-        );
+        // Create escrow with safety deposit (if any)
+        if (SAFETY_DEPOSIT > 0) {
+            EscrowFactory(chainB.factory).createDstEscrow{value: SAFETY_DEPOSIT}(
+                dstImmutables,
+                srcDeployTime + SRC_CANCELLATION_START
+            );
+        } else {
+            EscrowFactory(chainB.factory).createDstEscrow(
+                dstImmutables,
+                srcDeployTime + SRC_CANCELLATION_START
+            );
+        }
         
         vm.stopBroadcast();
 
