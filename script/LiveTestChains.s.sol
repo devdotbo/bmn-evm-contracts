@@ -407,8 +407,11 @@ contract LiveTestChains is Script {
         
         // Adjust destination timelocks to account for time elapsed
         // This ensures DST_CANCELLATION aligns with SRC_CANCELLATION in absolute time
-        uint256 adjustedDstCancellation = DST_CANCELLATION_START > timeElapsed ? 
-            DST_CANCELLATION_START - timeElapsed : 0;
+        // Subtract an extra second to ensure we're strictly less than srcCancellationTimestamp
+        uint256 adjustedDstCancellation = DST_CANCELLATION_START > (timeElapsed + 1) ? 
+            DST_CANCELLATION_START - timeElapsed - 1 : 0;
+            
+        console.log("Adjusting DST_CANCELLATION from", DST_CANCELLATION_START, "to", adjustedDstCancellation);
         
         packed |= uint256(uint32(DST_WITHDRAWAL_START)) << 128;
         packed |= uint256(uint32(DST_PUBLIC_WITHDRAWAL_START)) << 160;
