@@ -4,6 +4,7 @@
 
 ### 🔴 Critical: CREATE2 Address Mismatch
 - **Main Analysis**: [CREATE2_ADDRESS_MISMATCH_ANALYSIS.md](./CREATE2_ADDRESS_MISMATCH_ANALYSIS.md)
+- **1inch Comparison**: [1INCH_COMPARISON_ANALYSIS.md](./1INCH_COMPARISON_ANALYSIS.md) - **NEW**: Confirms 1inch has same issue
 - **Resolver Findings**: [../bmn-evm-resolver/CREATE2_ADDRESS_MISMATCH_FINDINGS.md](../bmn-evm-resolver/CREATE2_ADDRESS_MISMATCH_FINDINGS.md)
 - **Status**: Workaround implemented, contract fix pending
 
@@ -15,6 +16,7 @@
 ### 🔧 Resolver Integration
 - **Fix Instructions**: [RESOLVER_FIX_INSTRUCTIONS.md](./RESOLVER_FIX_INSTRUCTIONS.md)
 - **Test Flow Fixes**: [../bmn-evm-resolver/TEST_FLOW_FIXES.md](../bmn-evm-resolver/TEST_FLOW_FIXES.md)
+- **1inch Learnings**: [../bmn-evm-resolver/1INCH_RESOLVER_LEARNINGS.md](../bmn-evm-resolver/1INCH_RESOLVER_LEARNINGS.md) - **NEW**: Best practices from 1inch
 - **Status**: Resolver updated with event-based address parsing
 
 ## Core Documentation
@@ -53,8 +55,14 @@
 3. Test with `./scripts/test-live-swap.sh`
 4. Check balances with `./scripts/check-deployment.sh`
 
-## Recent Changes (2025-08-02)
+## Recent Changes
 
+### 2025-08-02 (Today)
+1. **Analyzed 1inch implementation** - Discovered they have identical CREATE2 issue
+2. **Created comparison documentation** - Comprehensive analysis of 1inch vs our approach
+3. **Documented resolver learnings** - Best practices from 1inch resolver patterns
+
+### 2025-08-02 (Earlier)
 1. **Implemented 1-second block mining** on both Anvil chains
 2. **Optimized timelocks** to use seconds instead of minutes
 3. **Added automatic ABI copying** to deployment script
