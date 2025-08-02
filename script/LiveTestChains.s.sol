@@ -220,7 +220,15 @@ contract LiveTestChains is Script {
         uint256 srcDeployTime = vm.parseJsonUint(json, ".srcDeployTime");
 
         // Calculate time elapsed since source escrow deployment
-        uint256 timeElapsed = block.timestamp > srcDeployTime ? block.timestamp - srcDeployTime : 0;
+        // Handle case where destination chain timestamp is behind source chain
+        uint256 timeElapsed;
+        if (block.timestamp > srcDeployTime) {
+            timeElapsed = block.timestamp - srcDeployTime;
+        } else {
+            // If destination chain is behind, assume minimal time has passed
+            console.log("Warning: Destination chain timestamp is behind source chain!");
+            timeElapsed = 0;
+        }
         
         console.log("Current block.timestamp:", block.timestamp);
         console.log("srcDeployTime:", srcDeployTime);
@@ -229,7 +237,7 @@ contract LiveTestChains is Script {
         
         // Create timelocks adjusted for destination chain
         // Ensure DST_CANCELLATION aligns with SRC_CANCELLATION
-        Timelocks adjustedTimelocks = createTimelocksForDst(timeElapsed);
+        Timelocks adjustedTimelocks = createTimelocksForDst(block.timestamp, srcDeployTime + SRC_CANCELLATION_START);
         
         IBaseEscrow.Immutables memory dstImmutables = IBaseEscrow.Immutables({
             orderHash: orderHash,
@@ -396,7 +404,7 @@ contract LiveTestChains is Script {
         return Timelocks.wrap(packed);
     }
 
-    function createTimelocksForDst(uint256 timeElapsed) internal pure returns (Timelocks) {
+    function createTimelocksForDst(uint256 currentTimestamp, uint256 srcCancellationTimestamp) internal pure returns (Timelocks) {
         uint256 packed = 0;
         
         // Source timelocks remain the same
@@ -405,13 +413,21 @@ contract LiveTestChains is Script {
         packed |= uint256(uint32(SRC_CANCELLATION_START)) << 64;
         packed |= uint256(uint32(SRC_PUBLIC_CANCELLATION_START)) << 96;
         
-        // Adjust destination timelocks to account for time elapsed
-        // This ensures DST_CANCELLATION aligns with SRC_CANCELLATION in absolute time
-        // Subtract an extra second to ensure we're strictly less than srcCancellationTimestamp
-        uint256 adjustedDstCancellation = DST_CANCELLATION_START > (timeElapsed + 1) ? 
-            DST_CANCELLATION_START - timeElapsed - 1 : 0;
+        // Calculate the offset needed to reach srcCancellationTimestamp
+        // The factory will do: currentTimestamp + offset = dstCancellationTimestamp
+        // We need: dstCancellationTimestamp < srcCancellationTimestamp
+        // So: currentTimestamp + offset < srcCancellationTimestamp
+        // Therefore: offset < srcCancellationTimestamp - currentTimestamp
+        
+        uint256 maxOffset = srcCancellationTimestamp > currentTimestamp ? 
+            srcCancellationTimestamp - currentTimestamp - 1 : 0;
+        
+        // Use the minimum of our desired offset and the maximum allowed
+        uint256 adjustedDstCancellation = DST_CANCELLATION_START < maxOffset ? 
+            DST_CANCELLATION_START : maxOffset;
             
-        console.log("Adjusting DST_CANCELLATION from", DST_CANCELLATION_START, "to", adjustedDstCancellation);
+        console.log("Max allowed offset:", maxOffset);
+        console.log("Adjusting DST_CANCELLATION to:", adjustedDstCancellation);
         
         packed |= uint256(uint32(DST_WITHDRAWAL_START)) << 128;
         packed |= uint256(uint32(DST_PUBLIC_WITHDRAWAL_START)) << 160;
