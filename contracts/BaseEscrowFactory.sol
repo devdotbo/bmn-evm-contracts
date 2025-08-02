@@ -34,6 +34,10 @@ abstract contract BaseEscrowFactory is IEscrowFactory, BaseExtension, ResolverVa
     using SafeERC20 for IERC20;
     using TimelocksLib for Timelocks;
 
+    /// @notice Timestamp tolerance for cross-chain operations (5 minutes)
+    /// @dev Allows for reasonable timestamp drift between chains without compromising security
+    uint256 private constant TIMESTAMP_TOLERANCE = 300; // 5 minutes
+
     /// @notice See {IEscrowFactory-ESCROW_SRC_IMPLEMENTATION}.
     address public immutable ESCROW_SRC_IMPLEMENTATION;
     /// @notice See {IEscrowFactory-ESCROW_DST_IMPLEMENTATION}.
