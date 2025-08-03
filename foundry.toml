@@ -1,7 +1,7 @@
 [profile.default]
 src = 'contracts'
 out = 'out'
-libs = ['lib']
+libs = ['lib', "dependencies"]
 test = 'test'
 optimizer_runs = 1000000
 via-ir = true
@@ -12,3 +12,6 @@ fs_permissions = [{ access = "read-write", path = "./deployments" }]
 [fmt]
 line_length = 140
 bracket_spacing = true
+
+[dependencies]
+create2-helpers = "0.5.0"

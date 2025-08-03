@@ -6,7 +6,7 @@ import { console } from "forge-std/console.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TransferForTest is Script {
-    address constant BMN_TOKEN = 0xf410a63e825C162274c3295F13EcA1Dd1202b5cC;
+    address constant BMN_TOKEN = 0xe666570DDa40948c6Ba9294440ffD28ab59C8325;
     address constant ALICE = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
     address constant BOB = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC;
     uint256 constant TRANSFER_AMOUNT = 100 ether; // 100 BMN

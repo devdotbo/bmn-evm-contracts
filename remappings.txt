@@ -1,5 +1,6 @@
 @1inch/solidity-utils/=lib/solidity-utils/
 @openzeppelin/=lib/openzeppelin-contracts/
+create2-helpers-0.5.0/=dependencies/create2-helpers-0.5.0/
 forge-std/=lib/forge-std/src/
 limit-order-protocol/=lib/limit-order-protocol/
 limit-order-settlement/=lib/limit-order-settlement/

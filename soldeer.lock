@@ -1,4 +1,11 @@
 [[dependencies]]
+name = "create2-helpers"
+version = "0.5.0"
+url = "https://soldeer-revisions.s3.amazonaws.com/create2-helpers/0_5_0_13-05-2025_17:05:02_create2-helpers.zip"
+checksum = "2e68e7866282a2801318145d610ea6f8bc64f5a591e1b57a27dd7d49b7adad65"
+integrity = "a18fe8aa906f2840378580388d61d032095410791ce6dff1f9a86754a6755d44"
+
+[[dependencies]]
 name = "solmate"
 version = "6.8.0"
 url = "https://soldeer-revisions.s3.amazonaws.com/solmate/6_8_0_29-10-2024_19:01:45_solmate.zip"

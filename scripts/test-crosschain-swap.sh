@@ -30,13 +30,17 @@ echo ""
 # Check initial balances
 echo -e "${YELLOW}=== Initial Balances ===${NC}"
 echo -n "Alice BMN on Base: "
-cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
+BALANCE=$(cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $BASE_RPC_URL)
+cast --to-unit $BALANCE ether
 echo -n "Alice BMN on Etherlink: "
-cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
+BALANCE=$(cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $ETHERLINK_RPC_URL)
+cast --to-unit $BALANCE ether
 echo -n "Bob BMN on Base: "
-cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
+BALANCE=$(cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $BASE_RPC_URL)
+cast --to-unit $BALANCE ether
 echo -n "Bob BMN on Etherlink: "
-cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
+BALANCE=$(cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $ETHERLINK_RPC_URL)
+cast --to-unit $BALANCE ether
 echo ""
 
 # Test flow
@@ -106,13 +110,17 @@ echo ""
 # Check final balances
 echo -e "${YELLOW}=== Final Balances ===${NC}"
 echo -n "Alice BMN on Base: "
-cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
+BALANCE=$(cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $BASE_RPC_URL)
+cast --to-unit $BALANCE ether
 echo -n "Alice BMN on Etherlink: "
-cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
+BALANCE=$(cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $ETHERLINK_RPC_URL)
+cast --to-unit $BALANCE ether
 echo -n "Bob BMN on Base: "
-cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
+BALANCE=$(cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $BASE_RPC_URL)
+cast --to-unit $BALANCE ether
 echo -n "Bob BMN on Etherlink: "
-cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
+BALANCE=$(cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $ETHERLINK_RPC_URL)
+cast --to-unit $BALANCE ether
 
 echo ""
 echo -e "${GREEN}========================================${NC}"

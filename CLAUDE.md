@@ -14,6 +14,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Important Instructions
 
+**ALWAYS source .env before running forge commands.** All forge commands should be prefixed with `source .env &&` to ensure environment variables are loaded.
+
 **ALWAYS commit changes immediately after making them, one file at a time.** This ensures clean commit history and prevents loss of work.
 
 **NEVER use emojis in code, commit messages, or any files.** Emojis cause compilation errors and should be replaced with text alternatives like [OK], [ERROR], [WARNING], etc.
