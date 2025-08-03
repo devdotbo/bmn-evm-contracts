@@ -42,6 +42,8 @@ contract LiveTestMainnet is Script {
     // Test configuration
     uint256 constant SWAP_AMOUNT = 10 ether;
     uint256 constant SAFETY_DEPOSIT = 0.0001 ether; // Very small deposit for mainnet test
+    // Note: In production with proper UX, Alice would never provide safety deposits
+    // The resolver (Bob) would provide safety deposits for both escrows
     
     // Timelock configuration (in seconds) - production values
     uint256 constant SRC_WITHDRAWAL_START = 0;
@@ -165,8 +167,8 @@ contract LiveTestMainnet is Script {
         
         console.log("Source escrow deployed at:", srcEscrow);
         
-        // Note: Safety deposit is handled internally by the escrow contract
-        // The safetyDeposit field in immutables specifies the required amount
+        // Note: In production, the resolver (Bob) would provide the safety deposit
+        // For better UX, Alice never provides safety deposits
 
         // Create destination immutables for saving
         IBaseEscrow.Immutables memory dstImmutables = IBaseEscrow.Immutables({
@@ -213,7 +215,7 @@ contract LiveTestMainnet is Script {
         // Update timelocks with current deployment timestamp
         dstImmutables.timelocks = dstImmutables.timelocks.setDeployedAt(block.timestamp);
 
-        // Calculate expected destination escrow address
+        // Calculate expected destination escrow address using the updated immutables
         address expectedDstEscrow = Clones.predictDeterministicAddress(
             TestEscrowFactory(etherlink.factory).ESCROW_DST_IMPLEMENTATION(),
             dstImmutables.hashMem(),
@@ -222,9 +224,9 @@ contract LiveTestMainnet is Script {
         
         console.log("Destination escrow will be at:", expectedDstEscrow);
 
-        // Pre-fund destination escrow with tokens
-        IERC20(etherlink.tokenB).transfer(expectedDstEscrow, SWAP_AMOUNT);
-        console.log("Sent", SWAP_AMOUNT / 1e18, "TKB to destination escrow");
+        // Approve factory to transfer tokens from Bob
+        IERC20(etherlink.tokenB).approve(etherlink.factory, SWAP_AMOUNT);
+        console.log("Approved", SWAP_AMOUNT / 1e18, "TKB to factory");
 
         // Deploy destination escrow using factory's createDstEscrow
         // Bob provides safety deposit when creating destination escrow
@@ -233,12 +235,16 @@ contract LiveTestMainnet is Script {
         IEscrowFactory(etherlink.factory).createDstEscrow{value: SAFETY_DEPOSIT}(dstImmutables, srcCancellationTimestamp);
         
         console.log("Destination escrow deployed!");
+        
+        // Save the actual deployed timelocks (with deployment timestamp)
+        Timelocks deployedTimelocks = dstImmutables.timelocks.setDeployedAt(block.timestamp);
 
         // Update state file
         string memory json = "state";
         string memory newState = vm.readFile(STATE_FILE);
         vm.serializeString(json, "existing", newState);
         vm.serializeAddress(json, "dstEscrow", expectedDstEscrow);
+        vm.serializeUint(json, "deployedTimelocks", Timelocks.unwrap(deployedTimelocks));
         string memory updatedJson = vm.serializeUint(json, "dstDeployTime", block.timestamp);
         vm.writeJson(updatedJson, STATE_FILE);
 
@@ -254,7 +260,8 @@ contract LiveTestMainnet is Script {
         // Load test state
         string memory stateJson = vm.readFile(STATE_FILE);
         address dstEscrow = vm.parseJsonAddress(stateJson, ".dstEscrow");
-        bytes32 secret = vm.parseJsonBytes32(stateJson, ".secret");
+        // Secret is nested due to JSON serialization
+        bytes32 secret = vm.parseJsonBytes32(stateJson, ".existing.existing.secret");
         
         // Get Alice's private key from environment
         uint256 aliceKey = vm.envUint("ALICE_PRIVATE_KEY");
@@ -267,12 +274,12 @@ contract LiveTestMainnet is Script {
         console.log("Alice TKB balance before:", balanceBefore / 1e18);
 
         // Load destination immutables from state
-        bytes memory dstImmutablesData = vm.parseJsonBytes(stateJson, ".dstImmutables");
+        bytes memory dstImmutablesData = vm.parseJsonBytes(stateJson, ".existing.dstImmutables");
         IBaseEscrow.Immutables memory dstImmutables = abi.decode(dstImmutablesData, (IBaseEscrow.Immutables));
         
-        // Update timelocks with deployment timestamp from state
-        uint256 dstDeployTime = vm.parseJsonUint(stateJson, ".dstDeployTime");
-        dstImmutables.timelocks = dstImmutables.timelocks.setDeployedAt(dstDeployTime);
+        // Use the deployed timelocks (with deployment timestamp) saved during deployment
+        uint256 deployedTimelocks = vm.parseJsonUint(stateJson, ".deployedTimelocks");
+        dstImmutables.timelocks = Timelocks.wrap(deployedTimelocks);
         
         // Withdraw from destination escrow
         IBaseEscrow(dstEscrow).withdraw(secret, dstImmutables);
@@ -293,8 +300,8 @@ contract LiveTestMainnet is Script {
         
         // Load test state
         string memory stateJson = vm.readFile(STATE_FILE);
-        address srcEscrow = vm.parseJsonAddress(stateJson, ".srcEscrow");
-        bytes32 secret = vm.parseJsonBytes32(stateJson, ".secret");
+        address srcEscrow = vm.parseJsonAddress(stateJson, ".existing.srcEscrow");
+        bytes32 secret = vm.parseJsonBytes32(stateJson, ".existing.existing.secret");
         
         // Get Bob's private key from environment
         uint256 bobKey = vm.envUint("RESOLVER_PRIVATE_KEY");
@@ -309,11 +316,11 @@ contract LiveTestMainnet is Script {
         console.log("Bob TKA balance before:", balanceBefore / 1e18);
 
         // Load source immutables from state
-        bytes memory srcImmutablesData = vm.parseJsonBytes(stateJson, ".srcImmutables");
+        bytes memory srcImmutablesData = vm.parseJsonBytes(stateJson, ".existing.srcImmutables");
         IBaseEscrow.Immutables memory srcImmutables = abi.decode(srcImmutablesData, (IBaseEscrow.Immutables));
         
         // Update timelocks with deployment timestamp from state
-        uint256 srcDeployTime = vm.parseJsonUint(stateJson, ".srcDeployTime");
+        uint256 srcDeployTime = vm.parseJsonUint(stateJson, ".existing.srcDeployTime");
         srcImmutables.timelocks = srcImmutables.timelocks.setDeployedAt(srcDeployTime);
         
         // Withdraw from source escrow
