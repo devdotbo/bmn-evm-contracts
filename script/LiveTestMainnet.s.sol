@@ -220,7 +220,12 @@ contract LiveTestMainnet is Script {
         // Deploy destination escrow using factory's createDstEscrow
         // Bob provides safety deposit when creating destination escrow
         console.log("Bob providing safety deposit:", SAFETY_DEPOSIT / 1e18, "ETH");
-        uint256 srcCancellationTimestamp = dstImmutables.timelocks.get(TimelocksLib.Stage.SrcCancellation);
+        
+        // Get source deployment time from state
+        uint256 srcDeployTime = vm.parseJsonUint(stateJson, ".srcDeployTime");
+        uint256 srcCancellationTimestamp = srcDeployTime + SRC_CANCELLATION_START;
+        console.log("Source deploy time:", srcDeployTime);
+        console.log("Source cancellation timestamp:", srcCancellationTimestamp);
         
         // Store the block timestamp before the transaction
         uint256 timestampBefore = block.timestamp;
