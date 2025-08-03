@@ -2,7 +2,7 @@
 pragma solidity 0.8.23;
 
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import { SafeERC20 } from "solidity-utils/contracts/libraries/SafeERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
 import { IBaseEscrow } from "./interfaces/IBaseEscrow.sol";
 import { TimelocksLib, Timelocks } from "./libraries/TimelocksLib.sol";
