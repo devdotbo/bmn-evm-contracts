@@ -18,10 +18,10 @@ CONTRACTS_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
 RESOLVER_DIR="$( cd "$CONTRACTS_DIR/../bmn-evm-resolver" && pwd )"
 
 # Test parameters
-BMN_TOKEN="0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e"
+BMN_TOKEN="0xf410a63e825C162274c3295F13EcA1Dd1202b5cC"  # New BMN V2 with 18 decimals
 ALICE="0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
 BOB="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
-DEPLOYER="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+DEPLOYER="0x5f29827e25dc174a6A51C99e6811Bbd7581285b0"  # Mainnet deployer (has 1000 BMN)
 SWAP_AMOUNT="10" # 10 BMN tokens
 MIN_BALANCE="15" # Need 15 BMN (10 for swap + 1 safety deposit + buffer)
 
@@ -40,7 +40,7 @@ check_balance() {
     local rpc_var="${chain}_RPC_URL"
     local rpc_url="${!rpc_var}"
     
-    balance=$(cast call $BMN_TOKEN "balanceOf(address)(uint256)" $address --rpc-url $rpc_url 2>/dev/null || echo "0")
+    balance=$(cast call --block-number latest $BMN_TOKEN "balanceOf(address)(uint256)" $address --rpc-url $rpc_url 2>/dev/null || echo "0")
     echo "$balance"
 }
 
@@ -122,12 +122,12 @@ if [ $(echo "$BOB_DST_BALANCE < $MIN_BALANCE_WEI" | bc) -eq 1 ]; then
     NEED_MINT=true
 fi
 
-# Mint tokens if needed
+# Transfer tokens if needed
 if [ "$NEED_MINT" = true ]; then
-    echo -e "\n${YELLOW}Minting BMN tokens...${NC}"
+    echo -e "\n${YELLOW}Transferring BMN tokens from deployer...${NC}"
     
-    # Create minting script
-    cat > script/MintForTest.s.sol << 'EOF'
+    # Create transfer script
+    cat > script/TransferForTest.s.sol << 'EOF'
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
@@ -135,38 +135,34 @@ import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-interface IBMNToken is IERC20 {
-    function mint(address to, uint256 amount) external;
-    function owner() external view returns (address);
-}
-
-contract MintForTest is Script {
-    address constant BMN_TOKEN = 0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e;
+contract TransferForTest is Script {
+    address constant BMN_TOKEN = 0xf410a63e825C162274c3295F13EcA1Dd1202b5cC;
     address constant ALICE = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
     address constant BOB = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC;
-    uint256 constant MINT_AMOUNT = 100 ether; // 100 BMN
+    uint256 constant TRANSFER_AMOUNT = 100 ether; // 100 BMN
 
     function run() external {
         string memory chain = vm.envString("TARGET_CHAIN");
         address target = vm.envAddress("TARGET_ADDRESS");
         
-        console.log("Minting on chain:", chain);
+        console.log("Transferring on chain:", chain);
         console.log("Target address:", target);
         
         vm.startBroadcast();
         
-        IBMNToken bmn = IBMNToken(BMN_TOKEN);
+        IERC20 bmn = IERC20(BMN_TOKEN);
         
         // Check current balance
         uint256 currentBalance = bmn.balanceOf(target);
         console.log("Current balance:", currentBalance);
         
         if (currentBalance < 15 ether) {
-            console.log("Minting", MINT_AMOUNT, "BMN to", target);
-            bmn.mint(target, MINT_AMOUNT);
+            console.log("Transferring", TRANSFER_AMOUNT, "BMN to", target);
+            bool success = bmn.transfer(target, TRANSFER_AMOUNT);
+            require(success, "Transfer failed");
             console.log("New balance:", bmn.balanceOf(target));
         } else {
-            console.log("Sufficient balance, skipping mint");
+            console.log("Sufficient balance, skipping transfer");
         }
         
         vm.stopBroadcast();
@@ -174,23 +170,23 @@ contract MintForTest is Script {
 }
 EOF
 
-    # Mint for Alice on source chain if needed
+    # Transfer for Alice on source chain if needed
     if [ $(echo "$ALICE_SRC_BALANCE < $MIN_BALANCE_WEI" | bc) -eq 1 ]; then
-        echo "Minting for Alice on $SRC_CHAIN..."
+        echo "Transferring for Alice on $SRC_CHAIN..."
         SRC_RPC_VAR="${SRC_CHAIN}_RPC_URL"
-        TARGET_CHAIN=$SRC_CHAIN TARGET_ADDRESS=$ALICE forge script script/MintForTest.s.sol --rpc-url ${!SRC_RPC_VAR} --broadcast --private-key $DEPLOYER_PRIVATE_KEY
+        TARGET_CHAIN=$SRC_CHAIN TARGET_ADDRESS=$ALICE forge script script/TransferForTest.s.sol --rpc-url ${!SRC_RPC_VAR} --broadcast --private-key $DEPLOYER_PRIVATE_KEY
     fi
     
-    # Mint for Bob on destination chain if needed
+    # Transfer for Bob on destination chain if needed
     if [ $(echo "$BOB_DST_BALANCE < $MIN_BALANCE_WEI" | bc) -eq 1 ]; then
-        echo "Minting for Bob on $DST_CHAIN..."
+        echo "Transferring for Bob on $DST_CHAIN..."
         DST_RPC_VAR="${DST_CHAIN}_RPC_URL"
-        TARGET_CHAIN=$DST_CHAIN TARGET_ADDRESS=$BOB forge script script/MintForTest.s.sol --rpc-url ${!DST_RPC_VAR} --broadcast --private-key $DEPLOYER_PRIVATE_KEY
+        TARGET_CHAIN=$DST_CHAIN TARGET_ADDRESS=$BOB forge script script/TransferForTest.s.sol --rpc-url ${!DST_RPC_VAR} --broadcast --private-key $DEPLOYER_PRIVATE_KEY
     fi
     
     # Re-check balances
     sleep 5
-    echo -e "\n${YELLOW}Re-checking balances after minting...${NC}"
+    echo -e "\n${YELLOW}Re-checking balances after transfers...${NC}"
     ALICE_SRC_BALANCE=$(check_balance $SRC_CHAIN $ALICE)
     BOB_DST_BALANCE=$(check_balance $DST_CHAIN $BOB)
     echo -e "Alice on $SRC_CHAIN: $(format_balance $ALICE_SRC_BALANCE) BMN"
