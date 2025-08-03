@@ -51,14 +51,14 @@ check_balance() {
         tokenB=$(jq -r '.contracts.tokenB' "$deployment_file" 2>/dev/null || echo "")
         
         if [ -n "$tokenA" ] && [ "$tokenA" != "null" ]; then
-            balance_a=$(cast call "$tokenA" "balanceOf(address)" "$address" --rpc-url "$rpc_url" 2>/dev/null || echo "0x0")
+            balance_a=$(cast call --block-number latest "$tokenA" "balanceOf(address)" "$address" --rpc-url "$rpc_url" 2>/dev/null || echo "0x0")
             balance_a_dec=$(cast --to-dec "$balance_a" 2>/dev/null || echo "0")
             balance_a_eth=$(cast --from-wei "$balance_a_dec" 2>/dev/null || echo "0")
             echo "  Token A: $balance_a_eth TKA"
         fi
         
         if [ -n "$tokenB" ] && [ "$tokenB" != "null" ]; then
-            balance_b=$(cast call "$tokenB" "balanceOf(address)" "$address" --rpc-url "$rpc_url" 2>/dev/null || echo "0x0")
+            balance_b=$(cast call --block-number latest "$tokenB" "balanceOf(address)" "$address" --rpc-url "$rpc_url" 2>/dev/null || echo "0x0")
             balance_b_dec=$(cast --to-dec "$balance_b" 2>/dev/null || echo "0")
             balance_b_eth=$(cast --from-wei "$balance_b_dec" 2>/dev/null || echo "0")
             echo "  Token B: $balance_b_eth TKB"
