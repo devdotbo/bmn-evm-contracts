@@ -6,8 +6,8 @@ import { EscrowFactory } from "../contracts/EscrowFactory.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract MainnetDeploy is Script {
-    // BMN Access Token deployed with CREATE2 - same on all chains
-    address constant BMN_ACCESS_TOKEN = 0xaa0D55FF5c69584c085F503900Af10628517ddbE;
+    // BMN Access Token V2 deployed with CREATE2 - same on all chains
+    address constant BMN_ACCESS_TOKEN = 0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e;
     
     function run() external {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
