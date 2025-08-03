@@ -3,6 +3,7 @@ pragma solidity 0.8.23;
 
 import { Script } from "forge-std/Script.sol";
 import { console } from "forge-std/console.sol";
+import { Vm } from "forge-std/Vm.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import { IOrderMixin, LimitOrderProtocol } from "limit-order-protocol/contracts/LimitOrderProtocol.sol";
 import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
@@ -212,18 +213,6 @@ contract LiveTestMainnet is Script {
 
         vm.startBroadcast(bobKey);
 
-        // Update timelocks with current deployment timestamp
-        dstImmutables.timelocks = dstImmutables.timelocks.setDeployedAt(block.timestamp);
-
-        // Calculate expected destination escrow address using the updated immutables
-        address expectedDstEscrow = Clones.predictDeterministicAddress(
-            TestEscrowFactory(etherlink.factory).ESCROW_DST_IMPLEMENTATION(),
-            dstImmutables.hashMem(),
-            etherlink.factory
-        );
-        
-        console.log("Destination escrow will be at:", expectedDstEscrow);
-
         // Approve factory to transfer tokens from Bob
         IERC20(Constants.BMN_TOKEN).approve(etherlink.factory, SWAP_AMOUNT);
         console.log("Approved", SWAP_AMOUNT / 1e18, "BMN to factory");
@@ -232,21 +221,102 @@ contract LiveTestMainnet is Script {
         // Bob provides safety deposit when creating destination escrow
         console.log("Bob providing safety deposit:", SAFETY_DEPOSIT / 1e18, "ETH");
         uint256 srcCancellationTimestamp = dstImmutables.timelocks.get(TimelocksLib.Stage.SrcCancellation);
+        
+        // Store the block timestamp before the transaction
+        uint256 timestampBefore = block.timestamp;
+        console.log("Timestamp before transaction:", timestampBefore);
+        
+        // Record logs to capture the event
+        vm.recordLogs();
+        
+        // Execute the transaction
         IEscrowFactory(etherlink.factory).createDstEscrow{value: SAFETY_DEPOSIT}(dstImmutables, srcCancellationTimestamp);
         
-        console.log("Destination escrow deployed!");
+        // Get the actual block timestamp after the transaction
+        // In a real scenario, the block timestamp might differ from the pre-transaction timestamp
+        uint256 actualDeploymentTime = block.timestamp;
+        console.log("Actual deployment timestamp:", actualDeploymentTime);
         
-        // Save the actual deployed timelocks (with deployment timestamp)
-        Timelocks deployedTimelocks = dstImmutables.timelocks.setDeployedAt(block.timestamp);
+        // Get the logs and find DstEscrowCreated event
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        address actualDstEscrow;
+        bool eventFound = false;
+        
+        // DstEscrowCreated event signature
+        bytes32 eventSig = keccak256("DstEscrowCreated(address,bytes32,address)");
+        
+        for (uint256 i = 0; i < logs.length; i++) {
+            if (logs[i].emitter == etherlink.factory && logs[i].topics.length > 0 && logs[i].topics[0] == eventSig) {
+                // The event has non-indexed parameters, so they're all in the data field
+                // Event structure: DstEscrowCreated(address escrow, bytes32 hashlock, Address taker)
+                (actualDstEscrow,,) = abi.decode(logs[i].data, (address, bytes32, Address));
+                console.log("Event found! Actual destination escrow deployed at:", actualDstEscrow);
+                eventFound = true;
+                
+                // For debugging: decode all event data
+                (address escrowAddr, bytes32 hashlockFromEvent, Address takerFromEvent) = abi.decode(logs[i].data, (address, bytes32, Address));
+                console.log("Event data - Escrow:", escrowAddr);
+                console.log("Event data - Hashlock:", vm.toString(hashlockFromEvent));
+                console.log("Event data - Taker:", Address.unwrap(takerFromEvent));
+                
+                break;
+            }
+        }
+        
+        // If event not found, try to calculate the expected address with the actual timestamp
+        if (!eventFound) {
+            console.log("Warning: DstEscrowCreated event not found in logs");
+            console.log("Total logs emitted:", logs.length);
+            
+            // Update timelocks with actual deployment timestamp and calculate expected address
+            dstImmutables.timelocks = dstImmutables.timelocks.setDeployedAt(actualDeploymentTime);
+            actualDstEscrow = Clones.predictDeterministicAddress(
+                TestEscrowFactory(etherlink.factory).ESCROW_DST_IMPLEMENTATION(),
+                dstImmutables.hashMem(),
+                etherlink.factory
+            );
+            console.log("Calculated expected escrow address:", actualDstEscrow);
+            
+            // Verify the escrow was actually deployed by checking its code
+            uint256 codeSize;
+            assembly {
+                codeSize := extcodesize(actualDstEscrow)
+            }
+            require(codeSize > 0, "Escrow not deployed at calculated address");
+            console.log("Verified: Contract deployed at calculated address (code size:", codeSize, "bytes)");
+        }
+        
+        require(actualDstEscrow != address(0), "Failed to determine destination escrow address");
+        
+        // Save the actual deployed timelocks (with actual deployment timestamp)
+        Timelocks deployedTimelocks = dstImmutables.timelocks.setDeployedAt(actualDeploymentTime);
+        
+        // Calculate what the address should be with the actual timestamp for verification
+        address verifyAddress = Clones.predictDeterministicAddress(
+            TestEscrowFactory(etherlink.factory).ESCROW_DST_IMPLEMENTATION(),
+            dstImmutables.setTimelocks(deployedTimelocks).hashMem(),
+            etherlink.factory
+        );
+        console.log("Verification - calculated address with actual timestamp:", verifyAddress);
+        
+        if (verifyAddress != actualDstEscrow) {
+            console.log("Warning: Address mismatch!");
+            console.log("This might indicate a timestamp discrepancy between calculation and deployment");
+        }
 
-        // Update state file
+        // Update state file with actual values
         string memory json = "state";
         string memory newState = vm.readFile(STATE_FILE);
         vm.serializeString(json, "existing", newState);
-        vm.serializeAddress(json, "dstEscrow", expectedDstEscrow);
+        vm.serializeAddress(json, "dstEscrow", actualDstEscrow);
         vm.serializeUint(json, "deployedTimelocks", Timelocks.unwrap(deployedTimelocks));
-        string memory updatedJson = vm.serializeUint(json, "dstDeployTime", block.timestamp);
+        vm.serializeUint(json, "dstDeployTime", actualDeploymentTime);
+        vm.serializeUint(json, "timestampDiff", actualDeploymentTime > timestampBefore ? actualDeploymentTime - timestampBefore : 0);
+        string memory updatedJson = vm.serializeAddress(json, "actualDstEscrow", actualDstEscrow);
         vm.writeJson(updatedJson, STATE_FILE);
+        
+        console.log("State updated with actual deployment values");
+        console.log("Destination escrow successfully deployed at:", actualDstEscrow);
 
         vm.stopBroadcast();
     }
@@ -300,8 +370,8 @@ contract LiveTestMainnet is Script {
         
         // Load test state
         string memory stateJson = vm.readFile(STATE_FILE);
-        address srcEscrow = vm.parseJsonAddress(stateJson, ".existing.srcEscrow");
-        bytes32 secret = vm.parseJsonBytes32(stateJson, ".existing.existing.secret");
+        address srcEscrow = vm.parseJsonAddress(stateJson, ".existing.existing.srcEscrow");
+        bytes32 secret = vm.parseJsonBytes32(stateJson, ".existing.existing.existing.secret");
         
         // Get Bob's private key from environment
         uint256 bobKey = vm.envUint("RESOLVER_PRIVATE_KEY");
@@ -316,11 +386,11 @@ contract LiveTestMainnet is Script {
         console.log("Bob BMN balance before:", balanceBefore / 1e18);
 
         // Load source immutables from state
-        bytes memory srcImmutablesData = vm.parseJsonBytes(stateJson, ".existing.srcImmutables");
+        bytes memory srcImmutablesData = vm.parseJsonBytes(stateJson, ".existing.existing.srcImmutables");
         IBaseEscrow.Immutables memory srcImmutables = abi.decode(srcImmutablesData, (IBaseEscrow.Immutables));
         
         // Update timelocks with deployment timestamp from state
-        uint256 srcDeployTime = vm.parseJsonUint(stateJson, ".existing.srcDeployTime");
+        uint256 srcDeployTime = vm.parseJsonUint(stateJson, ".existing.existing.srcDeployTime");
         srcImmutables.timelocks = srcImmutables.timelocks.setDeployedAt(srcDeployTime);
         
         // Withdraw from source escrow
