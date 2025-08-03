@@ -47,7 +47,7 @@ get_balance() {
     local rpc=$3
     
     # Get balance in wei
-    balance_wei=$(cast call $token "balanceOf(address)(uint256)" $account --rpc-url $rpc 2>/dev/null)
+    balance_wei=$(cast call --block-number latest $token "balanceOf(address)(uint256)" $account --rpc-url $rpc 2>/dev/null)
     
     if [ -z "$balance_wei" ]; then
         echo "0"
