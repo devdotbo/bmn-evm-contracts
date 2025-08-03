@@ -15,8 +15,8 @@ contract MintBMNTokens is Script {
     address constant DEPLOYER_OWNER = 0x5f29827e25dc174a6A51C99e6811Bbd7581285b0;
     address constant BOB_RESOLVER = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC;
     
-    // Amount to mint to each address
-    uint256 constant MINT_AMOUNT = 1000;
+    // Amount to mint to each address (1000 BMN in 18-decimals)
+    uint256 constant MINT_AMOUNT = 1000 * 10**18;
     
     // Chain IDs
     uint256 constant BASE_CHAIN_ID = 8453;
