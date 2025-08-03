@@ -65,12 +65,11 @@ verify_contract() {
     echo ""
 }
 
-# 1. Verify BMNAccessTokenV2
-echo -e "${GREEN}1. BMNAccessTokenV2${NC}"
-verify_contract \
-    "contracts/BMNAccessTokenV2.sol:BMNAccessTokenV2" \
-    "0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e" \
-    "--constructor-args 0x0000000000000000000000005f29827e25dc174a6A51C99e6811Bbd7581285b0"
+# 1. BMN Token is external (deployed via CREATE3 in separate repo)
+echo -e "${GREEN}1. BMN Token (External)${NC}"
+echo -e "BMN Token is deployed externally at: 0xe666570DDa40948c6Ba9294440ffD28ab59C8325"
+echo -e "See https://basescan.org/address/0xe666570DDa40948c6Ba9294440ffD28ab59C8325#code"
+echo ""
 
 # 2. Verify EscrowFactory
 echo -e "${GREEN}2. EscrowFactory${NC}"
@@ -78,7 +77,7 @@ echo -e "${GREEN}2. EscrowFactory${NC}"
 FACTORY_ARGS=$(cast abi-encode "constructor(address,address,address,address,uint32,uint32)" \
     "0x0000000000000000000000000000000000000000" \
     "0x0000000000000000000000000000000000000000" \
-    "0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e" \
+    "0xe666570DDa40948c6Ba9294440ffD28ab59C8325" \
     "0x5f29827e25dc174a6A51C99e6811Bbd7581285b0" \
     86400 \
     86400)
@@ -92,7 +91,7 @@ verify_contract \
 echo -e "${GREEN}3. EscrowSrc Implementation${NC}"
 ESCROW_ARGS=$(cast abi-encode "constructor(uint32,address)" \
     86400 \
-    "0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e")
+    "0xe666570DDa40948c6Ba9294440ffD28ab59C8325")
 
 verify_contract \
     "contracts/EscrowSrc.sol:EscrowSrc" \
@@ -109,7 +108,7 @@ verify_contract \
 echo -e "${GREEN}=== Verification Complete ===${NC}"
 echo ""
 echo "Check verification status at:"
-echo "- BMNAccessTokenV2: https://basescan.org/address/0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e#code"
+echo "- BMN Token (External): https://basescan.org/address/0xe666570DDa40948c6Ba9294440ffD28ab59C8325#code"
 echo "- EscrowFactory: https://basescan.org/address/0x068aABdFa6B8c442CD32945A9A147B45ad7146d2#code"
 echo "- EscrowSrc: https://basescan.org/address/0x8f92DA1E1b537003569b7293B8063E6e79f27FC6#code"
 echo "- EscrowDst: https://basescan.org/address/0xFd3114ef8B537003569b7293B8063E6e79f27FC6#code"

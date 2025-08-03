@@ -53,8 +53,8 @@ echo -e "${YELLOW}Generating flattened source files...${NC}"
 mkdir -p verification/etherlink
 
 # Flatten contracts
-echo "Flattening BMNAccessTokenV2..."
-forge flatten contracts/BMNAccessTokenV2.sol > verification/etherlink/BMNAccessTokenV2_flattened.sol
+echo "BMN Token is external (deployed in separate repo)..."
+echo "BMN Token address: 0xe666570DDa40948c6Ba9294440ffD28ab59C8325"
 
 echo "Flattening EscrowFactory..."
 forge flatten contracts/EscrowFactory.sol > verification/etherlink/EscrowFactory_flattened.sol
@@ -79,18 +79,17 @@ forge script script/VerifyContracts.s.sol -vvv > verification/etherlink/construc
 echo -e "${GREEN}=== Contract Verification Information ===${NC}"
 echo ""
 
-# 1. BMNAccessTokenV2
-BMNV2_ARGS="0x0000000000000000000000005f29827e25dc174a6A51C99e6811Bbd7581285b0"
-generate_verification_info \
-    "BMNAccessTokenV2" \
-    "0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e" \
-    "${BMNV2_ARGS}"
+# 1. BMN Token (External)
+echo -e "${GREEN}BMN Token (External):${NC}"
+echo "  Address: 0xe666570DDa40948c6Ba9294440ffD28ab59C8325"
+echo "  Deployed via CREATE3 in separate repository"
+echo ""
 
 # 2. EscrowFactory
 FACTORY_ARGS=$(cast abi-encode "constructor(address,address,address,address,uint32,uint32)" \
     "0x0000000000000000000000000000000000000000" \
     "0x0000000000000000000000000000000000000000" \
-    "0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e" \
+    "0xe666570DDa40948c6Ba9294440ffD28ab59C8325" \
     "0x5f29827e25dc174a6A51C99e6811Bbd7581285b0" \
     86400 \
     86400)
@@ -102,7 +101,7 @@ generate_verification_info \
 # 3. EscrowSrc
 ESCROW_ARGS=$(cast abi-encode "constructor(uint32,address)" \
     86400 \
-    "0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e")
+    "0xe666570DDa40948c6Ba9294440ffD28ab59C8325")
 generate_verification_info \
     "EscrowSrc" \
     "0x8f92DA1E1b537003569b7293B8063E6e79f27FC6" \
@@ -116,7 +115,7 @@ generate_verification_info \
 
 # Save constructor args to files
 echo -e "${YELLOW}Saving constructor arguments to files...${NC}"
-echo "${BMNV2_ARGS}" > verification/etherlink/BMNAccessTokenV2_constructor_args.txt
+# BMN Token is external, no constructor args file needed
 echo "${FACTORY_ARGS}" > verification/etherlink/EscrowFactory_constructor_args.txt
 echo "${ESCROW_ARGS}" > verification/etherlink/EscrowSrc_constructor_args.txt
 echo "${ESCROW_ARGS}" > verification/etherlink/EscrowDst_constructor_args.txt
@@ -187,7 +186,7 @@ echo ""
 echo "All files saved in: verification/etherlink/"
 echo ""
 echo "Contract addresses on Etherlink:"
-echo "- BMNAccessTokenV2: https://explorer.etherlink.com/address/0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e"
+echo "- BMN Token (External): https://explorer.etherlink.com/address/0xe666570DDa40948c6Ba9294440ffD28ab59C8325"
 echo "- EscrowFactory: https://explorer.etherlink.com/address/0x068aABdFa6B8c442CD32945A9A147B45ad7146d2"
 echo "- EscrowSrc: https://explorer.etherlink.com/address/0x8f92DA1E1b537003569b7293B8063E6e79f27FC6"
 echo "- EscrowDst: https://explorer.etherlink.com/address/0xFd3114ef8B537003569b7293B8063E6e79f27FC6"

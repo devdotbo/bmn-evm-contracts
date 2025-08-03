@@ -4,10 +4,9 @@ pragma solidity 0.8.23;
 import { Script, console } from "forge-std/Script.sol";
 import { EscrowFactory } from "../contracts/EscrowFactory.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { Constants } from "../contracts/Constants.sol";
 
 contract MainnetDeploy is Script {
-    // BMN Access Token V2 deployed with CREATE2 - same on all chains
-    address constant BMN_ACCESS_TOKEN = 0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e;
     
     function run() external {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
@@ -18,7 +17,7 @@ contract MainnetDeploy is Script {
         EscrowFactory factory = new EscrowFactory(
             address(0), // No limit order protocol needed for mainnet
             IERC20(address(0)), // Fee token - not used
-            IERC20(BMN_ACCESS_TOKEN), // BMN Access token for public functions
+            IERC20(Constants.BMN_TOKEN), // BMN Access token for public functions
             deployer, // Owner
             86400,  // rescueDelaySrc: 1 day
             86400   // rescueDelayDst: 1 day
@@ -28,7 +27,7 @@ contract MainnetDeploy is Script {
         console.log("Factory deployed at:", address(factory));
         console.log("Src Implementation:", factory.ESCROW_SRC_IMPLEMENTATION());
         console.log("Dst Implementation:", factory.ESCROW_DST_IMPLEMENTATION());
-        console.log("Access Token:", BMN_ACCESS_TOKEN);
+        console.log("Access Token:", Constants.BMN_TOKEN);
         console.log("=======================");
         
         vm.stopBroadcast();
