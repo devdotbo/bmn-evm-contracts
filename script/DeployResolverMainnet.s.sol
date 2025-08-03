@@ -4,7 +4,7 @@ pragma solidity 0.8.23;
 import "forge-std/Script.sol";
 import "../contracts/CrossChainResolverV2.sol";
 import "../contracts/test/TestEscrowFactory.sol";
-import "../contracts/test/TokenMock.sol";
+import { TokenMock } from "solidity-utils/contracts/mocks/TokenMock.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 contract DeployResolverMainnet is Script {
@@ -13,8 +13,8 @@ contract DeployResolverMainnet is Script {
     uint256 constant ETHERLINK_MAINNET = 42793;
     
     // BMN Token addresses (from previous deployments)
-    address constant BMN_TOKEN_BASE = 0x9c32618CEeC96B9dc0B7c0976C4b4cf2eE452988;
-    address constant BMN_TOKEN_ETHERLINK = 0x9c32618CEeC96B9dc0B7c0976C4b4cf2eE452988;
+    address constant BMN_TOKEN_BASE = 0x9C32618CeeC96b9DC0b7c0976c4b4cf2Ee452988;
+    address constant BMN_TOKEN_ETHERLINK = 0x9C32618CeeC96b9DC0b7c0976c4b4cf2Ee452988;
     
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
@@ -41,8 +41,8 @@ contract DeployResolverMainnet is Script {
         // For hackathon, use simple mock tokens for fees and access
         // In production, these would be real tokens
         address limitOrderProtocol = deployer; // Simplified for hackathon
-        IERC20 feeToken = IERC20(address(new TokenMock("Fee Token", "FEE", 18)));
-        IERC20 accessToken = IERC20(address(new TokenMock("Access Token", "ACCESS", 18)));
+        IERC20 feeToken = IERC20(address(new TokenMock("Fee Token", "FEE")));
+        IERC20 accessToken = IERC20(address(new TokenMock("Access Token", "ACCESS")));
         
         TestEscrowFactory factory = new TestEscrowFactory(
             limitOrderProtocol,
@@ -74,7 +74,7 @@ contract DeployResolverMainnet is Script {
         
         // Save deployment addresses
         console.log("\n=== Deployment Summary ===");
-        console.log("Chain:", chainName, "(", block.chainid, ")");
+        console.log(string(abi.encodePacked("Chain: ", chainName, " (", vm.toString(block.chainid), ")")));
         console.log("Factory:", address(factory));
         console.log("Resolver:", address(resolver));
         console.log("Fee Token:", address(feeToken));
