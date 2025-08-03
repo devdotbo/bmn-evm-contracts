@@ -46,14 +46,14 @@ contract LiveTestMainnet is Script {
     // Note: In production with proper UX, Alice would never provide safety deposits
     // The resolver (Bob) would provide safety deposits for both escrows
     
-    // Timelock configuration (in seconds) - production values
+    // Timelock configuration (in seconds) - extended test values
     uint256 constant SRC_WITHDRAWAL_START = 0;
-    uint256 constant SRC_PUBLIC_WITHDRAWAL_START = 300; // 5 minutes
-    uint256 constant SRC_CANCELLATION_START = 900; // 15 minutes
-    uint256 constant SRC_PUBLIC_CANCELLATION_START = 1200; // 20 minutes
+    uint256 constant SRC_PUBLIC_WITHDRAWAL_START = 600; // 10 minutes
+    uint256 constant SRC_CANCELLATION_START = 1800; // 30 minutes
+    uint256 constant SRC_PUBLIC_CANCELLATION_START = 2100; // 35 minutes
     uint256 constant DST_WITHDRAWAL_START = 0;
-    uint256 constant DST_PUBLIC_WITHDRAWAL_START = 300; // 5 minutes
-    uint256 constant DST_CANCELLATION_START = 900; // 15 minutes
+    uint256 constant DST_PUBLIC_WITHDRAWAL_START = 600; // 10 minutes
+    uint256 constant DST_CANCELLATION_START = 1800; // 30 minutes
 
     // State file for cross-chain coordination  
     string constant STATE_FILE = "deployments/mainnet-test-state.json";

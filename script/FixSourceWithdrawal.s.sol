@@ -4,12 +4,13 @@ pragma solidity 0.8.23;
 import "forge-std/Script.sol";
 import "forge-std/console.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {EscrowSrc} from "../contracts/EscrowSrc.sol";
-import {TimelocksLib} from "../contracts/libraries/TimelocksLib.sol";
+import {TimelocksLib, Timelocks} from "../contracts/libraries/TimelocksLib.sol";
 import {ImmutablesLib} from "../contracts/libraries/ImmutablesLib.sol";
+import {IBaseEscrow} from "../contracts/interfaces/IBaseEscrow.sol";
+import {AddressLib} from "@1inch/solidity-utils/contracts/libraries/AddressLib.sol";
 
 contract FixSourceWithdrawal is Script {
-    using TimelocksLib for TimelocksLib.Timelocks;
+    using TimelocksLib for Timelocks;
     using TimelocksLib for uint256;
     
     // Mainnet addresses
@@ -37,52 +38,38 @@ contract FixSourceWithdrawal is Script {
         // Start broadcasting transactions
         vm.startBroadcast(resolverPrivateKey);
         
-        // Get escrow instance
-        EscrowSrc srcEscrow = EscrowSrc(SRC_ESCROW);
+        // Load immutables from state file
+        string memory stateJson = vm.readFile("deployments/mainnet-test-state.json");
+        bytes memory srcImmutablesData = vm.parseJsonBytes(stateJson, ".srcImmutables");
+        IBaseEscrow.Immutables memory currentImmutables = abi.decode(srcImmutablesData, (IBaseEscrow.Immutables));
         
-        // Get current immutables
-        ImmutablesLib.Immutables memory currentImmutables = srcEscrow.immutables();
         console.log("Current immutables:");
-        console.log("  maker:", currentImmutables.maker);
-        console.log("  taker:", currentImmutables.taker);
-        console.log("  token:", currentImmutables.token);
+        console.log("  maker:", AddressLib.get(currentImmutables.maker));
+        console.log("  taker:", AddressLib.get(currentImmutables.taker));
+        console.log("  token:", AddressLib.get(currentImmutables.token));
         console.log("  amount:", currentImmutables.amount);
         console.log("  safetyDeposit:", currentImmutables.safetyDeposit);
         console.log("  hashlock:", uint256(currentImmutables.hashlock));
         
-        // Log current timelocks
-        TimelocksLib.Timelocks memory currentTimelocks = currentImmutables.timelocks.unpackTimelocks();
-        console.log("Current timelocks:");
-        console.log("  srcWithdrawal:", currentTimelocks.srcWithdrawal);
-        console.log("  srcPublicWithdrawal:", currentTimelocks.srcPublicWithdrawal);
-        console.log("  srcCancellation:", currentTimelocks.srcCancellation);
-        console.log("  srcPublicCancellation:", currentTimelocks.srcPublicCancellation);
-        console.log("  deployedAt:", currentTimelocks.deployedAt);
+        // Log current timelocks - no need to unpack, already have Timelocks type
+        Timelocks currentTimelocks = currentImmutables.timelocks;
+        console.log("Current timelocks (packed):", Timelocks.unwrap(currentTimelocks));
         
-        // Create updated immutables with correct deployment timestamp
-        TimelocksLib.Timelocks memory fixedTimelocks = TimelocksLib.Timelocks({
-            srcWithdrawal: currentTimelocks.srcWithdrawal,
-            srcPublicWithdrawal: currentTimelocks.srcPublicWithdrawal,
-            srcCancellation: currentTimelocks.srcCancellation,
-            srcPublicCancellation: currentTimelocks.srcPublicCancellation,
-            dstWithdrawal: currentTimelocks.dstWithdrawal,
-            dstPublicWithdrawal: currentTimelocks.dstPublicWithdrawal,
-            dstCancellation: currentTimelocks.dstCancellation,
-            dstPublicCancellation: currentTimelocks.dstPublicCancellation,
-            deployedAt: SRC_DEPLOY_TIME // Use the actual deployment timestamp
-        });
+        // Update timelocks with correct deployment timestamp
+        Timelocks fixedTimelocks = currentTimelocks.setDeployedAt(SRC_DEPLOY_TIME);
         
         console.log("Fixed timelocks with correct deployedAt:", SRC_DEPLOY_TIME);
         
         // Create immutables with fixed timestamp
-        ImmutablesLib.Immutables memory fixedImmutables = ImmutablesLib.Immutables({
+        IBaseEscrow.Immutables memory fixedImmutables = IBaseEscrow.Immutables({
+            orderHash: currentImmutables.orderHash,
+            hashlock: currentImmutables.hashlock,
             maker: currentImmutables.maker,
             taker: currentImmutables.taker,
             token: currentImmutables.token,
             amount: currentImmutables.amount,
             safetyDeposit: currentImmutables.safetyDeposit,
-            timelocks: fixedTimelocks.packTimelocks(),
-            hashlock: currentImmutables.hashlock
+            timelocks: fixedTimelocks
         });
         
         // Check resolver's balance before withdrawal
@@ -98,7 +85,7 @@ contract FixSourceWithdrawal is Script {
         uint256 expectedAmount = currentImmutables.amount + currentImmutables.safetyDeposit;
         console.log("Expected withdrawal amount (amount + safety deposit):", expectedAmount);
         
-        try srcEscrow.withdraw(REVEALED_SECRET, fixedImmutables) {
+        try IBaseEscrow(SRC_ESCROW).withdraw(REVEALED_SECRET, fixedImmutables) {
             console.log("[OK] Withdrawal successful!");
             
             // Check resolver's balance after withdrawal
