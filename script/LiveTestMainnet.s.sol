@@ -347,8 +347,7 @@ contract LiveTestMainnet is Script {
         // Load test state
         string memory stateJson = vm.readFile(STATE_FILE);
         address dstEscrow = vm.parseJsonAddress(stateJson, ".dstEscrow");
-        // Secret is nested due to JSON serialization
-        bytes32 secret = vm.parseJsonBytes32(stateJson, ".existing.existing.secret");
+        bytes32 secret = vm.parseJsonBytes32(stateJson, ".secret");
         
         // Get Alice's private key from environment
         uint256 aliceKey = vm.envUint("ALICE_PRIVATE_KEY");
@@ -361,15 +360,28 @@ contract LiveTestMainnet is Script {
         console.log("Alice BMN balance before:", balanceBefore / 1e18);
 
         // Load destination immutables from state
-        bytes memory dstImmutablesData = vm.parseJsonBytes(stateJson, ".existing.dstImmutables");
+        bytes memory dstImmutablesData = vm.parseJsonBytes(stateJson, ".dstImmutables");
         IBaseEscrow.Immutables memory dstImmutables = abi.decode(dstImmutablesData, (IBaseEscrow.Immutables));
         
         // Use the deployed timelocks (with deployment timestamp) saved during deployment
         uint256 deployedTimelocks = vm.parseJsonUint(stateJson, ".deployedTimelocks");
         dstImmutables.timelocks = Timelocks.wrap(deployedTimelocks);
         
-        // Withdraw from destination escrow
-        IBaseEscrow(dstEscrow).withdraw(secret, dstImmutables);
+        console.log("Destination escrow:", dstEscrow);
+        console.log("Secret:", vm.toString(secret));
+        console.log("Deployed timelocks:", deployedTimelocks);
+        
+        // Try withdraw with better error handling
+        try IBaseEscrow(dstEscrow).withdraw(secret, dstImmutables) {
+            console.log("Withdrawal successful!");
+        } catch Error(string memory reason) {
+            console.log("Withdrawal failed:", reason);
+            revert(reason);
+        } catch (bytes memory data) {
+            console.log("Withdrawal failed with data:");
+            console.logBytes(data);
+            revert("Withdrawal failed");
+        }
         
         // Check balance after
         uint256 balanceAfter = IERC20(Constants.BMN_TOKEN).balanceOf(alice);
@@ -387,8 +399,8 @@ contract LiveTestMainnet is Script {
         
         // Load test state
         string memory stateJson = vm.readFile(STATE_FILE);
-        address srcEscrow = vm.parseJsonAddress(stateJson, ".existing.existing.srcEscrow");
-        bytes32 secret = vm.parseJsonBytes32(stateJson, ".existing.existing.existing.secret");
+        address srcEscrow = vm.parseJsonAddress(stateJson, ".srcEscrow");
+        bytes32 secret = vm.parseJsonBytes32(stateJson, ".secret");
         
         // Get Bob's private key from environment
         uint256 bobKey = vm.envUint("RESOLVER_PRIVATE_KEY");
@@ -403,11 +415,11 @@ contract LiveTestMainnet is Script {
         console.log("Bob BMN balance before:", balanceBefore / 1e18);
 
         // Load source immutables from state
-        bytes memory srcImmutablesData = vm.parseJsonBytes(stateJson, ".existing.existing.srcImmutables");
+        bytes memory srcImmutablesData = vm.parseJsonBytes(stateJson, ".srcImmutables");
         IBaseEscrow.Immutables memory srcImmutables = abi.decode(srcImmutablesData, (IBaseEscrow.Immutables));
         
         // Update timelocks with deployment timestamp from state
-        uint256 srcDeployTime = vm.parseJsonUint(stateJson, ".existing.existing.srcDeployTime");
+        uint256 srcDeployTime = vm.parseJsonUint(stateJson, ".srcDeployTime");
         srcImmutables.timelocks = srcImmutables.timelocks.setDeployedAt(srcDeployTime);
         
         // Withdraw from source escrow
