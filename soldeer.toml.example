@@ -1,0 +1,38 @@
+# soldeer.toml - Alternative standalone configuration
+# Use this if you prefer separate config from foundry.toml
+
+[soldeer]
+# Remapping configuration
+remappings_generate = true
+remappings_regenerate = false
+remappings_version = true
+remappings_prefix = ""
+
+# Dependencies with exact versions for production
+[dependencies]
+# OpenZeppelin Contracts - Industry standard for secure smart contracts
+"@openzeppelin-contracts" = "5.0.2"
+
+# Forge Standard Library - Essential for testing
+"@forge-std" = "1.9.2"
+
+# Solmate - Gas optimized contracts
+"@solmate" = "7"
+
+# Solady - Optimized Solidity snippets including CREATE3
+"@solady" = "0.0.235"
+
+# 1inch utilities
+"@1inch-solidity-utils" = "4.2.1"
+
+# Murky - Merkle tree library
+"@murky" = "1.0.0"
+
+# Git-based dependencies (when not available in registry)
+[dependencies.git]
+# Example: Custom library from GitHub
+# "my-custom-lib" = { git = "https://github.com/user/repo.git", tag = "v1.0.0" }
+
+# 1inch limit order protocol (if not in registry)
+"@limit-order-protocol" = { git = "https://github.com/1inch/limit-order-protocol.git", tag = "v3.0.0" }
+"@limit-order-settlement" = { git = "https://github.com/1inch/limit-order-settlement.git", tag = "v0.1.0" }

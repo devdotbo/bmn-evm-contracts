@@ -1,0 +1,110 @@
+name: CI with Soldeer
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  FOUNDRY_PROFILE: ci
+
+jobs:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: Foundry project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Check Soldeer version
+        run: |
+          forge --version
+          forge soldeer version
+
+      - name: Install dependencies with Soldeer
+        run: |
+          forge soldeer install
+
+      - name: Run forge build
+        run: |
+          forge build --sizes
+        id: build
+
+      - name: Run forge tests
+        run: |
+          forge test -vvv
+        id: test
+
+      - name: Run forge fmt check
+        run: |
+          forge fmt --check
+        id: fmt
+
+      - name: Generate coverage report
+        run: |
+          forge coverage --report lcov
+        id: coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./lcov.info
+          fail_ci_if_error: true
+
+  slither:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install dependencies with Soldeer
+        run: |
+          forge soldeer install
+
+      - name: Install Slither
+        run: |
+          pip3 install slither-analyzer
+
+      - name: Run Slither
+        run: |
+          slither . --config-file slither.config.json || true
+
+  gas-report:
+    name: Gas Report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install dependencies with Soldeer
+        run: |
+          forge soldeer install
+
+      - name: Generate gas report
+        run: |
+          forge test --gas-report > gas-report.txt
+
+      - name: Upload gas report
+        uses: actions/upload-artifact@v3
+        with:
+          name: gas-report
+          path: gas-report.txt

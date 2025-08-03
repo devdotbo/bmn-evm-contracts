@@ -13,7 +13,7 @@ contract VerifyContracts is Script {
     // Deployed contract addresses
     address constant BMN_ACCESS_TOKEN_V2 = 0x18ae5BB6E03Dc346eA9fd1afA78FEc314343857e;
     address constant ESCROW_FACTORY = 0x068aABdFa6B8c442CD32945A9A147B45ad7146d2;
-    address constant ESCROW_SRC_IMPL = 0x8f92DA1E1b537003569b7293B8063E6e79f27FC6;
+    address constant ESCROW_SRC_IMPL = 0x8F92Da1e1B537003569B7293B8063e6e79f27Fc6;
     address constant ESCROW_DST_IMPL = 0xFd3114ef8B537003569b7293B8063E6e79f27FC6;
     
     // Constructor arguments
