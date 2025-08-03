@@ -46,7 +46,7 @@ contract MintBMNTokens is Script {
         // Verify ownership
         address currentOwner = bmnToken.owner();
         require(currentOwner == owner, "MintBMNTokens: not the token owner");
-        console.log("Verified ownership ✓");
+        console.log("Verified ownership");
         console.log("");
         
         // Check and authorize addresses if needed
@@ -72,7 +72,7 @@ contract MintBMNTokens is Script {
         if (!token.authorized(account)) {
             console.log("Authorizing address:", account);
             token.authorize(account);
-            console.log("✓ Authorized");
+            console.log("Authorized successfully");
         } else {
             console.log("Address already authorized:", account);
         }
@@ -88,7 +88,7 @@ contract MintBMNTokens is Script {
         
         uint256 balanceAfter = token.balanceOf(to);
         console.log("Balance after:", balanceAfter);
-        console.log("✓ Minted", balanceAfter - balanceBefore, "tokens");
+        console.log("Minted", balanceAfter - balanceBefore, "tokens successfully");
     }
     
     function getChainName(uint256 chainId) private pure returns (string memory) {
