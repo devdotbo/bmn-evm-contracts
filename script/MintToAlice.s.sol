@@ -11,8 +11,8 @@ contract MintToAlice is Script {
     // Alice's address (from test accounts)
     address constant ALICE = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
     
-    // Amount to mint to Alice
-    uint256 constant MINT_AMOUNT = 100;
+    // Amount to mint to Alice (100 BMN in 18-decimals)
+    uint256 constant MINT_AMOUNT = 100 * 10**18;
     
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
