@@ -13,7 +13,7 @@ Yes, we can now run mainnet atomic swaps! The cross-chain factory consistency is
 - **CrossChainEscrowFactory**: `0xc72ed1E8a0649e51Cd046a0FfccC8f8c0bf385Fa`
 - **EscrowSrc Implementation**: `0xcCF2DEd118EC06185DC99E1a42a078754ae9c84c`
 - **EscrowDst Implementation**: `0xb5A9FBEB81830006A9C03aBB33d02574346C5A9a`
-- **BMN Token**: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` (6 decimals)
+- **BMN Token**: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` (18 decimals)
 
 All contracts are verified on both [Basescan](https://basescan.org/address/0xc72ed1E8a0649e51Cd046a0FfccC8f8c0bf385Fa#code) and [Etherlink Explorer](https://explorer.etherlink.com/address/0xc72ed1E8a0649e51Cd046a0FfccC8f8c0bf385Fa/contracts#address-tabs).
 
@@ -24,50 +24,19 @@ All contracts are verified on both [Basescan](https://basescan.org/address/0xc72
    - Alice needs at least 11 BMN on Base (10 for swap + 1 safety deposit)
    - Bob needs at least 11 BMN on Etherlink
 
-### Quick Test
-Run the automated test script:
-```bash
-./scripts/test-crosschain-swap.sh
-```
+### Testing Options
 
-This script will:
-1. Create source escrow on Base (Alice locks 10 BMN)
-2. Create destination escrow on Etherlink (Bob locks 10 BMN)
-3. Alice withdraws from destination (reveals secret)
-4. Bob withdraws from source (using revealed secret)
-5. Show final balances
-
-### Manual Step-by-Step Test
-For more control, use the Forge script directly:
+For testing, use the scripts documented in [RESOLVER-AGENT-GUIDE.md](./RESOLVER-AGENT-GUIDE.md):
 
 ```bash
-# Step 1: Create source escrow on Base
-source .env && ACTION=create-src forge script script/TestCrossChainSwap.s.sol \
-    --rpc-url $BASE_RPC_URL \
-    --broadcast \
-    --private-key $ALICE_PRIVATE_KEY
+# Deploy test infrastructure
+./scripts/run-mainnet-test.sh deploy
 
-# Step 2: Create destination escrow on Etherlink  
-source .env && ACTION=create-dst forge script script/TestCrossChainSwap.s.sol \
-    --rpc-url $ETHERLINK_RPC_URL \
-    --broadcast \
-    --private-key $RESOLVER_PRIVATE_KEY
+# Execute atomic swap
+./scripts/run-mainnet-test.sh swap
 
-# Step 3: Alice withdraws from destination (reveals secret)
-source .env && ACTION=withdraw-dst forge script script/TestCrossChainSwap.s.sol \
-    --rpc-url $ETHERLINK_RPC_URL \
-    --broadcast \
-    --private-key $ALICE_PRIVATE_KEY
-
-# Step 4: Bob withdraws from source
-source .env && ACTION=withdraw-src forge script script/TestCrossChainSwap.s.sol \
-    --rpc-url $BASE_RPC_URL \
-    --broadcast \
-    --private-key $RESOLVER_PRIVATE_KEY
-
-# Check balances at any time
-source .env && ACTION=check-balances forge script script/TestCrossChainSwap.s.sol \
-    --rpc-url $BASE_RPC_URL
+# Check balances
+./scripts/run-mainnet-test.sh check
 ```
 
 ### Expected Results
@@ -77,17 +46,14 @@ After a successful swap:
 
 ## Technical Details
 
-### How CREATE2 Solved the Problem
-1inch uses CREATE3 for cross-chain consistency, but Etherlink doesn't support CREATE3. We solved this by:
-1. Using the standard CREATE2 factory at `0x4e59b44847b379578588920cA78FbF26c0B4956C`
-2. Deploying implementations with deterministic salts
-3. Creating `CrossChainEscrowFactory` that accepts pre-deployed implementation addresses
-4. Result: Identical addresses on both chains without CREATE3
+### CREATE2 Implementation
+See [CREATE3_DEPLOYMENT_STRATEGY.md](./CREATE3_DEPLOYMENT_STRATEGY.md) for how we achieved cross-chain address consistency without CREATE3.
 
-### Key Innovation
-The `CrossChainEscrowFactory` constructor accepts implementation addresses as parameters, allowing us to use the same factory bytecode with pre-deployed implementations. This ensures the factory itself has the same address on all chains.
+### Timelock Configuration
+- **Source Withdrawal**: 0-300s (5 min) - Taker only  
+- **Source Public**: 300-600s (5-10 min) - Anyone
+- **Source Cancel**: 600-900s (10-15 min) - Maker only
+- **Source Public Cancel**: 900s+ (15 min+) - Anyone
 
-## Next Steps
-1. Run the test to verify the atomic swap works
-2. Consider integrating with 1inch Limit Order Protocol for production
-3. Deploy resolver infrastructure for automated swap execution
+### Integration
+For production integration with 1inch Limit Order Protocol, see [CROSSCHAIN-FACTORY-USAGE.md](./CROSSCHAIN-FACTORY-USAGE.md).
