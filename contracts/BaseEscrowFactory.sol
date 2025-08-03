@@ -148,16 +148,18 @@ abstract contract BaseEscrowFactory is IEscrowFactory, BaseExtension, ResolverVa
 
     /**
      * @notice See {IEscrowFactory-addressOfEscrowSrc}.
+     * @dev Uses Clones.predictDeterministicAddress to match the deployment method
      */
     function addressOfEscrowSrc(IBaseEscrow.Immutables calldata immutables) external view virtual returns (address) {
-        return Create2.computeAddress(immutables.hash(), _PROXY_SRC_BYTECODE_HASH);
+        return Clones.predictDeterministicAddress(ESCROW_SRC_IMPLEMENTATION, immutables.hash(), address(this));
     }
 
     /**
      * @notice See {IEscrowFactory-addressOfEscrowDst}.
+     * @dev Uses Clones.predictDeterministicAddress to match the deployment method
      */
     function addressOfEscrowDst(IBaseEscrow.Immutables calldata immutables) external view virtual returns (address) {
-        return Create2.computeAddress(immutables.hash(), _PROXY_DST_BYTECODE_HASH);
+        return Clones.predictDeterministicAddress(ESCROW_DST_IMPLEMENTATION, immutables.hash(), address(this));
     }
 
     /**
