@@ -65,10 +65,10 @@ contract BMNAccessToken is ERC20, Ownable {
     }
     
     /**
-     * @notice Override decimals to use 0 for simplicity
-     * @return Always returns 0
+     * @notice Override decimals to use 18, the ERC-20 default
+     * @return Always returns 18
      */
     function decimals() public pure override returns (uint8) {
-        return 0;
+        return 18;
     }
 }
