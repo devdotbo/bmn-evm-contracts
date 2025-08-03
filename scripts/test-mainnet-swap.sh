@@ -1,11 +1,11 @@
 #!/bin/bash
-# Test cross-chain swap on mainnet (Base + Etherlink)
+# Test mainnet atomic swap with CrossChainEscrowFactory
 
-set -e  # Exit on error
+set -e
 
 # Colors for output
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
+YELLOW='\033[1;33m'  
 RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
@@ -14,85 +14,119 @@ NC='\033[0m' # No Color
 source .env
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}Mainnet Cross-Chain Swap Test${NC}"
+echo -e "${GREEN}Mainnet Cross-Chain Atomic Swap Test${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 
-# Check if deployment files exist
-if [ ! -f "deployments/baseMainnet.json" ] || [ ! -f "deployments/etherlinkMainnet.json" ]; then
-    echo -e "${RED}Error: Deployment files not found${NC}"
-    echo "Please run deployment script first: ./scripts/deploy-unified.sh base && ./scripts/deploy-unified.sh etherlink"
-    exit 1
-fi
-
-# Extract contract addresses
-FACTORY_BASE=$(jq -r '.contracts.factory' deployments/baseMainnet.json)
-FACTORY_ETHERLINK=$(jq -r '.contracts.factory' deployments/etherlinkMainnet.json)
-LOP_BASE=$(jq -r '.contracts.limitOrderProtocol' deployments/baseMainnet.json)
-LOP_ETHERLINK=$(jq -r '.contracts.limitOrderProtocol' deployments/etherlinkMainnet.json)
-TOKEN_A=$(jq -r '.contracts.tokenA' deployments/baseMainnet.json)
-TOKEN_B=$(jq -r '.contracts.tokenB' deployments/etherlinkMainnet.json)
-ACCESS_TOKEN=$(jq -r '.contracts.accessToken' deployments/baseMainnet.json)
-FEE_TOKEN=$(jq -r '.contracts.feeToken' deployments/baseMainnet.json)
+# Contract addresses (same on both chains) - Using CrossChainEscrowFactory deployment
+FACTORY="0xc72ed1E8a0649e51Cd046a0FfccC8f8c0bf385Fa"
+BMN_TOKEN="0x8287CD2aC7E227D9D927F998EB600a0683a832A1"  # BMN V1 with 18 decimals
 
 echo "Contract Addresses:"
-echo "  Factory (both chains): $FACTORY_BASE"
-echo "  LOP (both chains): $LOP_BASE"
-echo "  Token A (Base): $TOKEN_A"
-echo "  Token B (Etherlink): $TOKEN_B"
+echo "  CrossChainEscrowFactory: $FACTORY"  
+echo "  BMN Token: $BMN_TOKEN"
 echo ""
 
 # Check initial balances
 echo -e "${YELLOW}=== Initial Balances ===${NC}"
-echo -n "Alice TKA on Base: "
-cast call $TOKEN_A "balanceOf(address)" $ALICE --rpc-url $CHAIN_A_RPC_URL | xargs -I {} cast --from-wei {}
-echo -n "Alice TKB on Etherlink: "
-cast call $TOKEN_B "balanceOf(address)" $ALICE --rpc-url $CHAIN_B_RPC_URL | xargs -I {} cast --from-wei {}
-echo -n "Bob TKA on Base: "
-cast call $TOKEN_A "balanceOf(address)" $BOB_RESOLVER --rpc-url $CHAIN_A_RPC_URL | xargs -I {} cast --from-wei {}
-echo -n "Bob TKB on Etherlink: "
-cast call $TOKEN_B "balanceOf(address)" $BOB_RESOLVER --rpc-url $CHAIN_B_RPC_URL | xargs -I {} cast --from-wei {}
+echo -n "Alice BMN on Base: "
+cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=2; {} / 1000000000000000000" | bc
+echo -n "Alice BMN on Etherlink: "
+cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=2; {} / 1000000000000000000" | bc
+echo -n "Bob BMN on Base: "
+cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=2; {} / 1000000000000000000" | bc
+echo -n "Bob BMN on Etherlink: "
+cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=2; {} / 1000000000000000000" | bc
 echo ""
 
-# Test parameters
-AMOUNT_TKA="10"  # Alice swaps 10 TKA
-AMOUNT_TKB="10"  # For 10 TKB
-SAFETY_DEPOSIT="1"  # 1 TKB safety deposit
-
-echo -e "${BLUE}Test: Alice swaps ${AMOUNT_TKA} TKA for ${AMOUNT_TKB} TKB${NC}"
+# Test flow
+echo -e "${BLUE}Test Flow: Alice (Base) swaps 10 BMN for Bob's 10 BMN (Etherlink)${NC}"
 echo ""
 
-# Step 1: Run the cross-chain swap test script
-echo -e "${YELLOW}Running cross-chain swap test...${NC}"
-echo "This will:"
-echo "1. Create order on Base (Alice wants to swap TKA for TKB)"
-echo "2. Create source escrow on Base"
-echo "3. Deploy destination escrow on Etherlink" 
-echo "4. Execute atomic swap"
-echo ""
-
-# Run the test using Forge script
-forge script script/LiveTestMainnet.s.sol \
-    --rpc-url $CHAIN_A_RPC_URL \
+# Step 1: Create source escrow on Base
+echo -e "${YELLOW}Step 1: Creating source escrow on Base...${NC}"
+source .env && ACTION=create-src forge script script/TestCrossChainSwap.s.sol \
+    --rpc-url $BASE_RPC_URL \
     --broadcast \
-    -vvv \
-    --sig "run()" || {
-        echo -e "${RED}Test failed!${NC}"
-        exit 1
-    }
+    --private-key $ALICE_PRIVATE_KEY \
+    -vvv || {
+    echo -e "${RED}Failed to create source escrow${NC}"
+    exit 1
+}
 
 echo ""
+echo -e "${GREEN}✓ Source escrow created${NC}"
+echo ""
+
+# Wait a bit for chain sync
+sleep 5
+
+# Step 2: Create destination escrow on Etherlink
+echo -e "${YELLOW}Step 2: Creating destination escrow on Etherlink...${NC}"
+source .env && ACTION=create-dst forge script script/TestCrossChainSwap.s.sol \
+    --rpc-url $ETHERLINK_RPC_URL \
+    --broadcast \
+    --private-key $RESOLVER_PRIVATE_KEY \
+    -vvv || {
+    echo -e "${RED}Failed to create destination escrow${NC}"
+    exit 1
+}
+
+echo ""
+echo -e "${GREEN}✓ Destination escrow created${NC}"
+echo ""
+
+# Wait a bit for chain sync
+sleep 5
+
+# Step 3: Alice withdraws from destination (reveals secret)
+echo -e "${YELLOW}Step 3: Alice withdrawing from destination escrow (revealing secret)...${NC}"
+source .env && ACTION=withdraw-dst forge script script/TestCrossChainSwap.s.sol \
+    --rpc-url $ETHERLINK_RPC_URL \
+    --broadcast \
+    --private-key $ALICE_PRIVATE_KEY \
+    -vvv || {
+    echo -e "${RED}Failed to withdraw from destination${NC}"
+    exit 1
+}
+
+echo ""
+echo -e "${GREEN}✓ Alice withdrew from destination${NC}"
+echo ""
+
+# Wait a bit for chain sync
+sleep 5
+
+# Step 4: Bob withdraws from source using revealed secret
+echo -e "${YELLOW}Step 4: Bob withdrawing from source escrow...${NC}"
+source .env && ACTION=withdraw-src forge script script/TestCrossChainSwap.s.sol \
+    --rpc-url $BASE_RPC_URL \
+    --broadcast \
+    --private-key $RESOLVER_PRIVATE_KEY \
+    -vvv || {
+    echo -e "${RED}Failed to withdraw from source${NC}"
+    exit 1
+}
+
+echo ""
+echo -e "${GREEN}✓ Bob withdrew from source${NC}"
+echo ""
+
+# Check final balances
 echo -e "${YELLOW}=== Final Balances ===${NC}"
-echo -n "Alice TKA on Base: "
-cast call $TOKEN_A "balanceOf(address)" $ALICE --rpc-url $CHAIN_A_RPC_URL | xargs -I {} cast --from-wei {}
-echo -n "Alice TKB on Etherlink: "
-cast call $TOKEN_B "balanceOf(address)" $ALICE --rpc-url $CHAIN_B_RPC_URL | xargs -I {} cast --from-wei {}
-echo -n "Bob TKA on Base: "
-cast call $TOKEN_A "balanceOf(address)" $BOB_RESOLVER --rpc-url $CHAIN_A_RPC_URL | xargs -I {} cast --from-wei {}
-echo -n "Bob TKB on Etherlink: "
-cast call $TOKEN_B "balanceOf(address)" $BOB_RESOLVER --rpc-url $CHAIN_B_RPC_URL | xargs -I {} cast --from-wei {}
+echo -n "Alice BMN on Base: "
+cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=2; {} / 1000000000000000000" | bc
+echo -n "Alice BMN on Etherlink: "
+cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=2; {} / 1000000000000000000" | bc
+echo -n "Bob BMN on Base: "
+cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=2; {} / 1000000000000000000" | bc
+echo -n "Bob BMN on Etherlink: "
+cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=2; {} / 1000000000000000000" | bc
 
 echo ""
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}Mainnet Cross-Chain Swap Test Complete!${NC}"
+echo -e "${GREEN}Cross-Chain Swap Test Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
+
+# Clean up state file
+rm -f deployments/crosschain-swap-state.json

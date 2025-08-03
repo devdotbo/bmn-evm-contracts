@@ -23,15 +23,15 @@ contract TestCrossChainSwap is Script {
 
     // Deployed contract addresses (same on both chains)
     address constant FACTORY = 0xc72ed1E8a0649e51Cd046a0FfccC8f8c0bf385Fa;
-    address constant BMN_TOKEN = 0x8287CD2aC7E227D9D927F998EB600a0683a832A1; // BMN V1 with 6 decimals
+    address constant BMN_TOKEN = 0x8287CD2aC7E227D9D927F998EB600a0683a832A1; // BMN V1 with 18 decimals
     
     // Test accounts from .env
     address constant ALICE = 0x240E2588e35FB9D3D60B283B45108a49972FFFd8;
     address constant BOB = 0xfdF1dDeB176BEA06c7430166e67E615bC312b7B5;
     
     // Test parameters
-    uint256 constant SWAP_AMOUNT = 10e6; // 10 BMN (6 decimals)
-    uint256 constant SAFETY_DEPOSIT = 1e6; // 1 BMN safety deposit
+    uint256 constant SWAP_AMOUNT = 10e18; // 10 BMN (18 decimals)
+    uint256 constant SAFETY_DEPOSIT = 1e18; // 1 BMN safety deposit
     
     // Timelock configuration (in seconds)
     uint256 constant SRC_WITHDRAWAL_START = 0;
@@ -96,12 +96,12 @@ contract TestCrossChainSwap is Script {
 
         // Check balance
         uint256 balance = IERC20(BMN_TOKEN).balanceOf(alice);
-        console.log("Alice BMN balance:", balance / 1e6, "BMN");
+        console.log("Alice BMN balance:", balance / 1e18, "BMN");
         require(balance >= SWAP_AMOUNT, "Insufficient BMN balance");
 
         // Approve token transfer
         IERC20(BMN_TOKEN).approve(FACTORY, SWAP_AMOUNT);
-        console.log("Approved", SWAP_AMOUNT / 1e6, "BMN to factory");
+        console.log("Approved", SWAP_AMOUNT / 1e18, "BMN to factory");
 
         // Create immutables for source escrow
         IBaseEscrow.Immutables memory srcImmutables = IBaseEscrow.Immutables({
@@ -163,18 +163,18 @@ contract TestCrossChainSwap is Script {
 
         // Check balance
         uint256 balance = IERC20(BMN_TOKEN).balanceOf(bob);
-        console.log("Bob BMN balance:", balance / 1e6, "BMN");
+        console.log("Bob BMN balance:", balance / 1e18, "BMN");
         require(balance >= SWAP_AMOUNT, "Insufficient BMN balance");
 
         // Approve token transfer
         IERC20(BMN_TOKEN).approve(FACTORY, SWAP_AMOUNT);
-        console.log("Approved", SWAP_AMOUNT / 1e6, "BMN to factory");
+        console.log("Approved", SWAP_AMOUNT / 1e18, "BMN to factory");
 
         // Update timelocks with current timestamp
         dstImmutables.timelocks = dstImmutables.timelocks.setDeployedAt(block.timestamp);
 
-        // Deploy destination escrow (Bob provides safety deposit)
-        console.log("Bob providing safety deposit:", SAFETY_DEPOSIT / 1e6, "BMN");
+        // Deploy destination escrow (Bob provides safety deposit in ETH)
+        console.log("Bob providing safety deposit:", SAFETY_DEPOSIT / 1e18, "ETH");
         uint256 srcCancellationTimestamp = dstImmutables.timelocks.get(TimelocksLib.Stage.SrcCancellation);
         address dstEscrow = IEscrowFactory(FACTORY).createDstEscrow{value: SAFETY_DEPOSIT}(
             dstImmutables, 
@@ -211,7 +211,7 @@ contract TestCrossChainSwap is Script {
 
         // Check balance before
         uint256 balanceBefore = IERC20(BMN_TOKEN).balanceOf(alice);
-        console.log("Alice BMN balance before:", balanceBefore / 1e6);
+        console.log("Alice BMN balance before:", balanceBefore / 1e18);
 
         // Load destination immutables
         bytes memory dstImmutablesData = vm.parseJsonBytes(stateJson, ".existing.dstImmutables");
@@ -226,8 +226,8 @@ contract TestCrossChainSwap is Script {
         
         // Check balance after
         uint256 balanceAfter = IERC20(BMN_TOKEN).balanceOf(alice);
-        console.log("Alice BMN balance after:", balanceAfter / 1e6);
-        console.log("Alice received:", (balanceAfter - balanceBefore) / 1e6, "BMN");
+        console.log("Alice BMN balance after:", balanceAfter / 1e18);
+        console.log("Alice received:", (balanceAfter - balanceBefore) / 1e18, "BMN");
 
         vm.stopBroadcast();
     }
@@ -250,7 +250,7 @@ contract TestCrossChainSwap is Script {
 
         // Check balance before
         uint256 balanceBefore = IERC20(BMN_TOKEN).balanceOf(bob);
-        console.log("Bob BMN balance before:", balanceBefore / 1e6);
+        console.log("Bob BMN balance before:", balanceBefore / 1e18);
 
         // Load source immutables
         bytes memory srcImmutablesData = vm.parseJsonBytes(stateJson, ".existing.srcImmutables");
@@ -265,8 +265,8 @@ contract TestCrossChainSwap is Script {
         
         // Check balance after
         uint256 balanceAfter = IERC20(BMN_TOKEN).balanceOf(bob);
-        console.log("Bob BMN balance after:", balanceAfter / 1e6);
-        console.log("Bob received:", (balanceAfter - balanceBefore) / 1e6, "BMN");
+        console.log("Bob BMN balance after:", balanceAfter / 1e18);
+        console.log("Bob received:", (balanceAfter - balanceBefore) / 1e18, "BMN");
 
         vm.stopBroadcast();
     }
@@ -277,8 +277,8 @@ contract TestCrossChainSwap is Script {
         uint256 aliceBalance = IERC20(BMN_TOKEN).balanceOf(ALICE);
         uint256 bobBalance = IERC20(BMN_TOKEN).balanceOf(BOB);
         
-        console.log("Alice BMN:", aliceBalance / 1e6);
-        console.log("Bob BMN:", bobBalance / 1e6);
+        console.log("Alice BMN:", aliceBalance / 1e18);
+        console.log("Bob BMN:", bobBalance / 1e18);
         
         console.log("\nFactory:", FACTORY);
         console.log("BMN Token:", BMN_TOKEN);

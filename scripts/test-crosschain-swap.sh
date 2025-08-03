@@ -18,9 +18,9 @@ echo -e "${GREEN}Cross-Chain Atomic Swap Test${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 
-# Contract addresses (same on both chains)
+# Contract addresses (same on both chains) - Using CrossChainEscrowFactory deployment
 FACTORY="0xc72ed1E8a0649e51Cd046a0FfccC8f8c0bf385Fa"
-BMN_TOKEN="0x8287CD2aC7E227D9D927F998EB600a0683a832A1"
+BMN_TOKEN="0x8287CD2aC7E227D9D927F998EB600a0683a832A1"  # BMN V1 with 18 decimals
 
 echo "Contract Addresses:"
 echo "  CrossChainEscrowFactory: $FACTORY"  
@@ -30,13 +30,13 @@ echo ""
 # Check initial balances
 echo -e "${YELLOW}=== Initial Balances ===${NC}"
 echo -n "Alice BMN on Base: "
-cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000" | bc
+cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
 echo -n "Alice BMN on Etherlink: "
-cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000" | bc
+cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
 echo -n "Bob BMN on Base: "
-cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000" | bc
+cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
 echo -n "Bob BMN on Etherlink: "
-cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000" | bc
+cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
 echo ""
 
 # Test flow
@@ -106,13 +106,13 @@ echo ""
 # Check final balances
 echo -e "${YELLOW}=== Final Balances ===${NC}"
 echo -n "Alice BMN on Base: "
-cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000" | bc
+cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
 echo -n "Alice BMN on Etherlink: "
-cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000" | bc
+cast call $BMN_TOKEN "balanceOf(address)" $ALICE --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
 echo -n "Bob BMN on Base: "
-cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000" | bc
+cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $BASE_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
 echo -n "Bob BMN on Etherlink: "
-cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000" | bc
+cast call $BMN_TOKEN "balanceOf(address)" $BOB_RESOLVER --rpc-url $ETHERLINK_RPC_URL | xargs -I {} echo "scale=6; {} / 1000000000000000000" | bc
 
 echo ""
 echo -e "${GREEN}========================================${NC}"
