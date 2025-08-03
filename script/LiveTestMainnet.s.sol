@@ -292,9 +292,21 @@ contract LiveTestMainnet is Script {
         Timelocks deployedTimelocks = dstImmutables.timelocks.setDeployedAt(actualDeploymentTime);
         
         // Calculate what the address should be with the actual timestamp for verification
+        // Create immutables with updated timelocks
+        IBaseEscrow.Immutables memory verifyImmutables = IBaseEscrow.Immutables({
+            orderHash: dstImmutables.orderHash,
+            hashlock: dstImmutables.hashlock,
+            maker: dstImmutables.maker,
+            taker: dstImmutables.taker,
+            token: dstImmutables.token,
+            amount: dstImmutables.amount,
+            safetyDeposit: dstImmutables.safetyDeposit,
+            timelocks: deployedTimelocks
+        });
+        
         address verifyAddress = Clones.predictDeterministicAddress(
             TestEscrowFactory(etherlink.factory).ESCROW_DST_IMPLEMENTATION(),
-            dstImmutables.setTimelocks(deployedTimelocks).hashMem(),
+            verifyImmutables.hashMem(),
             etherlink.factory
         );
         console.log("Verification - calculated address with actual timestamp:", verifyAddress);
