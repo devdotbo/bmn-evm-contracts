@@ -3,7 +3,7 @@ pragma solidity 0.8.23;
 
 import "forge-std/Script.sol";
 import "../contracts/CrossChainResolverV2.sol";
-import "../contracts/test/TokenMock.sol";
+import { TokenMock } from "solidity-utils/contracts/mocks/TokenMock.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import { TimelocksLib, Timelocks } from "../contracts/libraries/TimelocksLib.sol";
 
@@ -27,12 +27,12 @@ contract TestCrossChainResolver is Script {
         // Deploy a test token if needed
         address tokenAddress = vm.envOr("TEST_TOKEN", address(0));
         if (tokenAddress == address(0)) {
-            TokenMock token = new TokenMock("Test Token", "TEST", 18);
-            tokenAddress = address(token);
+            TokenMock testToken = new TokenMock("Test Token", "TEST");
+            tokenAddress = address(testToken);
             console.log("Deployed test token at:", tokenAddress);
             
             // Mint tokens to deployer
-            token.mint(deployer, 1000 * 10**18);
+            testToken.mint(deployer, 1000 * 10**18);
             console.log("Minted 1000 TEST tokens to deployer");
         }
         
@@ -46,12 +46,16 @@ contract TestCrossChainResolver is Script {
         uint256 dstChainId = block.chainid == 8453 ? 42793 : 8453; // Swap between Base and Etherlink
         
         // Create timelocks (1 hour for each stage)
-        Timelocks timelocks = TimelocksLib.init(
-            uint32(3600),  // srcWithdrawal: 1 hour
-            uint32(3600),  // srcCancellation: 1 hour  
-            uint32(3600),  // dstWithdrawal: 1 hour
-            uint32(3600)   // dstCancellation: 1 hour
-        );
+        uint256 packed = 0;
+        packed |= uint256(uint32(300));    // srcWithdrawal: 5 minutes
+        packed |= uint256(uint32(600)) << 32;    // srcPublicWithdrawal: 10 minutes
+        packed |= uint256(uint32(900)) << 64;    // srcCancellation: 15 minutes
+        packed |= uint256(uint32(1200)) << 96;   // srcPublicCancellation: 20 minutes
+        packed |= uint256(uint32(300)) << 128;   // dstWithdrawal: 5 minutes
+        packed |= uint256(uint32(600)) << 160;   // dstPublicWithdrawal: 10 minutes
+        packed |= uint256(uint32(900)) << 192;   // dstCancellation: 15 minutes
+        
+        Timelocks timelocks = Timelocks.wrap(packed);
         
         console.log("\n=== Test Parameters ===");
         console.log("Token:", tokenAddress);
