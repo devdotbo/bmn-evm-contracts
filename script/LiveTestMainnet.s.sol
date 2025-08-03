@@ -15,6 +15,7 @@ import { EscrowFactory } from "../contracts/EscrowFactory.sol";
 import { TestEscrowFactory } from "../contracts/test/TestEscrowFactory.sol";
 import { Timelocks, TimelocksLib } from "../contracts/libraries/TimelocksLib.sol";
 import { ImmutablesLib } from "../contracts/libraries/ImmutablesLib.sol";
+import { Constants } from "../contracts/Constants.sol";
 
 /**
  * @title LiveTestMainnet
@@ -30,8 +31,7 @@ contract LiveTestMainnet is Script {
     struct Deployment {
         address factory;
         address limitOrderProtocol;
-        address tokenA;
-        address tokenB;
+        address bmnToken;  // BMN token address (same on all chains)
         address accessToken;
         address feeToken;
         address alice;
@@ -41,7 +41,7 @@ contract LiveTestMainnet is Script {
 
     // Test configuration
     uint256 constant SWAP_AMOUNT = 10 ether;
-    uint256 constant SAFETY_DEPOSIT = 0.0001 ether; // Very small deposit for mainnet test
+    uint256 constant SAFETY_DEPOSIT = 0.00001 ether; // ~$0.03-0.04 at current ETH prices
     // Note: In production with proper UX, Alice would never provide safety deposits
     // The resolver (Bob) would provide safety deposits for both escrows
     
@@ -144,8 +144,8 @@ contract LiveTestMainnet is Script {
         vm.startBroadcast(aliceKey);
 
         // Approve token transfer
-        IERC20(base.tokenA).approve(base.factory, SWAP_AMOUNT);
-        console.log("Approved", SWAP_AMOUNT / 1e18, "TKA to factory");
+        IERC20(Constants.BMN_TOKEN).approve(base.factory, SWAP_AMOUNT);
+        console.log("Approved", SWAP_AMOUNT / 1e18, "BMN to factory");
 
         // Create immutables for source escrow
         IBaseEscrow.Immutables memory srcImmutables = IBaseEscrow.Immutables({
@@ -153,7 +153,7 @@ contract LiveTestMainnet is Script {
             hashlock: hashlock,
             maker: Address.wrap(uint160(alice)),
             taker: Address.wrap(uint160(bob)),
-            token: Address.wrap(uint160(base.tokenA)),
+            token: Address.wrap(uint160(Constants.BMN_TOKEN)),
             amount: SWAP_AMOUNT,
             safetyDeposit: SAFETY_DEPOSIT,
             timelocks: createTimelocks()
@@ -176,7 +176,7 @@ contract LiveTestMainnet is Script {
             hashlock: hashlock,
             maker: Address.wrap(uint160(bob)), // Bob is maker on destination
             taker: Address.wrap(uint160(alice)), // Alice is taker on destination
-            token: Address.wrap(uint160(base.tokenB)),
+            token: Address.wrap(uint160(Constants.BMN_TOKEN)),
             amount: SWAP_AMOUNT,
             safetyDeposit: SAFETY_DEPOSIT,
             timelocks: createTimelocks()
@@ -225,8 +225,8 @@ contract LiveTestMainnet is Script {
         console.log("Destination escrow will be at:", expectedDstEscrow);
 
         // Approve factory to transfer tokens from Bob
-        IERC20(etherlink.tokenB).approve(etherlink.factory, SWAP_AMOUNT);
-        console.log("Approved", SWAP_AMOUNT / 1e18, "TKB to factory");
+        IERC20(Constants.BMN_TOKEN).approve(etherlink.factory, SWAP_AMOUNT);
+        console.log("Approved", SWAP_AMOUNT / 1e18, "BMN to factory");
 
         // Deploy destination escrow using factory's createDstEscrow
         // Bob provides safety deposit when creating destination escrow
@@ -270,8 +270,8 @@ contract LiveTestMainnet is Script {
         vm.startBroadcast(aliceKey);
 
         // Check balance before
-        uint256 balanceBefore = IERC20(etherlink.tokenB).balanceOf(alice);
-        console.log("Alice TKB balance before:", balanceBefore / 1e18);
+        uint256 balanceBefore = IERC20(Constants.BMN_TOKEN).balanceOf(alice);
+        console.log("Alice BMN balance before:", balanceBefore / 1e18);
 
         // Load destination immutables from state
         bytes memory dstImmutablesData = vm.parseJsonBytes(stateJson, ".existing.dstImmutables");
@@ -285,9 +285,9 @@ contract LiveTestMainnet is Script {
         IBaseEscrow(dstEscrow).withdraw(secret, dstImmutables);
         
         // Check balance after
-        uint256 balanceAfter = IERC20(etherlink.tokenB).balanceOf(alice);
-        console.log("Alice TKB balance after:", balanceAfter / 1e18);
-        console.log("Alice received:", (balanceAfter - balanceBefore) / 1e18, "TKB");
+        uint256 balanceAfter = IERC20(Constants.BMN_TOKEN).balanceOf(alice);
+        console.log("Alice BMN balance after:", balanceAfter / 1e18);
+        console.log("Alice received:", (balanceAfter - balanceBefore) / 1e18, "BMN");
 
         vm.stopBroadcast();
     }
@@ -312,8 +312,8 @@ contract LiveTestMainnet is Script {
         console.log("Using secret:", vm.toString(secret));
 
         // Check balance before
-        uint256 balanceBefore = IERC20(base.tokenA).balanceOf(bob);
-        console.log("Bob TKA balance before:", balanceBefore / 1e18);
+        uint256 balanceBefore = IERC20(Constants.BMN_TOKEN).balanceOf(bob);
+        console.log("Bob BMN balance before:", balanceBefore / 1e18);
 
         // Load source immutables from state
         bytes memory srcImmutablesData = vm.parseJsonBytes(stateJson, ".existing.srcImmutables");
@@ -327,9 +327,9 @@ contract LiveTestMainnet is Script {
         IBaseEscrow(srcEscrow).withdraw(secret, srcImmutables);
         
         // Check balance after
-        uint256 balanceAfter = IERC20(base.tokenA).balanceOf(bob);
-        console.log("Bob TKA balance after:", balanceAfter / 1e18);
-        console.log("Bob received:", (balanceAfter - balanceBefore) / 1e18, "TKA");
+        uint256 balanceAfter = IERC20(Constants.BMN_TOKEN).balanceOf(bob);
+        console.log("Bob BMN balance after:", balanceAfter / 1e18);
+        console.log("Bob received:", (balanceAfter - balanceBefore) / 1e18, "BMN");
 
         vm.stopBroadcast();
     }
@@ -345,14 +345,11 @@ contract LiveTestMainnet is Script {
         address bob = vm.envAddress("BOB_RESOLVER");
         
         console.log("\n=== Base Mainnet ===");
-        console.log("Alice TKA:", IERC20(base.tokenA).balanceOf(alice) / 1e18);
-        console.log("Bob TKA:", IERC20(base.tokenA).balanceOf(bob) / 1e18);
+        console.log("Alice BMN:", IERC20(Constants.BMN_TOKEN).balanceOf(alice) / 1e18);
+        console.log("Bob BMN:", IERC20(Constants.BMN_TOKEN).balanceOf(bob) / 1e18);
         
         console.log("\n=== Etherlink Mainnet ===");
-        // Note: On Etherlink, we need to use the same token addresses as Base
-        // The tokens are the same across both chains (same addresses due to CREATE2)
-        console.log("Alice TKB:", IERC20(base.tokenB).balanceOf(alice) / 1e18);
-        console.log("Bob TKB:", IERC20(base.tokenB).balanceOf(bob) / 1e18);
+        console.log("Note: Run this script on Etherlink to see BMN balances there");
     }
 
     function loadDeployment(string memory path) internal view returns (Deployment memory) {
@@ -361,8 +358,7 @@ contract LiveTestMainnet is Script {
         Deployment memory deployment;
         deployment.factory = vm.parseJsonAddress(json, ".contracts.factory");
         deployment.limitOrderProtocol = vm.parseJsonAddress(json, ".contracts.limitOrderProtocol");
-        deployment.tokenA = vm.parseJsonAddress(json, ".contracts.tokenA");
-        deployment.tokenB = vm.parseJsonAddress(json, ".contracts.tokenB");
+        deployment.bmnToken = Constants.BMN_TOKEN; // BMN is at same address on all chains
         deployment.accessToken = vm.parseJsonAddress(json, ".contracts.accessToken");
         deployment.feeToken = vm.parseJsonAddress(json, ".contracts.feeToken");
         deployment.alice = vm.parseJsonAddress(json, ".accounts.alice");
