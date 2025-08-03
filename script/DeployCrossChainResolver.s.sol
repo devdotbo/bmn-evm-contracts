@@ -4,7 +4,7 @@ pragma solidity 0.8.23;
 import "forge-std/Script.sol";
 import "../contracts/CrossChainResolverV2.sol";
 import "../contracts/test/TestEscrowFactory.sol";
-import "../contracts/test/TokenMock.sol";
+import { TokenMock } from "solidity-utils/contracts/mocks/TokenMock.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 contract DeployCrossChainResolver is Script {
@@ -24,9 +24,9 @@ contract DeployCrossChainResolver is Script {
             console.log("No factory address provided, deploying TestEscrowFactory...");
             
             // Deploy mock contracts for factory dependencies
-            address limitOrderProtocol = address(new TokenMock("Mock LOP", "LOP", 18));
-            IERC20 feeToken = IERC20(address(new TokenMock("Fee Token", "FEE", 18)));
-            IERC20 accessToken = IERC20(address(new TokenMock("Access Token", "ACCESS", 18)));
+            address limitOrderProtocol = address(new TokenMock("Mock LOP", "LOP"));
+            IERC20 feeToken = IERC20(address(new TokenMock("Fee Token", "FEE")));
+            IERC20 accessToken = IERC20(address(new TokenMock("Access Token", "ACCESS")));
             
             // Deploy TestEscrowFactory
             TestEscrowFactory factory = new TestEscrowFactory(
