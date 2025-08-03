@@ -12,6 +12,7 @@ import { Clones } from "openzeppelin-contracts/contracts/proxy/Clones.sol";
 import { IBaseEscrow } from "../contracts/interfaces/IBaseEscrow.sol";
 import { IEscrowFactory } from "../contracts/interfaces/IEscrowFactory.sol";
 import { EscrowFactory } from "../contracts/EscrowFactory.sol";
+import { TestEscrowFactory } from "../contracts/test/TestEscrowFactory.sol";
 import { Timelocks, TimelocksLib } from "../contracts/libraries/TimelocksLib.sol";
 import { ImmutablesLib } from "../contracts/libraries/ImmutablesLib.sol";
 
@@ -40,7 +41,7 @@ contract LiveTestMainnet is Script {
 
     // Test configuration
     uint256 constant SWAP_AMOUNT = 10 ether;
-    uint256 constant SAFETY_DEPOSIT = 0.01 ether; // Small deposit for mainnet
+    uint256 constant SAFETY_DEPOSIT = 0.0001 ether; // Very small deposit for mainnet test
     
     // Timelock configuration (in seconds) - production values
     uint256 constant SRC_WITHDRAWAL_START = 0;
@@ -124,7 +125,7 @@ contract LiveTestMainnet is Script {
     function createSrcEscrow() internal {
         console.log("--- Step 2: Creating Source Escrow on Base Mainnet ---");
         
-        Deployment memory base = loadDeployment("deployments/baseMainnet.json");
+        Deployment memory base = loadDeployment("deployments/baseMainnetTest.json");
         require(base.chainId == 8453, "Not on Base mainnet");
         
         // Load test state
@@ -144,61 +145,48 @@ contract LiveTestMainnet is Script {
         IERC20(base.tokenA).approve(base.factory, SWAP_AMOUNT);
         console.log("Approved", SWAP_AMOUNT / 1e18, "TKA to factory");
 
-        // Setup timelock values
-        Timelocks memory timelocks = Timelocks({
-            srcWithdrawal: SRC_WITHDRAWAL_START,
-            srcPublicWithdrawal: SRC_PUBLIC_WITHDRAWAL_START,
-            srcCancellation: SRC_CANCELLATION_START,
-            srcPublicCancellation: SRC_PUBLIC_CANCELLATION_START,
-            dstWithdrawal: DST_WITHDRAWAL_START,
-            dstPublicWithdrawal: DST_PUBLIC_WITHDRAWAL_START,
-            dstCancellation: DST_CANCELLATION_START
-        });
-
-        // Create immutables for escrow
-        IBaseEscrow.Immutables memory immutables = IBaseEscrow.Immutables({
+        // Create immutables for source escrow
+        IBaseEscrow.Immutables memory srcImmutables = IBaseEscrow.Immutables({
             orderHash: bytes32(0), // Not using order hash for direct creation
             hashlock: hashlock,
-            srcMaker: alice,
-            srcToken: base.tokenA,
-            srcAmount: SWAP_AMOUNT,
-            srcBeneficiary: alice,
-            srcCanceler: alice,
-            dstMaker: bob,
-            dstToken: base.tokenB,
-            dstAmount: SWAP_AMOUNT,
-            dstBeneficiary: alice,
-            dstCanceler: bob,
-            timelocks: timelocks.pack()
+            maker: Address.wrap(uint160(alice)),
+            taker: Address.wrap(uint160(bob)),
+            token: Address.wrap(uint160(base.tokenA)),
+            amount: SWAP_AMOUNT,
+            safetyDeposit: SAFETY_DEPOSIT,
+            timelocks: createTimelocks()
         });
 
-        // Calculate escrow addresses
-        (address srcEscrow, address dstEscrow) = IEscrowFactory(base.factory).computeEscrowAddresses(
-            immutables
-        );
+        // Cast factory to TestEscrowFactory
+        TestEscrowFactory testFactory = TestEscrowFactory(base.factory);
         
-        console.log("Source escrow will be at:", srcEscrow);
-        console.log("Destination escrow will be at:", dstEscrow);
-
-        // Pre-fund with safety deposit if needed
-        if (SAFETY_DEPOSIT > 0) {
-            (bool sent, ) = srcEscrow.call{value: SAFETY_DEPOSIT}("");
-            require(sent, "Failed to send safety deposit");
-            console.log("Sent", SAFETY_DEPOSIT / 1e18, "ETH safety deposit to source escrow");
-        }
-
-        // Deploy source escrow (TestEscrowFactory allows direct deployment)
-        IEscrowFactory(base.factory).deployEscrow(immutables, false);
+        // Deploy source escrow using test factory
+        address srcEscrow = testFactory.createSrcEscrowForTesting(srcImmutables, SWAP_AMOUNT);
         
-        console.log("Source escrow deployed!");
+        console.log("Source escrow deployed at:", srcEscrow);
+        
+        // Note: Safety deposit is handled internally by the escrow contract
+        // The safetyDeposit field in immutables specifies the required amount
+
+        // Create destination immutables for saving
+        IBaseEscrow.Immutables memory dstImmutables = IBaseEscrow.Immutables({
+            orderHash: bytes32(0),
+            hashlock: hashlock,
+            maker: Address.wrap(uint160(bob)), // Bob is maker on destination
+            taker: Address.wrap(uint160(alice)), // Alice is taker on destination
+            token: Address.wrap(uint160(base.tokenB)),
+            amount: SWAP_AMOUNT,
+            safetyDeposit: SAFETY_DEPOSIT,
+            timelocks: createTimelocks()
+        });
 
         // Update state file
         string memory json = "state";
         string memory newState = vm.readFile(STATE_FILE);
         vm.serializeString(json, "existing", newState);
         vm.serializeAddress(json, "srcEscrow", srcEscrow);
-        vm.serializeAddress(json, "dstEscrow", dstEscrow);
-        vm.serializeBytes(json, "immutables", abi.encode(immutables));
+        vm.serializeBytes(json, "srcImmutables", abi.encode(srcImmutables));
+        vm.serializeBytes(json, "dstImmutables", abi.encode(dstImmutables));
         string memory updatedJson = vm.serializeUint(json, "srcDeployTime", block.timestamp);
         vm.writeJson(updatedJson, STATE_FILE);
 
@@ -208,14 +196,13 @@ contract LiveTestMainnet is Script {
     function createDstEscrow() internal {
         console.log("--- Step 3: Creating Destination Escrow on Etherlink Mainnet ---");
         
-        Deployment memory etherlink = loadDeployment("deployments/etherlinkMainnet.json");
+        Deployment memory etherlink = loadDeployment("deployments/etherlinkMainnetTest.json");
         require(etherlink.chainId == 42793, "Not on Etherlink mainnet");
         
         // Load test state
         string memory stateJson = vm.readFile(STATE_FILE);
-        address dstEscrow = vm.parseJsonAddress(stateJson, ".dstEscrow");
-        bytes memory immutablesData = vm.parseJsonBytes(stateJson, ".immutables");
-        IBaseEscrow.Immutables memory immutables = abi.decode(immutablesData, (IBaseEscrow.Immutables));
+        bytes memory dstImmutablesData = vm.parseJsonBytes(stateJson, ".dstImmutables");
+        IBaseEscrow.Immutables memory dstImmutables = abi.decode(dstImmutablesData, (IBaseEscrow.Immutables));
         
         // Get Bob's private key from environment
         uint256 bobKey = vm.envUint("RESOLVER_PRIVATE_KEY");
@@ -223,25 +210,35 @@ contract LiveTestMainnet is Script {
 
         vm.startBroadcast(bobKey);
 
-        // Pre-fund destination escrow with tokens and safety deposit
-        IERC20(etherlink.tokenB).transfer(dstEscrow, SWAP_AMOUNT);
-        console.log("Sent", SWAP_AMOUNT / 1e18, "TKB to destination escrow");
-        
-        if (SAFETY_DEPOSIT > 0) {
-            (bool sent, ) = dstEscrow.call{value: SAFETY_DEPOSIT}("");
-            require(sent, "Failed to send safety deposit");
-            console.log("Sent", SAFETY_DEPOSIT / 1e18, "ETH safety deposit to destination escrow");
-        }
+        // Update timelocks with current deployment timestamp
+        dstImmutables.timelocks = dstImmutables.timelocks.setDeployedAt(block.timestamp);
 
-        // Deploy destination escrow
-        IEscrowFactory(etherlink.factory).deployEscrow(immutables, true);
+        // Calculate expected destination escrow address
+        address expectedDstEscrow = Clones.predictDeterministicAddress(
+            TestEscrowFactory(etherlink.factory).ESCROW_DST_IMPLEMENTATION(),
+            dstImmutables.hashMem(),
+            etherlink.factory
+        );
         
-        console.log("Destination escrow deployed at:", dstEscrow);
+        console.log("Destination escrow will be at:", expectedDstEscrow);
+
+        // Pre-fund destination escrow with tokens
+        IERC20(etherlink.tokenB).transfer(expectedDstEscrow, SWAP_AMOUNT);
+        console.log("Sent", SWAP_AMOUNT / 1e18, "TKB to destination escrow");
+
+        // Deploy destination escrow using factory's createDstEscrow
+        // Bob provides safety deposit when creating destination escrow
+        console.log("Bob providing safety deposit:", SAFETY_DEPOSIT / 1e18, "ETH");
+        uint256 srcCancellationTimestamp = dstImmutables.timelocks.get(TimelocksLib.Stage.SrcCancellation);
+        IEscrowFactory(etherlink.factory).createDstEscrow{value: SAFETY_DEPOSIT}(dstImmutables, srcCancellationTimestamp);
+        
+        console.log("Destination escrow deployed!");
 
         // Update state file
         string memory json = "state";
         string memory newState = vm.readFile(STATE_FILE);
         vm.serializeString(json, "existing", newState);
+        vm.serializeAddress(json, "dstEscrow", expectedDstEscrow);
         string memory updatedJson = vm.serializeUint(json, "dstDeployTime", block.timestamp);
         vm.writeJson(updatedJson, STATE_FILE);
 
@@ -251,7 +248,7 @@ contract LiveTestMainnet is Script {
     function withdrawDst() internal {
         console.log("--- Step 4: Withdraw from Destination Escrow (Alice reveals secret) ---");
         
-        Deployment memory etherlink = loadDeployment("deployments/etherlinkMainnet.json");
+        Deployment memory etherlink = loadDeployment("deployments/etherlinkMainnetTest.json");
         require(etherlink.chainId == 42793, "Not on Etherlink mainnet");
         
         // Load test state
@@ -269,8 +266,16 @@ contract LiveTestMainnet is Script {
         uint256 balanceBefore = IERC20(etherlink.tokenB).balanceOf(alice);
         console.log("Alice TKB balance before:", balanceBefore / 1e18);
 
+        // Load destination immutables from state
+        bytes memory dstImmutablesData = vm.parseJsonBytes(stateJson, ".dstImmutables");
+        IBaseEscrow.Immutables memory dstImmutables = abi.decode(dstImmutablesData, (IBaseEscrow.Immutables));
+        
+        // Update timelocks with deployment timestamp from state
+        uint256 dstDeployTime = vm.parseJsonUint(stateJson, ".dstDeployTime");
+        dstImmutables.timelocks = dstImmutables.timelocks.setDeployedAt(dstDeployTime);
+        
         // Withdraw from destination escrow
-        IBaseEscrow(dstEscrow).withdraw(secret);
+        IBaseEscrow(dstEscrow).withdraw(secret, dstImmutables);
         
         // Check balance after
         uint256 balanceAfter = IERC20(etherlink.tokenB).balanceOf(alice);
@@ -283,13 +288,13 @@ contract LiveTestMainnet is Script {
     function withdrawSrc() internal {
         console.log("--- Step 5: Withdraw from Source Escrow (Bob uses revealed secret) ---");
         
-        Deployment memory base = loadDeployment("deployments/baseMainnet.json");
+        Deployment memory base = loadDeployment("deployments/baseMainnetTest.json");
         require(base.chainId == 8453, "Not on Base mainnet");
         
         // Load test state
         string memory stateJson = vm.readFile(STATE_FILE);
         address srcEscrow = vm.parseJsonAddress(stateJson, ".srcEscrow");
-        address dstEscrow = vm.parseJsonAddress(stateJson, ".dstEscrow");
+        bytes32 secret = vm.parseJsonBytes32(stateJson, ".secret");
         
         // Get Bob's private key from environment
         uint256 bobKey = vm.envUint("RESOLVER_PRIVATE_KEY");
@@ -297,17 +302,22 @@ contract LiveTestMainnet is Script {
 
         vm.startBroadcast(bobKey);
 
-        // Get the revealed secret from destination escrow
-        bytes32 secret = IBaseEscrow(dstEscrow).secret();
-        require(secret != bytes32(0), "Secret not revealed yet");
-        console.log("Retrieved secret from destination escrow");
+        console.log("Using secret:", vm.toString(secret));
 
         // Check balance before
         uint256 balanceBefore = IERC20(base.tokenA).balanceOf(bob);
         console.log("Bob TKA balance before:", balanceBefore / 1e18);
 
+        // Load source immutables from state
+        bytes memory srcImmutablesData = vm.parseJsonBytes(stateJson, ".srcImmutables");
+        IBaseEscrow.Immutables memory srcImmutables = abi.decode(srcImmutablesData, (IBaseEscrow.Immutables));
+        
+        // Update timelocks with deployment timestamp from state
+        uint256 srcDeployTime = vm.parseJsonUint(stateJson, ".srcDeployTime");
+        srcImmutables.timelocks = srcImmutables.timelocks.setDeployedAt(srcDeployTime);
+        
         // Withdraw from source escrow
-        IBaseEscrow(srcEscrow).withdraw(secret);
+        IBaseEscrow(srcEscrow).withdraw(secret, srcImmutables);
         
         // Check balance after
         uint256 balanceAfter = IERC20(base.tokenA).balanceOf(bob);
@@ -320,9 +330,8 @@ contract LiveTestMainnet is Script {
     function checkBalances() internal view {
         console.log("--- Checking Balances ---");
         
-        // Try to load both deployments
+        // Load the regular deployment files for token addresses
         Deployment memory base = loadDeployment("deployments/baseMainnet.json");
-        Deployment memory etherlink = loadDeployment("deployments/etherlinkMainnet.json");
         
         // Get addresses from environment
         address alice = vm.envAddress("ALICE");
@@ -333,8 +342,10 @@ contract LiveTestMainnet is Script {
         console.log("Bob TKA:", IERC20(base.tokenA).balanceOf(bob) / 1e18);
         
         console.log("\n=== Etherlink Mainnet ===");
-        console.log("Alice TKB:", IERC20(etherlink.tokenB).balanceOf(alice) / 1e18);
-        console.log("Bob TKB:", IERC20(etherlink.tokenB).balanceOf(bob) / 1e18);
+        // Note: On Etherlink, we need to use the same token addresses as Base
+        // The tokens are the same across both chains (same addresses due to CREATE2)
+        console.log("Alice TKB:", IERC20(base.tokenB).balanceOf(alice) / 1e18);
+        console.log("Bob TKB:", IERC20(base.tokenB).balanceOf(bob) / 1e18);
     }
 
     function loadDeployment(string memory path) internal view returns (Deployment memory) {
@@ -352,5 +363,19 @@ contract LiveTestMainnet is Script {
         deployment.chainId = vm.parseJsonUint(json, ".chainId");
         
         return deployment;
+    }
+
+    function createTimelocks() internal pure returns (Timelocks) {
+        uint256 packed = 0;
+        
+        packed |= uint256(uint32(SRC_WITHDRAWAL_START));
+        packed |= uint256(uint32(SRC_PUBLIC_WITHDRAWAL_START)) << 32;
+        packed |= uint256(uint32(SRC_CANCELLATION_START)) << 64;
+        packed |= uint256(uint32(SRC_PUBLIC_CANCELLATION_START)) << 96;
+        packed |= uint256(uint32(DST_WITHDRAWAL_START)) << 128;
+        packed |= uint256(uint32(DST_PUBLIC_WITHDRAWAL_START)) << 160;
+        packed |= uint256(uint32(DST_CANCELLATION_START)) << 192;
+        
+        return Timelocks.wrap(packed);
     }
 }
