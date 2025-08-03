@@ -1,0 +1,13 @@
+[[dependencies]]
+name = "solmate"
+version = "6.8.0"
+url = "https://soldeer-revisions.s3.amazonaws.com/solmate/6_8_0_29-10-2024_19:01:45_solmate.zip"
+checksum = "e3ec0f0182cb3bbedecf8a0bcc39897266534a795ec732b2b03dafa285d78a5b"
+integrity = "a22e5a352de0231f671ee8adf5667bbe83c50012670083987bd1099a69feb429"
+
+[[dependencies]]
+name = "zeframlou-create3-factory"
+version = "567d6ec78cd0545f2fb18135dcb68298a5a1ef09"
+url = "https://soldeer-revisions.s3.amazonaws.com/zeframlou-create3-factory/567d6ec78cd0545f2fb18135dcb68298a5a1ef09_06-05-2025_06:29:56_zeframlou-create3-factory-567d6ec78cd0545f2fb18135dcb68298a5a1ef09.zip"
+checksum = "c944d07f6e632597f5a1fb1947aac287192a3fe9f4a14dcd241ad52e2ff98992"
+integrity = "15ad8094b4c0bf12f63a5e123e6157a0b99c1cc5d58ccf3fd94764fee1356856"

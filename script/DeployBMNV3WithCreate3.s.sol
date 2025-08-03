@@ -57,8 +57,9 @@ contract DeployBMNV3WithCreate3 is Script {
         
         // Check if token already deployed
         uint256 tokenCodeSize;
+        address tokenAddr = expectedTokenAddress;
         assembly {
-            tokenCodeSize := extcodesize(expectedTokenAddress)
+            tokenCodeSize := extcodesize(tokenAddr)
         }
         
         if (tokenCodeSize > 0) {

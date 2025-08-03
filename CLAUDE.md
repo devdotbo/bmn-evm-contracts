@@ -16,6 +16,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **ALWAYS commit changes immediately after making them, one file at a time.** This ensures clean commit history and prevents loss of work.
 
+**NEVER use emojis in code, commit messages, or any files.** Emojis cause compilation errors and should be replaced with text alternatives like [OK], [ERROR], [WARNING], etc.
+
 ## Essential Commands
 
 ### Build and Compilation

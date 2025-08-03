@@ -83,7 +83,7 @@ contract VerifyCreate3Deployment is Script {
         // Cross-chain consistency check
         console.log("\n=== CROSS-CHAIN CONSISTENCY ===");
         if (baseStatus.isValid && etherlinkStatus.isValid) {
-            console.log("✅ Both chains deployed successfully");
+            console.log("[OK] Both chains deployed successfully");
             
             // Verify addresses match
             require(
@@ -95,10 +95,10 @@ contract VerifyCreate3Deployment is Script {
                 "Token addresses don't match!"
             );
             
-            console.log("✅ Addresses match across chains");
-            console.log("✅ Deployment verified successfully!");
+            console.log("[OK] Addresses match across chains");
+            console.log("[OK] Deployment verified successfully!");
         } else {
-            console.log("❌ Deployment incomplete or invalid");
+            console.log("[ERROR] Deployment incomplete or invalid");
             if (!baseStatus.isValid) {
                 console.log("  - Base deployment issues");
             }
@@ -165,12 +165,12 @@ contract VerifyCreate3Deployment is Script {
         status.factoryAddress = expectedFactory;
         
         if (status.factoryDeployed) {
-            console.log("✅ Factory deployed at:", expectedFactory);
+            console.log("[OK] Factory deployed at:", expectedFactory);
             Create3Factory factory = Create3Factory(expectedFactory);
             status.factoryOwner = factory.owner();
             console.log("  Owner:", status.factoryOwner);
         } else {
-            console.log("❌ Factory not deployed");
+            console.log("[NOT DEPLOYED] Factory not deployed");
         }
         
         // Check token
@@ -183,7 +183,7 @@ contract VerifyCreate3Deployment is Script {
         status.tokenAddress = expectedBMN;
         
         if (status.tokenDeployed) {
-            console.log("✅ BMN token deployed at:", expectedBMN);
+            console.log("[OK] BMN token deployed at:", expectedBMN);
             BMNAccessTokenV2 token = BMNAccessTokenV2(expectedBMN);
             status.tokenOwner = token.owner();
             status.tokenSupply = token.totalSupply();
@@ -201,7 +201,7 @@ contract VerifyCreate3Deployment is Script {
             );
             require(token.decimals() == 18, "Invalid decimals");
         } else {
-            console.log("❌ BMN token not deployed");
+            console.log("[NOT DEPLOYED] BMN token not deployed");
         }
         
         // Overall status
@@ -212,12 +212,12 @@ contract VerifyCreate3Deployment is Script {
     
     function printStatus(DeploymentStatus memory status) internal pure {
         if (status.isValid) {
-            console.log("  ✅ Status: VALID");
+            console.log("  [OK] Status: VALID");
             console.log("  Factory:", status.factoryAddress);
             console.log("  Token:", status.tokenAddress);
             console.log("  Supply:", status.tokenSupply / 10**18, "BMN");
         } else {
-            console.log("  ❌ Status: INVALID");
+            console.log("  [ERROR] Status: INVALID");
             if (!status.factoryDeployed) {
                 console.log("  - Factory not deployed");
             }

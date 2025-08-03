@@ -15,7 +15,7 @@ contract DeployCreate3Factory is Script {
     bytes32 constant FACTORY_SALT = keccak256("BMN_CREATE3_FACTORY_V1");
     
     // Known CREATE2 factory on most chains
-    address constant CREATE2_FACTORY = 0x4e59b44847b379578588920cA78FbF26c0B4956C;
+    address constant CANONICAL_CANONICAL_CREATE2_FACTORY = 0x4e59b44847b379578588920cA78FbF26c0B4956C;
     
     function run() external {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
@@ -30,12 +30,12 @@ contract DeployCreate3Factory is Script {
         address expectedFactory = Create2.computeAddress(
             FACTORY_SALT,
             keccak256(initCode),
-            CREATE2_FACTORY
+            CANONICAL_CREATE2_FACTORY
         );
         
         console.log("=== CREATE3 FACTORY DEPLOYMENT ===");
         console.log("Deployer:", deployer);
-        console.log("CREATE2 Factory:", CREATE2_FACTORY);
+        console.log("CREATE2 Factory:", CANONICAL_CREATE2_FACTORY);
         console.log("Salt:", vm.toString(abi.encodePacked(FACTORY_SALT)));
         console.log("Expected Factory Address:", expectedFactory);
         console.log("");
@@ -99,7 +99,7 @@ contract DeployCreate3Factory is Script {
             console.log("Deploying CREATE3 Factory...");
             
             // Deploy using CREATE2 factory
-            (bool success,) = CREATE2_FACTORY.call(
+            (bool success,) = CANONICAL_CREATE2_FACTORY.call(
                 abi.encodePacked(FACTORY_SALT, initCode)
             );
             require(success, "CREATE2 deployment failed");
@@ -134,7 +134,7 @@ contract DeployCreate3Factory is Script {
             '{\n',
             '  "deploymentTime": "', timestamp, '",\n',
             '  "deployer": "', vm.toString(deployer), '",\n',
-            '  "create2Factory": "', vm.toString(CREATE2_FACTORY), '",\n',
+            '  "create2Factory": "', vm.toString(CANONICAL_CREATE2_FACTORY), '",\n',
             '  "salt": "', vm.toString(abi.encodePacked(FACTORY_SALT)), '",\n',
             '  "create3FactoryAddress": "', vm.toString(factoryAddress), '",\n',
             '  "chains": {\n',

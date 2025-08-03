@@ -32,7 +32,7 @@ contract VerifyBMNV3Create3 is Script {
         string version;
     }
     
-    function run() external view {
+    function run() external {
         address deployer = vm.addr(vm.envUint("DEPLOYER_PRIVATE_KEY"));
         
         console.log("=== BMN V3 CREATE3 Verification ===");
@@ -86,7 +86,7 @@ contract VerifyBMNV3Create3 is Script {
         console.log("All chains should have the same token address:", expectedAddress);
     }
     
-    function calculateExpectedAddress(address deployer) internal view returns (address) {
+    function calculateExpectedAddress(address deployer) internal returns (address) {
         // Check if we can access the factory
         try vm.createSelectFork("https://mainnet.base.org") {
             uint256 codeSize;
@@ -104,7 +104,7 @@ contract VerifyBMNV3Create3 is Script {
         return address(0);
     }
     
-    function verifyChain(ChainInfo memory chain, address expectedAddress) internal view {
+    function verifyChain(ChainInfo memory chain, address expectedAddress) internal {
         console.log(string(abi.encodePacked("--- ", chain.name, " ---")));
         
         // Try to connect to chain
@@ -116,7 +116,7 @@ contract VerifyBMNV3Create3 is Script {
             DeploymentInfo memory info = getDeploymentInfo(expectedAddress);
             
             if (info.isDeployed) {
-                console.log("✅ Token deployed at:", expectedAddress);
+                console.log("[OK] Token deployed at:", expectedAddress);
                 console.log("   Owner:", info.owner);
                 console.log("   Total Supply:", info.totalSupply / 10**18, "BMN");
                 console.log("   Version:", info.version);
@@ -133,7 +133,7 @@ contract VerifyBMNV3Create3 is Script {
                 );
                 require(token.decimals() == 18, "Invalid decimals");
             } else {
-                console.log("❌ Token not deployed yet");
+                console.log("[NOT DEPLOYED] Token not deployed yet");
             }
             
             // Check factory
@@ -149,9 +149,9 @@ contract VerifyBMNV3Create3 is Script {
             }
             
         } catch Error(string memory reason) {
-            console.log("❌ Failed to connect:", reason);
+            console.log("[ERROR] Failed to connect:", reason);
         } catch {
-            console.log("❌ Failed to connect to chain");
+            console.log("[ERROR] Failed to connect to chain");
         }
         
         console.log("");

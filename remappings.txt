@@ -1,8 +1,10 @@
-@openzeppelin/=lib/openzeppelin-contracts/
 @1inch/solidity-utils/=lib/solidity-utils/
-openzeppelin-contracts/=lib/openzeppelin-contracts/
-solidity-utils/=lib/solidity-utils/
+@openzeppelin/=lib/openzeppelin-contracts/
+forge-std/=lib/forge-std/src/
 limit-order-protocol/=lib/limit-order-protocol/
 limit-order-settlement/=lib/limit-order-settlement/
 murky/=lib/murky/
-forge-std/=lib/forge-std/src/
+openzeppelin-contracts/=lib/openzeppelin-contracts/
+solidity-utils/=lib/solidity-utils/
+solmate/=dependencies/solmate-6.8.0/src/
+zeframlou-create3-factory/=dependencies/zeframlou-create3-factory-567d6ec78cd0545f2fb18135dcb68298a5a1ef09/src/
