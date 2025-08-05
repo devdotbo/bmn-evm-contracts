@@ -37,17 +37,18 @@ interface IEscrowFactory {
 
     /**
      * @notice Emitted on EscrowSrc deployment to recreate EscrowSrc and EscrowDst immutables off-chain.
+     * @param escrow The address of the created source escrow.
      * @param srcImmutables The immutables of the escrow contract that are used in deployment on the source chain.
      * @param dstImmutablesComplement Additional immutables related to the escrow contract on the destination chain.
      */
-    event SrcEscrowCreated(IBaseEscrow.Immutables srcImmutables, DstImmutablesComplement dstImmutablesComplement);
+    event SrcEscrowCreated(address indexed escrow, IBaseEscrow.Immutables srcImmutables, DstImmutablesComplement dstImmutablesComplement);
     /**
      * @notice Emitted on EscrowDst deployment.
      * @param escrow The address of the created escrow.
      * @param hashlock The hash of the secret.
      * @param taker The address of the taker.
      */
-    event DstEscrowCreated(address escrow, bytes32 hashlock, Address taker);
+    event DstEscrowCreated(address indexed escrow, bytes32 indexed hashlock, Address taker);
 
     /* solhint-disable func-name-mixedcase */
     /// @notice Returns the address of implementation on the source chain.
