@@ -111,10 +111,10 @@ abstract contract BaseEscrowFactory is IEscrowFactory, BaseExtension, ResolverVa
             chainId: extraDataArgs.dstChainId
         });
 
-        emit SrcEscrowCreated(immutables, immutablesComplement);
-
         bytes32 salt = immutables.hashMem();
         address escrow = _deployEscrow(salt, 0, ESCROW_SRC_IMPLEMENTATION);
+
+        emit SrcEscrowCreated(escrow, immutables, immutablesComplement);
         if (escrow.balance < immutables.safetyDeposit || IERC20(order.makerAsset.get()).safeBalanceOf(escrow) < makingAmount) {
             revert InsufficientEscrowBalance();
         }
