@@ -13,7 +13,7 @@ import { IEscrowFactory } from "../contracts/interfaces/IEscrowFactory.sol";
 contract VerifyFactoryUpgrade is Script {
     // Chain configuration
     uint256 constant BASE_CHAIN_ID = 8453;
-    uint256 constant ETHERLINK_CHAIN_ID = 128123;
+    uint256 constant ETHERLINK_CHAIN_ID = 42793;
     
     function run() external view {
         // Get factory address from environment or use predicted address
