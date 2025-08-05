@@ -47,11 +47,8 @@ contract DeployFactoryUpgrade is Script {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
         
-        console.log("Deploying Factory Event Enhancement Upgrade");
-        console.log("==========================================");
-        console.log("Deployer:", deployer);
-        console.log("Chain ID:", block.chainid);
-        console.log("CREATE3 Factory:", CREATE3_FACTORY);
+        // Deploying Factory Event Enhancement Upgrade
+        // Deployer and chain info logged by forge
         
         // Validate chain
         require(
@@ -60,16 +57,14 @@ contract DeployFactoryUpgrade is Script {
         );
         
         string memory chainName = block.chainid == BASE_CHAIN_ID ? "Base" : "Etherlink";
-        console.log("Deploying to:", chainName);
         
         // Predict factory address
         upgradedFactory = ICREATE3(CREATE3_FACTORY).getDeployed(deployer, FACTORY_SALT);
-        console.log("\nPredicted upgraded factory address:", upgradedFactory);
+        // Predicted upgraded factory address calculated
         
         // Check if already deployed
         if (upgradedFactory.code.length > 0) {
-            console.log("[WARNING] Upgraded factory already deployed at:", upgradedFactory);
-            console.log("Skipping deployment...");
+            // Upgraded factory already deployed, skipping
             _verifyDeployment();
             return;
         }
@@ -77,10 +72,8 @@ contract DeployFactoryUpgrade is Script {
         vm.startBroadcast(deployerPrivateKey);
         
         // Deploy upgraded factory with enhanced events
-        console.log("\nDeploying upgraded CrossChainEscrowFactory...");
-        console.log("Using existing implementations:");
-        console.log("  SRC Implementation:", SRC_IMPLEMENTATION);
-        console.log("  DST Implementation:", DST_IMPLEMENTATION);
+        // Deploying upgraded CrossChainEscrowFactory
+        // Using existing implementations
         
         bytes memory factoryBytecode = abi.encodePacked(
             type(CrossChainEscrowFactory).creationCode,
@@ -97,8 +90,8 @@ contract DeployFactoryUpgrade is Script {
         address deployedFactory = ICREATE3(CREATE3_FACTORY).deploy(FACTORY_SALT, factoryBytecode);
         require(deployedFactory == upgradedFactory, "Factory address mismatch");
         
-        console.log("\n[OK] Upgraded CrossChainEscrowFactory deployed at:", deployedFactory);
-        console.log("Transaction hash:", vm.getRecordedLogs()[0].topics[0]);
+        // Upgraded CrossChainEscrowFactory deployed successfully
+        // Transaction hash logged by forge automatically
         
         vm.stopBroadcast();
         
@@ -108,20 +101,20 @@ contract DeployFactoryUpgrade is Script {
         // Save deployment info
         _saveDeploymentInfo(deployer);
         
-        console.log("\n=== Factory Upgrade Deployment Complete ===");
-        console.log("\nNext steps:");
-        console.log("1. Verify contract on block explorer");
-        console.log("2. Test event emission with sample transaction");
-        console.log("3. Update indexer to use new factory address");
-        console.log("4. Monitor event processing on", chainName);
+        // Factory Upgrade Deployment Complete
+        // Next steps:
+        // 1. Verify contract on block explorer
+        // 2. Test event emission with sample transaction  
+        // 3. Update indexer to use new factory address
+        // 4. Monitor event processing
     }
     
     function _verifyDeployment() private view {
-        console.log("\nVerifying deployment...");
+        // Verifying deployment...
         
         // Check factory code exists
         require(upgradedFactory.code.length > 0, "Factory not deployed");
-        console.log("[OK] Factory has code");
+        // Factory has code
         
         // Verify factory can access implementations
         CrossChainEscrowFactory factory = CrossChainEscrowFactory(upgradedFactory);
@@ -133,8 +126,8 @@ contract DeployFactoryUpgrade is Script {
         require(srcImpl == SRC_IMPLEMENTATION, "Invalid SRC implementation");
         require(dstImpl == DST_IMPLEMENTATION, "Invalid DST implementation");
         
-        console.log("[OK] Factory correctly references implementations");
-        console.log("[OK] Deployment verification passed");
+        // Factory correctly references implementations
+        // Deployment verification passed
     }
     
     function _saveDeploymentInfo(address deployer) private {
@@ -162,7 +155,7 @@ contract DeployFactoryUpgrade is Script {
         ));
         
         vm.writeFile(filename, deploymentInfo);
-        console.log("\nDeployment info saved to:", filename);
+        // Deployment info saved
         
         // Also update a latest symlink
         string memory latestFilename = string(abi.encodePacked(
@@ -172,6 +165,6 @@ contract DeployFactoryUpgrade is Script {
         ));
         
         vm.writeFile(latestFilename, deploymentInfo);
-        console.log("Latest deployment info saved to:", latestFilename);
+        // Latest deployment info saved
     }
 }

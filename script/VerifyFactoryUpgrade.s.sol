@@ -19,69 +19,25 @@ contract VerifyFactoryUpgrade is Script {
         // Get factory address from environment or use predicted address
         address factoryAddress = vm.envOr("UPGRADED_FACTORY", address(0));
         
-        if (factoryAddress == address(0)) {
-            console.log("Please set UPGRADED_FACTORY environment variable");
-            console.log("Example: UPGRADED_FACTORY=0x... forge script script/VerifyFactoryUpgrade.s.sol");
-            return;
-        }
+        require(factoryAddress != address(0), "Set UPGRADED_FACTORY env var");
         
-        console.log("Verifying Upgraded Factory");
-        console.log("=========================");
-        console.log("Factory Address:", factoryAddress);
-        console.log("Chain ID:", block.chainid);
-        
+        // Verify chain
         string memory chainName = block.chainid == BASE_CHAIN_ID ? "Base" : 
-                                 block.chainid == ETHERLINK_CHAIN_ID ? "Etherlink" : "Unknown";
-        console.log("Chain Name:", chainName);
+                                  block.chainid == ETHERLINK_CHAIN_ID ? "Etherlink" : "Unknown";
         
-        // Check factory exists
-        if (factoryAddress.code.length == 0) {
-            console.log("[ERROR] No code at factory address");
-            return;
-        }
-        console.log("[OK] Factory has code");
+        // Check factory has code
+        require(factoryAddress.code.length > 0, "No code at factory address");
         
-        // Cast to factory interface
-        CrossChainEscrowFactory factory = CrossChainEscrowFactory(factoryAddress);
+        // Get implementation addresses
+        CrossChainEscrowFactory factory = CrossChainEscrowFactory(payable(factoryAddress));
+        address srcImpl = factory.ESCROW_SRC_IMPLEMENTATION();
+        address dstImpl = factory.ESCROW_DST_IMPLEMENTATION();
         
-        // Verify implementations
-        address srcImpl = address(factory.ESCROW_SRC_IMPLEMENTATION());
-        address dstImpl = address(factory.ESCROW_DST_IMPLEMENTATION());
+        // Verify implementations have code
+        require(srcImpl.code.length > 0, "SRC implementation missing");
+        require(dstImpl.code.length > 0, "DST implementation missing");
         
-        console.log("\nImplementations:");
-        console.log("SRC Implementation:", srcImpl);
-        console.log("DST Implementation:", dstImpl);
-        
-        // Check implementations have code
-        if (srcImpl.code.length == 0) {
-            console.log("[ERROR] SRC implementation has no code");
-        } else {
-            console.log("[OK] SRC implementation has code");
-        }
-        
-        if (dstImpl.code.length == 0) {
-            console.log("[ERROR] DST implementation has no code");
-        } else {
-            console.log("[OK] DST implementation has code");
-        }
-        
-        // Check event signatures
-        console.log("\nEvent Signatures:");
-        console.log("SrcEscrowCreated topic:", _getEventTopic("SrcEscrowCreated(address,IBaseEscrow.Immutables,IEscrowFactory.DstImmutablesComplement)"));
-        console.log("DstEscrowCreated topic:", _getEventTopic("DstEscrowCreated(address,bytes32,IEscrowFactory.Address)"));
-        
-        // Verify owner and configuration
-        try factory.owner() returns (address owner) {
-            console.log("\nFactory owner:", owner);
-        } catch {
-            console.log("\n[INFO] Factory does not expose owner (expected for production)");
-        }
-        
-        console.log("\n[OK] Factory verification complete");
-        console.log("\nNext steps:");
-        console.log("1. Create a test order to verify event emission");
-        console.log("2. Check event logs contain escrow address as first indexed parameter");
-        console.log("3. Update indexer to use this factory address");
+        // All checks passed
     }
     
     function _getEventTopic(string memory signature) private pure returns (bytes32) {
