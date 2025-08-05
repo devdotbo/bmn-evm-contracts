@@ -77,6 +77,7 @@ This is a cross-chain atomic swap protocol implementing Hash Timelock Contracts 
 - Deploys escrows with deterministic addresses using CREATE2
 - Inherits from BaseEscrowFactory and resolver validation extensions
 - Manages both source and destination implementations
+- v1.1.0: Enhanced events to emit escrow addresses for better tracking
 
 **EscrowSrc** (`contracts/EscrowSrc.sol`)
 - Locks maker's tokens on source chain
@@ -120,6 +121,7 @@ Timelocks are packed into a single uint256 with stages:
 1. Factory stores implementation addresses
 2. Uses minimal proxy pattern for gas efficiency
 3. CREATE3 ensures deterministic addresses across chains (bytecode-independent)
+4. Factory events emit escrow addresses (v1.1.0+) for easier tracking by resolvers
 
 ### Secret Management
 - Hashlock set at order creation
@@ -147,13 +149,23 @@ Timelocks are packed into a single uint256 with stages:
 
 ### Production Deployments
 
-**Main Protocol Contracts**:
+**Current Deployments (v1.1.0)**:
 - EscrowSrc: `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535`
 - EscrowDst: `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b`
-- CrossChainEscrowFactory: `0x75ee15F6BfDd06Aee499ed95e8D92a114659f4d1`
+- CrossChainEscrowFactory: `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1` (Enhanced with escrow address events)
 
 **Resolver Infrastructure**:
 - Resolver Factory: `0xe767202fD26104267CFD8bD8cfBd1A44450DC343`
+
+### Deployment History
+
+**v1.1.0 (Current)**:
+- CrossChainEscrowFactory: `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1`
+- Enhancement: Factory events now emit escrow addresses for improved tracking
+
+**v1.0.0 (Previous)**:
+- CrossChainEscrowFactory: `0x75ee15F6BfDd06Aee499ed95e8D92a114659f4d1`
+- Initial deployment without escrow address in events
 
 ### Deployment Commands
 ```bash
@@ -186,6 +198,8 @@ When contracts are updated:
 1. Run `forge build` to generate new ABIs
 2. Copy required ABIs to resolver: `cp out/<Contract>.sol/<Contract>.json ../bmn-evm-resolver/abis/`
 3. Key ABIs needed: EscrowFactory, EscrowSrc, EscrowDst, TokenMock, LimitOrderProtocol, IERC20
+4. Ensure resolver is configured to use the new factory address (v1.1.0): `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1`
+5. The enhanced factory events include escrow addresses, simplifying resolver implementation
 
 ### TestEscrowFactory for Development
 For local testing, we deploy `TestEscrowFactory` instead of the regular `EscrowFactory`:
