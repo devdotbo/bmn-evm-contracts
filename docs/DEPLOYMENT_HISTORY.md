@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document tracks all production deployments of the Bridge Me Not protocol across Base and Etherlink chains.
+This document tracks all production deployments of the Bridge Me Not protocol across Base, Etherlink, and Optimism chains.
 
 ## Current Production Deployment (v1.1.0)
 
@@ -12,21 +12,23 @@ This document tracks all production deployments of the Bridge Me Not protocol ac
 
 | Contract | Address | Chains | Notes |
 |----------|---------|--------|-------|
-| EscrowSrc | `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535` | Base, Etherlink | Implementation for source escrows |
-| EscrowDst | `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b` | Base, Etherlink | Implementation for destination escrows |
+| BMN Token | `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` | Base, Etherlink, Optimism | Fee and access token |
+| EscrowSrc | `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535` | Base, Etherlink, Optimism | Implementation for source escrows |
+| EscrowDst | `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b` | Base, Etherlink, Optimism | Implementation for destination escrows |
 | CrossChainEscrowFactory | `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1` | Base, Etherlink | **v1.1.0** - Enhanced with escrow address events |
+| CrossChainEscrowFactory | `0xB916C3edbFe574fFCBa688A6B92F72106479bD6c` | Optimism | **v1.1.0** - Enhanced with escrow address events |
 
 ### Resolver Infrastructure
 
 | Contract | Address | Chains | Notes |
 |----------|---------|--------|-------|
-| Resolver Factory | `0xe767202fD26104267CFD8bD8cfBd1A44450DC343` | Base, Etherlink | Factory for resolver contracts |
+| Resolver Factory | `0xe767202fD26104267CFD8bD8cfBd1A44450DC343` | Base, Etherlink, Optimism | Factory for resolver contracts |
 
 ### Infrastructure
 
 | Contract | Address | Chains | Notes |
 |----------|---------|--------|-------|
-| CREATE3 Factory | `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` | Base, Etherlink | Used for deterministic deployments |
+| CREATE3 Factory | `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` | Base, Etherlink, Optimism | Used for deterministic deployments |
 
 ## Previous Deployment (v1.0.0)
 
@@ -61,6 +63,7 @@ This document tracks all production deployments of the Bridge Me Not protocol ac
 **Deployment Details**:
 - Base: Block 33806117, TX: `0x1bde783e6c3e4f8ecf24aa0736d1e093ae9f69e66961c0435b230b270de4a2d4`
 - Etherlink: Block 22641583, TX: `0x418f22a01a7724a1edec9ca7e278b299a29c8c5375abba126b689cee04463772`
+- Optimism: Factory v1.1.0 at `0xB916C3edbFe574fFCBa688A6B92F72106479bD6c` (Note: Different salt used)
 
 ### v1.0.0 (Initial)
 
@@ -105,6 +108,10 @@ All contracts are verified on:
 ### Etherlink (Chain ID: 42793)
 - RPC: Configured in `.env` as `ETHERLINK_RPC_URL`
 - Explorer: https://explorer.etherlink.com
+
+### Optimism (Chain ID: 10)
+- RPC: Configured in `.env` as `OPTIMISM_RPC_URL`
+- Explorer: https://optimistic.etherscan.io
 
 ## Future Deployments
 

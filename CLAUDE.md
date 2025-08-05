@@ -145,14 +145,16 @@ Timelocks are packed into a single uint256 with stages:
 
 ## CREATE3 Deployment
 
-**CREATE3 Factory**: `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` (shared across Base and Etherlink)
+**CREATE3 Factory**: `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` (shared across Base, Etherlink, and Optimism)
 
 ### Production Deployments
 
 **Current Deployments (v1.1.0)**:
-- EscrowSrc: `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535`
-- EscrowDst: `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b`
-- CrossChainEscrowFactory: `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1` (Enhanced with escrow address events)
+- BMN Token: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` (All chains)
+- EscrowSrc: `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535` (All chains)
+- EscrowDst: `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b` (All chains)
+- CrossChainEscrowFactory: `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1` (Base & Etherlink)
+- CrossChainEscrowFactory: `0xB916C3edbFe574fFCBa688A6B92F72106479bD6c` (Optimism)
 
 **Resolver Infrastructure**:
 - Resolver Factory: `0xe767202fD26104267CFD8bD8cfBd1A44450DC343`
