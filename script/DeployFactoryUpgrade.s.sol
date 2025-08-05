@@ -37,7 +37,7 @@ contract DeployFactoryUpgrade is Script {
     
     // Chain configuration
     uint256 constant BASE_CHAIN_ID = 8453;
-    uint256 constant ETHERLINK_CHAIN_ID = 128123;
+    uint256 constant ETHERLINK_CHAIN_ID = 42793;
     
     // Deployment result
     address public upgradedFactory;
