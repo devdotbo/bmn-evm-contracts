@@ -180,7 +180,7 @@ abstract contract BMNBaseExtension is Pausable, ReentrancyGuard, Ownable {
         reveal.revealed = true;
         
         // Track gas optimization
-        uint256 gasUsed = 200000 - gasleft(); // Approximate gas used
+        uint256 gasUsed = gasleft() > 200000 ? 0 : 200000 - gasleft(); // Approximate gas used
         _trackGasOptimization(bytes4(interaction), gasUsed, orderMaker);
         
         emit ExtensionMetric("post_interaction_gas", gasUsed, commitHash);
