@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 import "../contracts/CrossChainEscrowFactory.sol";
 import "../contracts/EscrowSrc.sol";
 import "../contracts/EscrowDst.sol";
-import "../contracts/test/TokenMock.sol";
+import "solidity-utils/contracts/mocks/TokenMock.sol";
 import "../contracts/libraries/TimelocksLib.sol";
 import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
 import { IOrderMixin } from "limit-order-protocol/contracts/interfaces/IOrderMixin.sol";
@@ -59,16 +59,15 @@ contract MockSimpleLimitOrderProtocol is ISimpleLimitOrderProtocol {
                 block.chainid == 31337 ? 1 : 31337,  // destination chain ID
                 order.takerAsset.get(),       // destination token
                 order.maker.get(),             // destination receiver
-                TimelocksLib.Timelocks({
-                    srcWithdrawal: 3600,       // 1 hour
-                    srcPublicWithdrawal: 7200, // 2 hours
-                    srcCancellation: 10800,    // 3 hours
-                    srcPublicCancellation: 14400, // 4 hours
-                    dstWithdrawal: 1800,       // 30 minutes
-                    dstPublicWithdrawal: 3600, // 1 hour
-                    dstCancellation: 7200,     // 2 hours
-                    dstPublicCancellation: 10800 // 3 hours
-                }),
+                Timelocks.wrap(
+                    (uint256(3600) << 192) |    // srcWithdrawal
+                    (uint256(7200) << 160) |    // srcPublicWithdrawal
+                    (uint256(10800) << 128) |   // srcCancellation
+                    (uint256(14400) << 96) |    // srcPublicCancellation
+                    (uint256(1800) << 64) |     // dstWithdrawal
+                    (uint256(3600) << 32) |     // dstPublicWithdrawal
+                    uint256(5400)                // dstCancellation
+                ),
                 keccak256("test_secret")       // hashlock
             );
             
@@ -91,7 +90,7 @@ contract MockSimpleLimitOrderProtocol is ISimpleLimitOrderProtocol {
 
 contract SimpleLimitOrderIntegrationTest is Test {
     using AddressLib for Address;
-    using TimelocksLib for TimelocksLib.Timelocks;
+    using TimelocksLib for Timelocks;
     
     CrossChainEscrowFactory factory;
     MockSimpleLimitOrderProtocol limitOrderProtocol;
@@ -103,7 +102,7 @@ contract SimpleLimitOrderIntegrationTest is Test {
     
     address alice = address(0xA11CE);
     address bob = address(0xB0B);
-    address resolver = address(0xRE501);
+    address resolver = address(0x3E501);
     
     bytes32 constant SECRET = "test_secret_123";
     bytes32 constant HASHLOCK = keccak256(abi.encode(SECRET));
@@ -115,8 +114,9 @@ contract SimpleLimitOrderIntegrationTest is Test {
         bmnToken = new TokenMock("BMN", "BMN");
         
         // Deploy escrow implementations
-        escrowSrcImpl = new EscrowSrc();
-        escrowDstImpl = new EscrowDst();
+        uint32 rescueDelay = 7 days;
+        escrowSrcImpl = new EscrowSrc(rescueDelay, IERC20(address(bmnToken)));
+        escrowDstImpl = new EscrowDst(rescueDelay, IERC20(address(bmnToken)));
         
         // Deploy factory first (without limit order protocol)
         factory = new CrossChainEscrowFactory(
@@ -187,17 +187,18 @@ contract SimpleLimitOrderIntegrationTest is Test {
     }
     
     function testCrossChainEscrowFlow() public {
-        // Setup timelocks
-        TimelocksLib.Timelocks memory timelocks = TimelocksLib.Timelocks({
-            srcWithdrawal: 3600,
-            srcPublicWithdrawal: 7200,
-            srcCancellation: 10800,
-            srcPublicCancellation: 14400,
-            dstWithdrawal: 1800,
-            dstPublicWithdrawal: 3600,
-            dstCancellation: 7200,
-            dstPublicCancellation: 10800
-        });
+        // Setup timelocks - packed as uint256 with bit shifts
+        // Format: srcWithdrawal(192), srcPublicWithdrawal(160), srcCancellation(128), srcPublicCancellation(96),
+        //         dstWithdrawal(64), dstPublicWithdrawal(32), dstCancellation(0)
+        Timelocks timelocks = Timelocks.wrap(
+            (uint256(3600) << 192) |    // srcWithdrawal
+            (uint256(7200) << 160) |    // srcPublicWithdrawal
+            (uint256(10800) << 128) |   // srcCancellation
+            (uint256(14400) << 96) |    // srcPublicCancellation
+            (uint256(1800) << 64) |     // dstWithdrawal
+            (uint256(3600) << 32) |     // dstPublicWithdrawal
+            uint256(5400)                // dstCancellation
+        );
         
         // Create order with cross-chain parameters
         IOrderMixin.Order memory order = IOrderMixin.Order({

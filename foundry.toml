@@ -1,19 +1,44 @@
 [profile.default]
 src = 'contracts'
 out = 'out'
-libs = ['lib', "dependencies"]
+libs = ['dependencies']
 test = 'test'
 optimizer_runs = 1000000
-via-ir = true
+via_ir = true
 evm_version = 'cancun'
 solc_version = '0.8.23'
 fs_permissions = [{ access = "read-write", path = "./deployments" }]
+allow_paths = ["../bmn-evm-contracts-limit-order"]
+remappings = [
+    "forge-std/=dependencies/forge-std-1.10.0/src/",
+    "openzeppelin-contracts/contracts/=dependencies/@openzeppelin-contracts-5.1.0/",
+    "@openzeppelin/contracts/=dependencies/@openzeppelin-contracts-5.1.0/",
+    "limit-order-protocol/=dependencies/limit-order-protocol/",
+    "limit-order-settlement/=dependencies/limit-order-settlement/",
+    "solidity-utils/=dependencies/solidity-utils/",
+    "@1inch/solidity-utils/=dependencies/solidity-utils/",
+    "murky/=dependencies/murky/src/",
+    "create3-factory/=dependencies/zeframlou-create3-factory-567d6ec78cd0545f2fb18135dcb68298a5a1ef09/src/",
+    "SimpleLimitOrderProtocol/=../bmn-evm-contracts-limit-order/contracts/"
+]
 
 [fmt]
 line_length = 140
 bracket_spacing = true
 
+[soldeer]
+remappings_generate = false
+remappings_regenerate = false
+remappings_version = true
+remappings_prefix = ""
+remappings_location = "config"
+recursive_deps = false
+
 [dependencies]
 zeframlou-create3-factory = "567d6ec78cd0545f2fb18135dcb68298a5a1ef09"
 forge-std = "1.10.0"
 "@openzeppelin-contracts" = "5.1.0"
+limit-order-protocol = "4.0.1"
+limit-order-settlement = "1.0.0"
+solidity-utils = "1.33.0"
+murky = "1.1.10"

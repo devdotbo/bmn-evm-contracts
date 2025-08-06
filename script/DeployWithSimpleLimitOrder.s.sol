@@ -5,7 +5,7 @@ import "forge-std/Script.sol";
 import "../contracts/CrossChainEscrowFactory.sol";
 import "../contracts/EscrowSrc.sol";
 import "../contracts/EscrowDst.sol";
-import "../contracts/test/TokenMock.sol";
+import "solidity-utils/contracts/mocks/TokenMock.sol";
 
 interface ICREATE3Factory {
     function deploy(bytes32 salt, bytes memory creationCode) external payable returns (address deployed);
@@ -66,9 +66,10 @@ contract DeployWithSimpleLimitOrder is Script {
         console.log("\nDeploying EscrowSrc implementation...");
         console.log("Predicted address:", escrowSrcPredicted);
         
+        uint32 rescueDelay = 7 days;
         address escrowSrc = CREATE3_FACTORY.deploy(
             SALT_ESCROW_SRC,
-            type(EscrowSrc).creationCode
+            abi.encodePacked(type(EscrowSrc).creationCode, abi.encode(rescueDelay, IERC20(BMN_TOKEN)))
         );
         console.log("EscrowSrc deployed at:", escrowSrc);
         
@@ -79,7 +80,7 @@ contract DeployWithSimpleLimitOrder is Script {
         
         address escrowDst = CREATE3_FACTORY.deploy(
             SALT_ESCROW_DST,
-            type(EscrowDst).creationCode
+            abi.encodePacked(type(EscrowDst).creationCode, abi.encode(rescueDelay, IERC20(BMN_TOKEN)))
         );
         console.log("EscrowDst deployed at:", escrowDst);
         

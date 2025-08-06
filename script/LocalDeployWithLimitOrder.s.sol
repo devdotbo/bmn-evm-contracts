@@ -5,7 +5,7 @@ import "forge-std/Script.sol";
 import "../contracts/CrossChainEscrowFactory.sol";
 import "../contracts/EscrowSrc.sol";
 import "../contracts/EscrowDst.sol";
-import "../contracts/test/TokenMock.sol";
+import "solidity-utils/contracts/mocks/TokenMock.sol";
 
 // Import SimpleLimitOrderProtocol interface
 interface ISimpleLimitOrderProtocol {
@@ -52,9 +52,10 @@ contract LocalDeployWithLimitOrder is Script {
         // Note: This is a simplified version for testing
         // In production, use the actual SimpleLimitOrderProtocol from bmn-evm-contracts-limit-order
         bytes memory limitOrderBytecode = vm.getCode("/Users/bioharz/git/2025_2/unite/bridge-me-not/bmn-evm-contracts-limit-order/out/SimpleLimitOrderProtocol.sol/SimpleLimitOrderProtocol.json");
+        bytes32 limitOrderSalt = keccak256("LOCAL_LIMIT_ORDER_PROTOCOL");
         address limitOrderProtocol;
         assembly {
-            limitOrderProtocol := create2(0, add(limitOrderBytecode, 0x20), mload(limitOrderBytecode), salt)
+            limitOrderProtocol := create2(0, add(limitOrderBytecode, 0x20), mload(limitOrderBytecode), limitOrderSalt)
         }
         
         console.log("SimpleLimitOrderProtocol deployed at:", limitOrderProtocol);
@@ -70,8 +71,9 @@ contract LocalDeployWithLimitOrder is Script {
         console.log("BMN Token deployed at:", address(bmnToken));
         
         // Deploy escrow implementations
-        EscrowSrc escrowSrc = new EscrowSrc();
-        EscrowDst escrowDst = new EscrowDst();
+        uint32 rescueDelay = 7 days;
+        EscrowSrc escrowSrc = new EscrowSrc(rescueDelay, IERC20(address(bmnToken)));
+        EscrowDst escrowDst = new EscrowDst(rescueDelay, IERC20(address(bmnToken)));
         console.log("EscrowSrc implementation:", address(escrowSrc));
         console.log("EscrowDst implementation:", address(escrowDst));
         

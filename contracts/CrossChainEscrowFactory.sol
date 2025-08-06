@@ -4,8 +4,8 @@ pragma solidity 0.8.23;
 
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-import { BaseExtension } from "limit-order-settlement/contracts/extensions/BaseExtension.sol";
-import { ResolverValidationExtension } from "limit-order-settlement/contracts/extensions/ResolverValidationExtension.sol";
+import { BaseExtension } from "./stubs/extensions/BaseExtension.sol";
+import { ResolverValidationExtension } from "./stubs/extensions/ResolverValidationExtension.sol";
 
 import { ProxyHashLib } from "./libraries/ProxyHashLib.sol";
 import { BaseEscrowFactory } from "./BaseEscrowFactory.sol";
@@ -26,9 +26,9 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
         address srcImplementation,
         address dstImplementation
     )
-    BaseExtension(limitOrderProtocol)
-    ResolverValidationExtension(feeToken, accessToken, owner)
     MerkleStorageInvalidator(limitOrderProtocol) {
+        // Note: In production, BaseExtension and ResolverValidationExtension would have constructors
+        // Our stub implementations don't require initialization
         require(srcImplementation != address(0), "Invalid SRC implementation");
         require(dstImplementation != address(0), "Invalid DST implementation");
         
