@@ -327,10 +327,16 @@ Timelocks are packed into a single uint256 with stages:
 
 ### Production Deployments
 
-**Current Deployments (v1.1.0)**:
+**Current Deployments (v2.1.0 - ACTIVE)**:
+**Deployment Date**: August 6, 2025
+**Security Features**: Resolver whitelist, Emergency pause mechanism
+
+- CrossChainEscrowFactory v2.1.0: `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` (Base & Optimism)
 - BMN Token: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` (All chains)
 - EscrowSrc: `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535` (All chains)
 - EscrowDst: `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b` (All chains)
+
+**Previous Deployments (v1.1.0 - DEPRECATED)**:
 - CrossChainEscrowFactory: `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1` (Base & Etherlink)
 - CrossChainEscrowFactory: `0xB916C3edbFe574fFCBa688A6B92F72106479bD6c` (Optimism)
 
