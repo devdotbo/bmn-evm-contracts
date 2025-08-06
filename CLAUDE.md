@@ -345,11 +345,17 @@ Timelocks are packed into a single uint256 with stages:
 
 ### Deployment History
 
-**v1.1.0 (Current)**:
-- CrossChainEscrowFactory: `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1`
-- Enhancement: Factory events now emit escrow addresses for improved tracking
+**v2.1.0 (Current - ACTIVE)**:
+- CrossChainEscrowFactory: `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` (Base & Optimism)
+- Security Features: Resolver whitelist, Emergency pause mechanism
+- Deployed: August 6, 2025
 
-**v1.0.0 (Previous)**:
+**v1.1.0 (DEPRECATED)**:
+- CrossChainEscrowFactory: `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1` (Base & Etherlink)
+- CrossChainEscrowFactory: `0xB916C3edbFe574fFCBa688A6B92F72106479bD6c` (Optimism)
+- Enhancement: Factory events emit escrow addresses
+
+**v1.0.0 (DEPRECATED)**:
 - CrossChainEscrowFactory: `0x75ee15F6BfDd06Aee499ed95e8D92a114659f4d1`
 - Initial deployment without escrow address in events
 
@@ -383,9 +389,10 @@ Key components:
 When contracts are updated:
 1. Run `forge build` to generate new ABIs
 2. Copy required ABIs to resolver: `cp out/<Contract>.sol/<Contract>.json ../bmn-evm-resolver/abis/`
-3. Key ABIs needed: EscrowFactory, EscrowSrc, EscrowDst, TokenMock, LimitOrderProtocol, IERC20
-4. Ensure resolver is configured to use the new factory address (v1.1.0): `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1`
+3. Key ABIs needed: CrossChainEscrowFactory, EscrowSrc, EscrowDst, TokenMock, LimitOrderProtocol, IERC20
+4. Ensure resolver is configured to use the new factory address (v2.1.0): `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A`
 5. The enhanced factory events include escrow addresses, simplifying resolver implementation
+6. **IMPORTANT**: v2.1.0 requires resolver whitelisting - contact factory owner for whitelist access
 
 ### TestEscrowFactory for Development
 For local testing, we deploy `TestEscrowFactory` instead of the regular `EscrowFactory`:

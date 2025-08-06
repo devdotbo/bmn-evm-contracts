@@ -44,29 +44,46 @@ node scripts/resolver.js
 forge test
 ```
 
+## Security Features (v2.1.0)
+
+The latest factory deployment includes critical security enhancements:
+
+- **Resolver Whitelist**: Only approved addresses can create destination escrows
+- **Emergency Pause**: Protocol can be immediately halted if issues are detected
+- **Enhanced Access Control**: Improved owner-only functions for protocol management
+
 ## Documentation
 
-### Key Documents
+### Essential Guides
 
-- **[Deployment History](docs/DEPLOYMENT_HISTORY.md)** - Comprehensive record of all deployments across chains
-- **[CREATE3 Deployment Summary](docs/CREATE3-DEPLOYMENT-SUMMARY.md)** - Details about CREATE3 factory usage and deployed addresses
-- **[Factory Event Enhancement](docs/FACTORY_EVENT_ENHANCEMENT.md)** - Technical proposal for factory improvements
-- **[Implementation Summary](docs/FACTORY_EVENT_ENHANCEMENT_IMPLEMENTATION.md)** - Implementation details for factory v1.1.0
-- **[Resolver Update Guide](docs/RESOLVER_UPDATE_GUIDE.md)** - Guide for updating resolver infrastructure
+- **[Testing Guide](TESTING.md)** - Comprehensive testing documentation
+- **[Deployment Runbook](DEPLOYMENT_RUNBOOK.md)** - Step-by-step deployment procedures
+- **[Resolver Migration Guide](RESOLVER_MIGRATION_GUIDE.md)** - Migration from v1.1.0 to v2.1.0
 
-### Deployment Addresses
+### Technical Documentation
 
-All contracts are deployed using CREATE3 for deterministic addresses across chains:
+- **[Deployment History](docs/DEPLOYMENT_HISTORY.md)** - Comprehensive record of all deployments
+- **[CREATE3 Deployment](docs/CREATE3-DEPLOYMENT-SUMMARY.md)** - CREATE3 factory usage details
+- **[Factory Enhancement](docs/FACTORY_EVENT_ENHANCEMENT.md)** - Technical improvements
+- **[Resolver Update Guide](docs/RESOLVER_UPDATE_GUIDE.md)** - Resolver infrastructure updates
 
-- **CREATE3 Factory**: `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` (Base, Etherlink & Optimism)
-- **BMN Token**: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1`
-- **EscrowSrc**: `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535`
-- **EscrowDst**: `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b`
-- **CrossChainEscrowFactory v1.1.0**: `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1` (Base & Etherlink)
-- **CrossChainEscrowFactory v1.1.0**: `0xB916C3edbFe574fFCBa688A6B92F72106479bD6c` (Optimism)
-- **Resolver Factory**: `0xe767202fD26104267CFD8bD8cfBd1A44450DC343`
+### Current Deployment (v2.1.0)
 
-See [Deployment History](docs/DEPLOYMENT_HISTORY.md) for full details.
+**Deployed**: August 6, 2025  
+**Status**: ACTIVE on Base and Optimism
+
+| Contract | Address | Networks |
+|----------|---------|----------|
+| CREATE3 Factory | `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` | All |
+| **CrossChainEscrowFactory v2.1.0** | `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` | Base, Optimism |
+| BMN Token | `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` | All |
+| EscrowSrc | `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535` | All |
+| EscrowDst | `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b` | All |
+| Resolver Factory | `0xe767202fD26104267CFD8bD8cfBd1A44450DC343` | All |
+
+⚠️ **Previous v1.1.0 factories are DEPRECATED** - All resolvers should migrate to v2.1.0
+
+See [Current Deployment Status](deployments/current/MAINNET-STATUS.md) for live status.
 
 ## License
 
