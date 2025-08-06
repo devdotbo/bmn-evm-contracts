@@ -2,6 +2,22 @@
 
 Cross-chain atomic swap protocol using hash timelock contracts (HTLC).
 
+## Important Note
+
+**TypeScript Resolver Required**: This repository contains the smart contracts (on-chain infrastructure) for the BMN protocol. To execute actual atomic swaps, you MUST use the TypeScript resolver implementation located at `../bmn-evm-resolver`. The contracts alone cannot perform cross-chain coordination - they provide the escrow and locking mechanisms that the resolver orchestrates.
+
+## Architecture Overview
+
+The BMN protocol consists of two essential components:
+1. **Smart Contracts** (this repository): Provide on-chain escrow, timelocks, and atomic swap infrastructure
+2. **TypeScript Resolver** (`../bmn-evm-resolver`): Monitors chains, coordinates swaps, reveals secrets
+
+Without the TypeScript resolver, the contracts can only create escrows on individual chains. The resolver is what enables true cross-chain atomic swaps by:
+- Monitoring order creation events
+- Deploying corresponding escrows on destination chains
+- Managing secret revelation timing
+- Ensuring atomicity across chains
+
 ## Setup
 
 ```bash
