@@ -85,14 +85,14 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
         _;
     }
     
-    /// @notice Modifier to check if caller is owner
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not owner");
+    /// @notice Modifier to check if caller is factory owner (renamed to avoid conflict)
+    modifier onlyFactoryOwner() {
+        require(msg.sender == owner, "Not factory owner");
         _;
     }
     
-    /// @notice Modifier to check if address is whitelisted resolver
-    modifier onlyWhitelistedResolver(address resolver) {
+    /// @notice Modifier to check if address is whitelisted resolver (renamed to avoid conflict)
+    modifier onlyWhitelistedResolverAddress(address resolver) {
         require(whitelistedResolvers[resolver], "Not whitelisted resolver");
         _;
     }
@@ -212,10 +212,10 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
     }
     
     /**
-     * @notice Add a resolver to whitelist
+     * @notice Add a resolver to whitelist (renamed to avoid conflict)
      * @param resolver Address to whitelist
      */
-    function addResolver(address resolver) external onlyOwner {
+    function addResolverToWhitelist(address resolver) external onlyFactoryOwner {
         require(resolver != address(0), "Invalid resolver");
         require(!whitelistedResolvers[resolver], "Already whitelisted");
         
@@ -225,10 +225,10 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
     }
     
     /**
-     * @notice Remove a resolver from whitelist
+     * @notice Remove a resolver from whitelist (renamed to avoid conflict)
      * @param resolver Address to remove
      */
-    function removeResolver(address resolver) external onlyOwner {
+    function removeResolverFromWhitelist(address resolver) external onlyFactoryOwner {
         require(whitelistedResolvers[resolver], "Not whitelisted");
         
         whitelistedResolvers[resolver] = false;
@@ -239,7 +239,7 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
     /**
      * @notice Pause the protocol (emergency only)
      */
-    function pause() external onlyOwner {
+    function pause() external onlyFactoryOwner {
         emergencyPaused = true;
         emit EmergencyPause(true);
     }
@@ -247,16 +247,16 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
     /**
      * @notice Unpause the protocol
      */
-    function unpause() external onlyOwner {
+    function unpause() external onlyFactoryOwner {
         emergencyPaused = false;
         emit EmergencyPause(false);
     }
     
     /**
-     * @notice Transfer ownership
+     * @notice Transfer factory ownership
      * @param newOwner New owner address
      */
-    function transferOwnership(address newOwner) external onlyOwner {
+    function transferFactoryOwnership(address newOwner) external onlyFactoryOwner {
         require(newOwner != address(0), "Invalid owner");
         
         address previousOwner = owner;
