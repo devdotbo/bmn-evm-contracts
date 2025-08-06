@@ -295,13 +295,21 @@ contract BMNExtensionsTest is Test {
     // Pause/Unpause Tests
     
     function testEmergencyPause() public {
-        vm.prank(owner);
-        baseExt.emergencyPause();
+        // First, mint tokens to alice for testing
+        bmnToken.mint(alice, MIN_STAKE);
         
-        // Should not allow operations when paused
-        vm.expectRevert("Pausable: paused");
+        // Pause the resolver extension contract
+        vm.prank(owner);
+        resolverExt.emergencyPause();
+        
+        // Should not allow registerResolver when paused
         vm.prank(alice);
         bmnToken.approve(address(resolverExt), MIN_STAKE);
+        
+        // OpenZeppelin 5.x uses custom errors instead of string reverts
+        vm.expectRevert(abi.encodeWithSignature("EnforcedPause()"));
+        vm.prank(alice);
+        resolverExt.registerResolver(MIN_STAKE);
     }
     
     // Fuzz Tests
