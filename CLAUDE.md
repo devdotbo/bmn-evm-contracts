@@ -2,15 +2,146 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## ⚠️ SECURITY WARNING
+## 🚨 CRITICAL SECURITY RULES - READ FIRST!
 
-**NEVER commit sensitive data to the repository!**
+### ❌ NEVER COMMIT THESE (Even in Documentation!)
 
-- Private keys, API keys, passwords, and secrets must ALWAYS be stored in `.env` files
-- Use `.env.example` files with placeholder values to document required environment variables
-- Ensure `.env` is in `.gitignore` (already configured)
-- All scripts should read sensitive data from environment variables, not hardcoded values
-- Even test/development keys should follow this practice to maintain good security habits
+**API Keys & RPC Endpoints:**
+- NEVER write actual API keys in ANY file (not even .md files!)
+- NEVER include API keys in RPC URLs:
+  - ❌ WRONG: `https://rpc.ankr.com/optimism/abc123def456ghi789jkl012mno345pqr678stu901vwx234yz`
+  - ✅ RIGHT: `https://rpc.ankr.com/optimism/YOUR_API_KEY_HERE`
+  - ✅ RIGHT: `https://rpc.ankr.com/optimism/$ANKR_API_KEY` (env variable)
+
+**Private Keys & Secrets:**
+- NEVER commit private keys (even test ones, except Anvil defaults)
+- NEVER commit mnemonic phrases
+- NEVER commit passwords or JWT tokens
+- NEVER commit service account credentials
+
+**Common Exposure Patterns to Avoid:**
+```bash
+# ❌ NEVER DO THIS in deployment docs:
+OPTIMISM_RPC="https://lb.drpc.org/base/Xyz123Abc456Def789Ghi012Jkl"
+
+# ✅ ALWAYS DO THIS:
+OPTIMISM_RPC="https://lb.drpc.org/base/YOUR_DRPC_KEY_HERE"
+OPTIMISM_RPC="https://lb.drpc.org/base/$DRPC_API_KEY"
+```
+
+### 🛡️ SAFE DOCUMENTATION PRACTICES
+
+When documenting deployments or configurations:
+1. **ALWAYS use placeholders** for sensitive values
+2. **NEVER copy actual .env values** into documentation
+3. **CHECK TWICE** before committing any .md file with URLs
+
+Safe patterns for documentation:
+```markdown
+## Configuration
+- RPC URL: `https://provider.com/network/YOUR_API_KEY`
+- API Key: `YOUR_API_KEY_HERE`
+- Private Key: `0xYOUR_PRIVATE_KEY_HERE`
+- Contract Address: `0x1234...` (addresses are OK to share)
+```
+
+### 🔍 PRE-COMMIT SECURITY CHECKS
+
+**Automated Pre-Commit Hook (RECOMMENDED):**
+
+Install the automated security check that runs before every commit:
+```bash
+./scripts/install-pre-commit-hook.sh
+```
+
+This will automatically block commits containing:
+- API keys and tokens
+- RPC URLs with embedded keys
+- Private keys (except Anvil defaults)
+- .env files
+
+**Manual checks before commit:**
+
+```bash
+# Quick scan for exposed secrets in staged files
+git diff --cached | grep -E "(api[_-]?key|private[_-]?key|secret|password|token|bearer).*[:=].*[a-zA-Z0-9_\-]{20,}"
+
+# Check for RPC URLs with embedded keys
+git diff --cached | grep -E "https?://[^/]*(ankr|alchemy|infura|drpc|quicknode)[^/]*/[a-zA-Z0-9_\-]{20,}"
+
+# Scan all markdown files for exposed keys (replace with your known keys)
+grep -r "YOUR_KNOWN_KEY_PATTERN" --include="*.md" .
+grep -r "ANOTHER_KNOWN_KEY_PATTERN" --include="*.md" .
+```
+
+### 📊 REGULAR SECURITY AUDITS
+
+Run these commands weekly:
+
+```bash
+# Full repository scan
+git log --all -p | grep -E "(api[_-]?key|secret|token|password|private[_-]?key).*=.*['\"]?[a-zA-Z0-9_\-]{20,}" | head -20
+
+# Check current files
+find . -type f \( -name "*.md" -o -name "*.txt" -o -name "*.json" \) -exec grep -l "drpc.org/[^/]*/[a-zA-Z0-9_\-]{20,}" {} \;
+
+# Verify .env is gitignored
+git check-ignore .env # Should output ".env"
+```
+
+### 🚨 EMERGENCY: If You Accidentally Commit Secrets
+
+**IMMEDIATE ACTIONS:**
+1. **DO NOT PANIC** but act quickly
+2. **ROTATE THE KEY IMMEDIATELY** - assume it's compromised
+3. **Clean the repository:**
+
+```bash
+# Create secrets file
+echo "YOUR_EXPOSED_KEY_HERE" > secrets.txt
+
+# Clean with BFG
+git clone --mirror . ../repo-bare.git
+cd ../repo-bare.git
+bfg --replace-text ../your-repo/secrets.txt
+git reflog expire --expire=now --all && git gc --prune=now --aggressive
+
+# Update your repo
+cd ../your-repo
+git remote add cleaned ../repo-bare.git
+git fetch cleaned
+git reset --hard cleaned/main
+git push --force-with-lease origin main
+```
+
+4. **Notify team members** to re-clone
+5. **Document the incident** for learning
+
+### 🔐 Environment Variables Best Practices
+
+**Structure your .env files:**
+```bash
+# .env (NEVER COMMIT)
+DRPC_API_KEY=actual_key_here
+ETHERSCAN_API_KEY=actual_key_here
+
+# .env.example (SAFE TO COMMIT)
+DRPC_API_KEY=YOUR_DRPC_API_KEY_HERE
+ETHERSCAN_API_KEY=YOUR_ETHERSCAN_API_KEY_HERE
+```
+
+**Always source .env before operations:**
+```bash
+source .env && forge script ...
+```
+
+### ⚠️ SPECIAL ATTENTION AREAS
+
+1. **Deployment summaries** - Double-check RPC URLs
+2. **Script files** - Ensure no hardcoded keys
+3. **Test files** - Use only Anvil default keys
+4. **JSON configs** - Often contain URLs with keys
+5. **GitHub Actions** - Use secrets, never hardcode
 
 ## Important Instructions
 
