@@ -3,8 +3,6 @@ pragma solidity 0.8.23;
 
 import "forge-std/Test.sol";
 import "../contracts/CrossChainEscrowFactory.sol";
-import "../contracts/EscrowSrc.sol";
-import "../contracts/EscrowDst.sol";
 import "solidity-utils/contracts/mocks/TokenMock.sol";
 import "../contracts/libraries/TimelocksLib.sol";
 import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
@@ -97,8 +95,6 @@ contract SimpleLimitOrderIntegrationTest is Test {
     TokenMock tokenA;
     TokenMock tokenB;
     TokenMock bmnToken;
-    EscrowSrc escrowSrcImpl;
-    EscrowDst escrowDstImpl;
     
     address alice = address(0xA11CE);
     address bob = address(0xB0B);
@@ -113,19 +109,15 @@ contract SimpleLimitOrderIntegrationTest is Test {
         tokenB = new TokenMock("Token B", "TKB");
         bmnToken = new TokenMock("BMN", "BMN");
         
-        // Deploy escrow implementations
+        // Deploy factory with correct constructor parameters
         uint32 rescueDelay = 7 days;
-        escrowSrcImpl = new EscrowSrc(rescueDelay, IERC20(address(bmnToken)));
-        escrowDstImpl = new EscrowDst(rescueDelay, IERC20(address(bmnToken)));
-        
-        // Deploy factory first (without limit order protocol)
         factory = new CrossChainEscrowFactory(
             address(0),                   // Will set later
             IERC20(address(bmnToken)),
             IERC20(address(bmnToken)),
             address(this),
-            address(escrowSrcImpl),
-            address(escrowDstImpl)
+            rescueDelay,                  // rescueDelaySrc
+            rescueDelay                   // rescueDelayDst
         );
         
         // Deploy mock SimpleLimitOrderProtocol with factory address

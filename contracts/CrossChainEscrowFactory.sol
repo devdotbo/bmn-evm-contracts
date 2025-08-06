@@ -360,8 +360,8 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
         chainStats.totalVolume += volume;
         chainStats.successfulSwaps++;
         
-        // Calculate gas used
-        uint256 gasUsed = 200000 - gasleft(); // Approximate
+        // Calculate gas used (safe from underflow)
+        uint256 gasUsed = gasleft() > 200000 ? 0 : 200000 - gasleft();
         
         emit SwapCompleted(orderHash, resolver, completionTime, gasUsed);
         emit MetricsUpdated(

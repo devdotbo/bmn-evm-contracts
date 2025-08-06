@@ -34,7 +34,7 @@ contract BMNExtensionsTest is Test {
         vm.startPrank(owner);
         
         // Deploy BMN token
-        bmnToken = new TokenMock("BMN Token", "BMN");
+        bmnToken = new TokenMock("BMN Token", "BMN", 18);
         
         // Deploy extensions
         baseExt = new TestBaseExtension();
@@ -87,7 +87,7 @@ contract BMNExtensionsTest is Test {
         
         // Should trip after exceeding threshold
         vm.expectRevert(abi.encodeWithSelector(
-            BMNBaseExtension.CircuitBreakerTripped.selector,
+            BMNBaseExtension.CircuitBreakerTrippedError.selector,
             breakerId
         ));
         baseExt.testCheckBreakers(alice, bytes32("context"), 101);

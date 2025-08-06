@@ -10,8 +10,6 @@ import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressL
 import { CrossChainEscrowFactory } from "../contracts/CrossChainEscrowFactory.sol";
 import { IEscrowFactory } from "../contracts/interfaces/IEscrowFactory.sol";
 import { IBaseEscrow } from "../contracts/interfaces/IBaseEscrow.sol";
-import { EscrowSrc } from "../contracts/EscrowSrc.sol";
-import { EscrowDst } from "../contracts/EscrowDst.sol";
 import { Timelocks, TimelocksLib } from "../contracts/libraries/TimelocksLib.sol";
 import { ImmutablesLib } from "../contracts/libraries/ImmutablesLib.sol";
 
@@ -53,8 +51,6 @@ contract FactoryEventEnhancementTest is Test {
     using ImmutablesLib for IBaseEscrow.Immutables;
 
     CrossChainEscrowFactory factory;
-    EscrowSrc escrowSrcImpl;
-    EscrowDst escrowDstImpl;
     MockToken tokenA;
     MockToken tokenB;
 
@@ -80,18 +76,15 @@ contract FactoryEventEnhancementTest is Test {
     event DstEscrowCreated(address indexed escrow, bytes32 indexed hashlock, Address taker);
 
     function setUp() public {
-        // Deploy implementations with constructor parameters
-        escrowSrcImpl = new EscrowSrc(RESCUE_DELAY, IERC20(ACCESS_TOKEN));
-        escrowDstImpl = new EscrowDst(RESCUE_DELAY, IERC20(ACCESS_TOKEN));
-
         // Deploy factory with correct parameters
+        // The factory deploys its own implementation contracts
         factory = new CrossChainEscrowFactory(
             LIMIT_ORDER_PROTOCOL,
             IERC20(FEE_TOKEN),
             IERC20(ACCESS_TOKEN),
             address(this), // owner
-            address(escrowSrcImpl),
-            address(escrowDstImpl)
+            RESCUE_DELAY,   // rescueDelaySrc
+            RESCUE_DELAY    // rescueDelayDst
         );
 
         // Deploy tokens
@@ -101,6 +94,10 @@ contract FactoryEventEnhancementTest is Test {
         // Mint tokens
         tokenA.mint(alice, 1000e18);
         tokenB.mint(resolver, 1000e18);
+        
+        // Whitelist test resolvers (CrossChainEscrowFactory requires whitelisted resolvers)
+        factory.addResolverToWhitelist(bob);
+        factory.addResolverToWhitelist(resolver);
 
         // Labels for better test output
         vm.label(alice, "Alice");
