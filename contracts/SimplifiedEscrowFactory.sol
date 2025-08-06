@@ -1,0 +1,262 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.23;
+
+import { Clones } from "openzeppelin-contracts/contracts/proxy/Clones.sol";
+import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "solidity-utils/contracts/libraries/SafeERC20.sol";
+import { IBaseEscrow } from "./interfaces/IBaseEscrow.sol";
+import { ImmutablesLib } from "./libraries/ImmutablesLib.sol";
+import { Timelocks, TimelocksLib } from "./libraries/TimelocksLib.sol";
+import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
+
+/**
+ * @title SimplifiedEscrowFactory
+ * @notice Minimal factory for immediate mainnet deployment
+ * @dev Stripped down version focusing on core functionality and security
+ */
+contract SimplifiedEscrowFactory {
+    using Clones for address;
+    using SafeERC20 for IERC20;
+    using ImmutablesLib for IBaseEscrow.Immutables;
+    using TimelocksLib for Timelocks;
+    using AddressLib for Address;
+    
+    /// @notice Escrow implementation addresses
+    address public immutable ESCROW_SRC_IMPLEMENTATION;
+    address public immutable ESCROW_DST_IMPLEMENTATION;
+    
+    /// @notice Contract owner
+    address public owner;
+    
+    /// @notice Emergency pause state
+    bool public emergencyPaused;
+    
+    /// @notice Whitelisted resolvers
+    mapping(address => bool) public whitelistedResolvers;
+    
+    /// @notice Whitelisted makers (optional additional security)
+    mapping(address => bool) public whitelistedMakers;
+    
+    /// @notice Track deployed escrows
+    mapping(bytes32 => address) public escrows;
+    
+    /// @notice Resolver count for metrics
+    uint256 public resolverCount;
+    
+    /// @notice Maker whitelist enabled flag
+    bool public makerWhitelistEnabled;
+    
+    /// @notice Events
+    event SrcEscrowCreated(
+        address indexed escrow,
+        bytes32 indexed orderHash,
+        address indexed maker,
+        address taker,
+        uint256 amount
+    );
+    
+    event DstEscrowCreated(
+        address indexed escrow,
+        bytes32 indexed hashlock,
+        address indexed taker
+    );
+    
+    event ResolverWhitelisted(address indexed resolver);
+    event ResolverRemoved(address indexed resolver);
+    event MakerWhitelisted(address indexed maker);
+    event MakerRemoved(address indexed maker);
+    event EmergencyPause(bool paused);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    
+    /// @notice Modifiers
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+    
+    modifier whenNotPaused() {
+        require(!emergencyPaused, "Protocol paused");
+        _;
+    }
+    
+    modifier onlyWhitelistedResolver() {
+        require(whitelistedResolvers[msg.sender], "Not whitelisted resolver");
+        _;
+    }
+    
+    /**
+     * @notice Constructor
+     * @param srcImpl Source escrow implementation
+     * @param dstImpl Destination escrow implementation
+     * @param _owner Contract owner
+     */
+    constructor(
+        address srcImpl,
+        address dstImpl,
+        address _owner
+    ) {
+        require(srcImpl != address(0), "Invalid src implementation");
+        require(dstImpl != address(0), "Invalid dst implementation");
+        require(_owner != address(0), "Invalid owner");
+        
+        ESCROW_SRC_IMPLEMENTATION = srcImpl;
+        ESCROW_DST_IMPLEMENTATION = dstImpl;
+        owner = _owner;
+        
+        // Whitelist owner as initial resolver for testing
+        whitelistedResolvers[_owner] = true;
+        resolverCount = 1;
+        emit ResolverWhitelisted(_owner);
+    }
+    
+    /**
+     * @notice Create source escrow
+     * @param immutables Escrow parameters
+     * @param maker Order maker address
+     * @param token Token to be escrowed
+     * @param amount Amount to escrow
+     */
+    function createSrcEscrow(
+        IBaseEscrow.Immutables calldata immutables,
+        address maker,
+        address token,
+        uint256 amount
+    ) external whenNotPaused returns (address escrow) {
+        // Validate maker if whitelist is enabled
+        if (makerWhitelistEnabled) {
+            require(whitelistedMakers[maker], "Maker not whitelisted");
+        }
+        
+        // Deploy escrow
+        bytes32 salt = immutables.hash();
+        escrow = ESCROW_SRC_IMPLEMENTATION.cloneDeterministic(salt);
+        
+        // Track escrow
+        escrows[salt] = escrow;
+        
+        // Transfer tokens to escrow
+        IERC20(token).safeTransferFrom(msg.sender, escrow, amount);
+        
+        emit SrcEscrowCreated(
+            escrow,
+            immutables.orderHash,
+            maker,
+            immutables.taker.get(),
+            amount
+        );
+    }
+    
+    /**
+     * @notice Create destination escrow (resolver only)
+     * @param immutables Escrow parameters
+     */
+    function createDstEscrow(
+        IBaseEscrow.Immutables calldata immutables
+    ) external payable whenNotPaused onlyWhitelistedResolver returns (address escrow) {
+        // Deploy escrow
+        bytes32 salt = immutables.hash();
+        escrow = ESCROW_DST_IMPLEMENTATION.cloneDeterministic(salt, msg.value);
+        
+        // Track escrow
+        escrows[salt] = escrow;
+        
+        // Handle token transfer if not native
+        address token = immutables.token.get();
+        if (token != address(0)) {
+            IERC20(token).safeTransferFrom(msg.sender, escrow, immutables.amount);
+        }
+        
+        emit DstEscrowCreated(escrow, immutables.hashlock, immutables.taker);
+    }
+    
+    /**
+     * @notice Get escrow address for given parameters
+     */
+    function addressOfEscrow(
+        IBaseEscrow.Immutables calldata immutables,
+        bool isSrc
+    ) external view returns (address) {
+        address implementation = isSrc ? ESCROW_SRC_IMPLEMENTATION : ESCROW_DST_IMPLEMENTATION;
+        return Clones.predictDeterministicAddress(implementation, immutables.hash(), address(this));
+    }
+    
+    // === Admin Functions ===
+    
+    /**
+     * @notice Add resolver to whitelist
+     */
+    function addResolver(address resolver) external onlyOwner {
+        require(resolver != address(0), "Invalid resolver");
+        require(!whitelistedResolvers[resolver], "Already whitelisted");
+        
+        whitelistedResolvers[resolver] = true;
+        resolverCount++;
+        emit ResolverWhitelisted(resolver);
+    }
+    
+    /**
+     * @notice Remove resolver from whitelist
+     */
+    function removeResolver(address resolver) external onlyOwner {
+        require(whitelistedResolvers[resolver], "Not whitelisted");
+        
+        whitelistedResolvers[resolver] = false;
+        resolverCount--;
+        emit ResolverRemoved(resolver);
+    }
+    
+    /**
+     * @notice Add maker to whitelist
+     */
+    function addMaker(address maker) external onlyOwner {
+        require(maker != address(0), "Invalid maker");
+        require(!whitelistedMakers[maker], "Already whitelisted");
+        
+        whitelistedMakers[maker] = true;
+        emit MakerWhitelisted(maker);
+    }
+    
+    /**
+     * @notice Remove maker from whitelist
+     */
+    function removeMaker(address maker) external onlyOwner {
+        require(whitelistedMakers[maker], "Not whitelisted");
+        
+        whitelistedMakers[maker] = false;
+        emit MakerRemoved(maker);
+    }
+    
+    /**
+     * @notice Enable/disable maker whitelist
+     */
+    function setMakerWhitelistEnabled(bool enabled) external onlyOwner {
+        makerWhitelistEnabled = enabled;
+    }
+    
+    /**
+     * @notice Emergency pause
+     */
+    function pause() external onlyOwner {
+        emergencyPaused = true;
+        emit EmergencyPause(true);
+    }
+    
+    /**
+     * @notice Unpause
+     */
+    function unpause() external onlyOwner {
+        emergencyPaused = false;
+        emit EmergencyPause(false);
+    }
+    
+    /**
+     * @notice Transfer ownership
+     */
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "Invalid owner");
+        
+        address previousOwner = owner;
+        owner = newOwner;
+        emit OwnershipTransferred(previousOwner, newOwner);
+    }
+}
