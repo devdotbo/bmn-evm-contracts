@@ -303,7 +303,7 @@ abstract contract BMNResolverExtension is BMNBaseExtension {
         profile.reputation = uint128((profile.reputation * 9 + successRate) / 10);
         
         // Check if resolver should be deactivated
-        if (profile.reputation < MIN_REPUTATION_BPS) {
+        if (profile.reputation < MIN_REPUTATION_BPS && profile.isActive) {
             profile.isActive = false;
             activeResolverCount--;
             _removeFromRanking(resolver);
@@ -334,7 +334,7 @@ abstract contract BMNResolverExtension is BMNBaseExtension {
         }));
         
         // Check if stake fell below minimum
-        if (profile.stakedAmount < MIN_STAKE) {
+        if (profile.stakedAmount < MIN_STAKE && profile.isActive) {
             profile.isActive = false;
             activeResolverCount--;
             _removeFromRanking(resolver);
