@@ -262,7 +262,8 @@ contract TestBMNProtocol is Script {
      * @notice Helper: Create test immutables
      */
     function _createTestImmutables() internal view returns (IBaseEscrow.Immutables memory) {
-        Timelocks memory timelocks = Timelocks({
+        // Timelocks is a simple struct wrapping uint256, no memory needed
+        Timelocks timelocks = Timelocks({
             timelocks: uint256(0)
         });
         
