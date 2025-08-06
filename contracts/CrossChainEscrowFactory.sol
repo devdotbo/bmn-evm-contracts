@@ -22,7 +22,19 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
     using AddressLib for Address;
     
     /// @notice Version identifier for this implementation
-    string public constant VERSION = "2.0.0-bmn";
+    string public constant VERSION = "2.1.0-bmn-secure";
+    
+    /// @notice Emergency pause state
+    bool public emergencyPaused;
+    
+    /// @notice Contract owner for emergency functions
+    address public owner;
+    
+    /// @notice Whitelisted resolvers mapping
+    mapping(address => bool) public whitelistedResolvers;
+    
+    /// @notice Number of whitelisted resolvers
+    uint256 public resolverCount;
     
     /// @notice Performance metrics tracking
     struct SwapMetrics {
@@ -37,6 +49,12 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
     
     /// @notice Per-chain metrics
     mapping(uint256 => SwapMetrics) public chainMetrics;
+    
+    /// @notice Events for resolver management
+    event ResolverWhitelisted(address indexed resolver);
+    event ResolverRemoved(address indexed resolver);
+    event EmergencyPause(bool paused);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     
     /// @notice Enhanced events with BMN extensions
     event SwapInitiated(
@@ -61,12 +79,30 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
         uint256 avgCompletionTime
     );
     
+    /// @notice Modifier to check if protocol is not paused
+    modifier whenNotPaused() {
+        require(!emergencyPaused, "Protocol is paused");
+        _;
+    }
+    
+    /// @notice Modifier to check if caller is owner
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;
+    }
+    
+    /// @notice Modifier to check if address is whitelisted resolver
+    modifier onlyWhitelistedResolver(address resolver) {
+        require(whitelistedResolvers[resolver], "Not whitelisted resolver");
+        _;
+    }
+    
     /**
      * @notice Constructor initializes BMN extension system
      * @param limitOrderProtocol Address of limit order protocol
      * @param feeToken Token used for fees
      * @param bmnToken BMN token for staking and access
-     * @param owner Contract owner
+     * @param _owner Contract owner
      * @param rescueDelaySrc Rescue delay for source escrows
      * @param rescueDelayDst Rescue delay for destination escrows
      */
@@ -74,13 +110,16 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
         address limitOrderProtocol,
         IERC20 feeToken,
         IERC20 bmnToken,
-        address owner,
+        address _owner,
         uint32 rescueDelaySrc,
         uint32 rescueDelayDst
     )
         MerkleStorageInvalidator(limitOrderProtocol)
         // BMN token integration would be added here
     {
+        require(_owner != address(0), "Invalid owner");
+        owner = _owner;
+        
         // Deploy escrow implementations
         ESCROW_SRC_IMPLEMENTATION = address(new EscrowSrc(rescueDelaySrc, bmnToken));
         ESCROW_DST_IMPLEMENTATION = address(new EscrowDst(rescueDelayDst, bmnToken));
@@ -89,7 +128,10 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
         _PROXY_SRC_BYTECODE_HASH = ProxyHashLib.computeProxyBytecodeHash(ESCROW_SRC_IMPLEMENTATION);
         _PROXY_DST_BYTECODE_HASH = ProxyHashLib.computeProxyBytecodeHash(ESCROW_DST_IMPLEMENTATION);
         
-        // Ownership would be configured here if needed
+        // Initialize with owner as first whitelisted resolver for testing
+        whitelistedResolvers[_owner] = true;
+        resolverCount = 1;
+        emit ResolverWhitelisted(_owner);
         
         // Configure initial circuit breakers
         _configureDefaultCircuitBreakers();
@@ -108,9 +150,9 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
         uint256 takingAmount,
         uint256 remainingMakingAmount,
         bytes calldata extraData
-    ) internal override {
-        // Resolver validation would go here
-        // For now, accept all resolvers
+    ) internal override whenNotPaused {
+        // CRITICAL: Validate resolver is whitelisted
+        require(whitelistedResolvers[taker], "Resolver not whitelisted");
         
         // Record swap initiation time
         uint256 startTime = block.timestamp;
@@ -153,8 +195,74 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
         );
     }
     
-    // Note: createDstEscrow functionality is handled by the base contract
-    // Additional validation can be added through other mechanisms
+    /**
+     * @notice Override createDstEscrow to add pause check and resolver validation
+     */
+    function createDstEscrow(IBaseEscrow.Immutables calldata dstImmutables, uint256 srcCancellationTimestamp) 
+        external 
+        payable 
+        override 
+        whenNotPaused 
+    {
+        // CRITICAL: Validate caller is whitelisted resolver
+        require(whitelistedResolvers[msg.sender], "Resolver not whitelisted");
+        
+        // Call parent implementation
+        super.createDstEscrow(dstImmutables, srcCancellationTimestamp);
+    }
+    
+    /**
+     * @notice Add a resolver to whitelist
+     * @param resolver Address to whitelist
+     */
+    function addResolver(address resolver) external onlyOwner {
+        require(resolver != address(0), "Invalid resolver");
+        require(!whitelistedResolvers[resolver], "Already whitelisted");
+        
+        whitelistedResolvers[resolver] = true;
+        resolverCount++;
+        emit ResolverWhitelisted(resolver);
+    }
+    
+    /**
+     * @notice Remove a resolver from whitelist
+     * @param resolver Address to remove
+     */
+    function removeResolver(address resolver) external onlyOwner {
+        require(whitelistedResolvers[resolver], "Not whitelisted");
+        
+        whitelistedResolvers[resolver] = false;
+        resolverCount--;
+        emit ResolverRemoved(resolver);
+    }
+    
+    /**
+     * @notice Pause the protocol (emergency only)
+     */
+    function pause() external onlyOwner {
+        emergencyPaused = true;
+        emit EmergencyPause(true);
+    }
+    
+    /**
+     * @notice Unpause the protocol
+     */
+    function unpause() external onlyOwner {
+        emergencyPaused = false;
+        emit EmergencyPause(false);
+    }
+    
+    /**
+     * @notice Transfer ownership
+     * @param newOwner New owner address
+     */
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "Invalid owner");
+        
+        address previousOwner = owner;
+        owner = newOwner;
+        emit OwnershipTransferred(previousOwner, newOwner);
+    }
     
     /**
      * @notice Configure default circuit breakers
