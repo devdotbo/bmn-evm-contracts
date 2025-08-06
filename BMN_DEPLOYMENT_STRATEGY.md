@@ -25,10 +25,10 @@ source .env && forge script script/DeployWithCREATE3.s.sol --rpc-url $OPTIMISM_R
 
 ### 3. Gas Usage Baseline (Hour 6-12)
 - Record gas costs for:
-  - Order creation: Target < 150k gas
-  - Escrow deployment: Target < 200k gas
-  - Withdrawal execution: Target < 100k gas
-  - Total swap cost: Target < 500k gas combined
+  - Order creation: Measure actual usage
+  - Escrow deployment: Measure actual usage
+  - Withdrawal execution: Measure actual usage
+  - Total swap cost: Calculate combined usage
 
 ### 4. Monitoring Setup (Hour 12-24)
 ```javascript
@@ -42,9 +42,9 @@ source .env && forge script script/DeployWithCREATE3.s.sol --rpc-url $OPTIMISM_R
 ### Day 2: Progressive Value Testing
 | Test | Amount | Chains | Success Criteria |
 |------|--------|--------|-----------------|
-| Small | $1-10 | Base<->Optimism | 100% success, <2 min |
-| Medium | $10-100 | Base<->Optimism | 100% success, <3 min |
-| Large | $100-1000 | Base<->Optimism | 95% success, <5 min |
+| Small | $1-10 | Base<->Optimism | Track success rate |
+| Medium | $10-100 | Base<->Optimism | Track success rate |
+| Large | $100-1000 | Base<->Optimism | Track success rate |
 
 ### Day 3: Cross-Chain Matrix Testing
 ```
@@ -54,12 +54,12 @@ Base -> Etherlink: WETH, USDC (if bridge available)
 ```
 
 ### Day 4: Performance Benchmarking
-| Metric | BMN Target | 1inch Current | Advantage |
-|--------|------------|---------------|-----------|
-| Gas Cost | <500k total | 800k-1.2M | 40% cheaper |
-| Completion Time | <3 min | 15-30 min | 5-10x faster |
-| Success Rate | >98% | ~95% | More reliable |
-| Max Slippage | 0.1% | 0.5-1% | Better pricing |
+| Metric | To Measure | Benchmark Against |
+|--------|------------|------------------|
+| Gas Cost | Actual usage | Industry standards |
+| Completion Time | Actual time | Alternative solutions |
+| Success Rate | Actual rate | Track over time |
+| Max Slippage | Actual slippage | Market conditions |
 
 ## PRODUCTION ROLLOUT (Days 5-7)
 
@@ -94,12 +94,12 @@ Base -> Etherlink: WETH, USDC (if bridge available)
 ### Daily Metrics
 ```javascript
 {
-  "totalVolume": "$0",
-  "uniqueUsers": 0,
-  "averageSwapSize": "$0",
-  "successRate": "0%",
-  "averageGasCost": "0",
-  "profitMargin": "$0"
+  "totalVolume": "To be tracked",
+  "uniqueUsers": "To be counted",
+  "averageSwapSize": "To be calculated",
+  "successRate": "To be measured",
+  "averageGasCost": "To be recorded",
+  "revenue": "To be tracked"
 }
 ```
 
@@ -159,16 +159,16 @@ forge script script/EmergencyUpgrade.s.sol --broadcast
 ## SUCCESS CRITERIA
 
 ### Week 1 Targets
-- [x] 100 successful swaps
-- [x] $10,000 total volume
-- [x] Zero security incidents
-- [x] <500k average gas usage
+- [ ] Complete initial swaps
+- [ ] Track total volume
+- [ ] Maintain security
+- [ ] Measure gas usage
 
 ### Month 1 Targets
-- [ ] 1,000 unique users
-- [ ] $1M total volume
-- [ ] Integration with 1 DEX aggregator
-- [ ] 40% gas savings vs bridges
+- [ ] Build user base
+- [ ] Track volume growth
+- [ ] Explore integrations
+- [ ] Benchmark performance
 
 ### Quarter 1 Targets
 - [ ] $10M monthly volume
@@ -180,9 +180,9 @@ forge script script/EmergencyUpgrade.s.sol --broadcast
 
 ### vs 1inch Fusion
 - **No bridges needed**: Direct cross-chain swaps
-- **Faster**: 2-3 min vs 15-30 min
-- **Cheaper**: 40% less gas
-- **More reliable**: Atomic guarantees
+- **Speed**: Performance to be measured
+- **Cost**: Gas usage to be benchmarked
+- **Reliability**: Atomic execution design
 
 ### vs Traditional Bridges
 - **No wrapped tokens**: Native assets only
