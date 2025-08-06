@@ -275,9 +275,9 @@ contract BMNExtensionsTest is Test {
         resolverExt.testRecordPerformance(bob, true, 3, 20000e18, 20e18);
         resolverExt.testRecordPerformance(charlie, false, 10, 5000e18, 5e18);
         
-        // Check ranking
+        // Check ranking (Charlie was deactivated, so only 2 active resolvers remain)
         address[] memory topResolvers = resolverExt.getTopResolvers(3);
-        assertEq(topResolvers.length, 3);
+        assertEq(topResolvers.length, 2); // Only Alice and Bob remain active
         // Bob should rank higher due to better metrics
     }
     
