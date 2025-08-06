@@ -47,6 +47,18 @@ abstract contract BaseEscrowFactory is IEscrowFactory, IPostInteraction, BaseExt
     bytes32 internal immutable _PROXY_DST_BYTECODE_HASH;
 
     /**
+     * @notice Override _validateInteraction to resolve inheritance conflict
+     */
+    function _validateInteraction(
+        address orderMaker,
+        address interactionTarget,
+        bytes calldata interaction
+    ) internal virtual override(BaseExtension, ResolverValidationExtension) {
+        // Use ResolverValidationExtension's implementation
+        ResolverValidationExtension._validateInteraction(orderMaker, interactionTarget, interaction);
+    }
+
+    /**
      * @notice External function to handle post-interaction from limit order protocol.
      * @dev This function is called by the limit order protocol after order filling.
      */
