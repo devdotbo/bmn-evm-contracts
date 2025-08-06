@@ -38,8 +38,8 @@ contract DeployBMNExtensions is Script {
         vm.startBroadcast(deployerPrivateKey);
         
         // 1. Deploy BMN Token (if not already deployed)
-        address bmnToken = CREATE3.getDeployed(deployer, BMN_TOKEN_SALT);
-        if (bmnToken.code.length == 0) {
+        address bmnToken = CREATE3.deployments(deployer, BMN_TOKEN_SALT);
+        if (bmnToken == address(0)) {
             bytes memory tokenBytecode = abi.encodePacked(
                 type(TokenMock).creationCode,
                 abi.encode("Bridge Me Not Token", "BMN")
@@ -55,8 +55,8 @@ contract DeployBMNExtensions is Script {
         }
         
         // 2. Deploy SimpleLimitOrderProtocol (or use existing 1inch)
-        address limitOrderProtocol = CREATE3.getDeployed(deployer, LIMIT_ORDER_SALT);
-        if (limitOrderProtocol.code.length == 0) {
+        address limitOrderProtocol = CREATE3.deployments(deployer, LIMIT_ORDER_SALT);
+        if (limitOrderProtocol == address(0)) {
             // For production, integrate with actual 1inch protocol
             // For now, deploy a simple version for testing
             bytes memory lopBytecode = abi.encodePacked(
@@ -71,8 +71,8 @@ contract DeployBMNExtensions is Script {
         }
         
         // 3. Deploy CrossChainEscrowFactory with BMN extensions
-        address factory = CREATE3.getDeployed(deployer, FACTORY_SALT);
-        if (factory.code.length == 0) {
+        address factory = CREATE3.deployments(deployer, FACTORY_SALT);
+        if (factory == address(0)) {
             bytes memory factoryBytecode = abi.encodePacked(
                 type(CrossChainEscrowFactory).creationCode,
                 abi.encode(
@@ -154,7 +154,7 @@ contract DeployBMNExtensions is Script {
             block.chainid == 8453 || // Base
             block.chainid == 42793) { // Etherlink
             console.log("\nRun verification with:");
-            console.log("forge verify-contract", factory, "CrossChainEscrowFactory", "--chain", vm.toString(block.chainid));
+            console.log("forge verify-contract %s CrossChainEscrowFactory --chain %s", factory, block.chainid);
         }
     }
     
@@ -163,8 +163,8 @@ contract DeployBMNExtensions is Script {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
         
-        address bmnToken = CREATE3.getDeployed(deployer, BMN_TOKEN_SALT);
-        address limitOrderProtocol = CREATE3.getDeployed(deployer, LIMIT_ORDER_SALT);
+        address bmnToken = CREATE3.deployments(deployer, BMN_TOKEN_SALT);
+        address limitOrderProtocol = CREATE3.deployments(deployer, LIMIT_ORDER_SALT);
         
         return abi.encode(
             limitOrderProtocol,
