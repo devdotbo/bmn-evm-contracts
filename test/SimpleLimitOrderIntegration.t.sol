@@ -205,8 +205,10 @@ contract SimpleLimitOrderIntegrationTest is Test {
         });
         
         // Resolver fills the order (acts as taker)
-        vm.prank(resolver);
+        // Mint tokens to resolver first (as test contract owner)
         tokenB.mint(resolver, 50 ether); // Ensure resolver has tokens
+        
+        // Then have resolver approve
         vm.prank(resolver);
         tokenB.approve(address(limitOrderProtocol), type(uint256).max);
         
