@@ -13,7 +13,7 @@
 
 - **No Bridges, No Risk**: Zero bridge exploits possible - we don't use bridges
 - **True Atomicity**: Either both sides execute or neither does - guaranteed by cryptography
-- **30% Gas Savings**: Optimized bytecode with 1M optimizer runs outperforms competitors
+- **Gas Optimized**: 1M optimizer runs for efficient bytecode
 - **Sub-Second Resolution**: MEV-protected fast finality on modern L2s
 - **Production Proven**: Live on mainnet processing real value, not testnet experiments
 
@@ -35,13 +35,13 @@ While 1inch pioneered the limit order protocol concept, BMN Protocol advances th
 
 | Feature | 1inch | BMN Protocol | Advantage |
 |---------|-------|--------------|-----------|
-| **Extension System** | Basic validation | Full BMNResolverExtension with staking | 10x more secure |
-| **Gas Optimization** | Standard | 1M optimizer runs + gas refunds | 30% cheaper |
+| **Extension System** | Basic validation | BMNResolverExtension design | Enhanced security |
+| **Gas Optimization** | Standard | 1M optimizer runs | Optimized |
 | **Circuit Breakers** | None | Multi-dimensional protection | Enterprise-grade safety |
-| **MEV Protection** | Basic | Commit-reveal with time locks | Front-running proof |
+| **MEV Protection** | Basic | Commit-reveal with time locks | MEV resistant |
 | **Resolver Network** | Open | Staked & reputation-based | Quality guaranteed |
-| **Cross-chain** | Bridge-dependent | True atomic swaps | Zero bridge risk |
-| **Performance Tracking** | None | Built-in metrics & analytics | Data-driven optimization |
+| **Cross-chain** | Bridge-dependent | HTLC atomic swaps | No bridge dependency |
+| **Performance Tracking** | None | Metrics capability | Performance monitoring |
 
 ### System Architecture
 
@@ -124,18 +124,18 @@ All contracts deployed with CREATE3 for deterministic addresses across chains:
 
 Our proprietary extension system replaces 1inch's basic validation with enterprise-grade features:
 
-#### BMNResolverExtension
-- **Staking Requirements**: 10,000-1,000,000 BMN tokens
-- **Reputation Scoring**: 0-10,000 basis points tracking
-- **Performance Metrics**: Response time, success rate, volume
-- **Slashing Mechanism**: 10% penalty for failures
-- **Ranking Algorithm**: Composite scoring for resolver selection
+#### BMNResolverExtension (Design)
+- **Staking capability**: Token-based participation
+- **Reputation system**: Performance tracking planned
+- **Metrics tracking**: Implementation pending
+- **Penalty mechanism**: Configurable parameters
+- **Selection algorithm**: To be implemented
 
-#### BMNBaseExtension
-- **Circuit Breakers**: Multi-dimensional risk management
-- **Gas Optimization**: 50% refund on efficient execution
-- **MEV Protection**: Commit-reveal pattern with time locks
-- **Emergency Controls**: Pausable with owner controls
+#### BMNBaseExtension (Design)
+- **Circuit breakers**: Risk management planned
+- **Gas optimization**: Efficient execution patterns
+- **MEV protection**: Commit-reveal implementation
+- **Emergency controls**: Admin functions available
 
 ### 2. Gas Optimization Technology
 
@@ -147,18 +147,18 @@ via_ir: true               // Advanced IR pipeline
 evm_version: cancun        // Latest EVM features
 
 // Results
-Average gas savings: 30-40%
-Gas refund mechanism: Up to 50% back
-Transaction batching: 60% reduction
+Gas optimization: Implemented
+Performance metrics: To be measured
+Batching capability: Available
 ```
 
 ### 3. Advanced Security Features
 
-#### Circuit Breakers
-- **Global Volume Limits**: 10M tokens/day default
-- **Per-User Rate Limiting**: 100k tokens/hour
-- **Error Rate Protection**: Auto-pause on 5 errors/hour
-- **Auto-Recovery**: Configurable cooldown periods
+#### Circuit Breakers (Planned)
+- **Volume limits**: Configurable
+- **Rate limiting**: Implementation pending
+- **Error protection**: To be implemented
+- **Recovery mechanism**: Design phase
 
 #### MEV Protection
 - **Commit-Reveal**: 1-block delay minimum
@@ -167,13 +167,13 @@ Transaction batching: 60% reduction
 
 ### 4. Performance Metrics System
 
-Real-time tracking of:
-- Total volume processed
-- Success/failure rates
-- Average completion time
-- Gas usage optimization
-- Resolver performance
-- Chain-specific metrics
+Metrics capability for:
+- Volume tracking
+- Success rates
+- Completion times
+- Gas usage
+- Resolver activity
+- Chain metrics
 
 ---
 
@@ -384,19 +384,15 @@ Gas price > 1000 gwei: Throttle
 - **Cross-chain Execution**: 30-60 seconds
 - **Finality**: 2-12 blocks depending on chain
 
-### Volume Metrics (Projected)
+### Volume Metrics
 
-- **Day 1**: $100,000
-- **Week 1**: $1,000,000
-- **Month 1**: $10,000,000
-- **Year 1**: $500,000,000
+- Performance tracking to be implemented
+- Metrics will be published once available
 
-### Resolver Network Stats
+### Resolver Network
 
-- **Active Resolvers**: 10+ (growing)
-- **Total Staked**: 5,000,000 BMN
-- **Average Response Time**: 2.3 seconds
-- **Success Rate**: 99.7%
+- **Status**: Infrastructure deployed
+- **Metrics**: To be measured once operational
 
 ---
 
@@ -411,32 +407,23 @@ Gas price > 1000 gwei: Throttle
 - [ ] Documentation portal
 
 ### Q2 2025: Expansion
-- [ ] Arbitrum deployment
-- [ ] Polygon deployment
-- [ ] zkSync deployment
-- [ ] Institutional partnerships
-- [ ] $100M TVL milestone
+- [ ] Additional chain deployments planned
+- [ ] Partnership opportunities
+- [ ] Growth targets to be defined
 
 ### Q3 2025: Innovation
-- [ ] Layer 3 support
-- [ ] Native Bitcoin swaps
-- [ ] Privacy features (ZK-proofs)
-- [ ] Mobile SDK
-- [ ] $500M TVL milestone
+- [ ] Technical enhancements planned
+- [ ] Feature expansion
+- [ ] SDK development
 
-### Q4 2025: Dominance
-- [ ] 10+ chain support
-- [ ] Derivatives trading
-- [ ] Lending/borrowing integration
-- [ ] DAO governance launch
-- [ ] $1B TVL milestone
+### Q4 2025: Growth
+- [ ] Multi-chain expansion
+- [ ] Protocol integrations
+- [ ] Governance implementation
 
-### 2026: The Future
-- [ ] Cross-chain NFT swaps
-- [ ] Sovereign chain deployment
-- [ ] AI-powered routing
-- [ ] Regulatory compliance suite
-- [ ] $10B TVL target
+### 2026: Future Development
+- [ ] Additional features under consideration
+- [ ] Technology roadmap to be defined
 
 ---
 
@@ -446,16 +433,16 @@ Gas price > 1000 gwei: Throttle
 
 | Aspect | 1inch | BMN Protocol | Winner |
 |--------|-------|--------------|--------|
-| **Technology** | Basic limit orders | Advanced atomic swaps | **BMN** |
-| **Security** | Standard | Circuit breakers + staking | **BMN** |
-| **Gas Costs** | Higher | 30% lower | **BMN** |
+| **Technology** | Basic limit orders | HTLC atomic swaps | Different approach |
+| **Security** | Standard | Enhanced security design | Security focused |
+| **Gas Costs** | Standard | Optimized | To be benchmarked |
 | **Decentralization** | Moderate | Fully decentralized | **BMN** |
 | **Cross-chain** | Bridge-dependent | Bridge-free | **BMN** |
-| **Innovation Speed** | Slow | Fast ("ship to mainnet") | **BMN** |
+| **Innovation Speed** | Established | Rapid deployment | Fast iteration |
 
 ### vs. Traditional Bridges
 
-- **No Bridge Risk**: Bridges have lost $2B+ to hacks. We use zero bridges.
+- **No Bridge Risk**: Eliminates bridge dependency entirely.
 - **True Atomicity**: Bridges can fail mid-transaction. Our swaps are atomic.
 - **Lower Fees**: No bridge fees, no wrapped tokens, no intermediate steps.
 - **Faster**: Direct swaps vs multi-hop bridge routes.
@@ -465,7 +452,7 @@ Gas price > 1000 gwei: Throttle
 
 - **Cross-chain Native**: Built for multi-chain from day one
 - **MEV Protected**: Commit-reveal prevents sandwiching
-- **Gas Optimized**: 30-40% cheaper than competitors
+- **Gas Optimized**: Efficient contract design
 - **Professional**: Institutional-grade with enterprise features
 - **Proven**: Live on mainnet, not vaporware
 
@@ -475,7 +462,7 @@ Gas price > 1000 gwei: Throttle
 
 ### Revenue Streams
 
-1. **Protocol Fees**: 0.1% on all swaps
+1. **Protocol Fees**: Fee structure available
 2. **Resolver Staking**: Interest on locked BMN
 3. **Premium Features**: Advanced APIs, priority execution
 4. **Enterprise Solutions**: White-label, custom deployments
@@ -485,7 +472,7 @@ Gas price > 1000 gwei: Throttle
 
 - **Total Supply**: 1,000,000,000 BMN
 - **Staking Rewards**: 10% APY
-- **Burn Mechanism**: 50% of fees burned
+- **Burn Mechanism**: Deflationary design possible
 - **Governance**: 1 BMN = 1 vote
 - **Vesting**: Team tokens locked 2 years
 
@@ -495,7 +482,7 @@ Gas price > 1000 gwei: Throttle
 2. **Partnerships**: Integration with major DeFi protocols
 3. **Incentives**: Liquidity mining and trading rewards
 4. **Marketing**: Developer-focused, results-driven
-5. **Network Effects**: More resolvers → better execution → more users
+5. **Network Effects**: Growth through adoption
 
 ---
 
@@ -606,9 +593,9 @@ BMN Protocol isn't just another DeFi project - it's a fundamental reimagining of
 Our philosophy is simple: **Real devs deploy to mainnet.**
 
 We've taken the best ideas from 1inch, eliminated their limitations, added enterprise-grade features, and deployed a system that's:
-- **30% cheaper** in gas costs
+- **Gas optimized** implementation
 - **100% bridge-free** for security
-- **10x more advanced** in features
+- **Enhanced features** implemented
 - **Production-proven** on mainnet
 
 The future of DeFi is multi-chain, and BMN Protocol is the infrastructure that makes it possible without compromises.
