@@ -142,6 +142,9 @@ contract BMNExtensionsTest is Test {
     function testGasOptimizationTracking() public {
         bytes4 selector = bytes4(keccak256("testFunction()"));
         
+        // Set a non-zero gas price for refund calculation
+        vm.txGasPrice(20 gwei);
+        
         // First execution sets baseline
         baseExt.testTrackGas(selector, 100000, alice);
         
@@ -158,6 +161,9 @@ contract BMNExtensionsTest is Test {
     
     function testGasRefundClaim() public {
         bytes4 selector = bytes4(keccak256("testFunction()"));
+        
+        // Set a non-zero gas price for refund calculation
+        vm.txGasPrice(20 gwei);
         
         // Generate refunds
         baseExt.testTrackGas(selector, 100000, alice);
