@@ -7,41 +7,41 @@
 
 ## Executive Summary
 
-**BMN Protocol** (Bridge-Me-Not) represents a paradigm shift in cross-chain interoperability. While the industry debates theoretical improvements, we've deployed production-ready infrastructure to Base and Optimism mainnet that eliminates bridges entirely through cryptographically-secured atomic swaps.
+**BMN Protocol** (Bridge-Me-Not) is a prototype implementation of cross-chain atomic swaps using HTLC technology. We've deployed initial contracts to Base and Optimism mainnet that demonstrate bridgeless swaps, though the system is not yet production-ready.
 
-### Why BMN Matters
+### What BMN Demonstrates
 
-- **No Bridges, No Risk**: Zero bridge exploits possible - we don't use bridges
-- **True Atomicity**: Either both sides execute or neither does - guaranteed by cryptography
-- **Gas Optimized**: 1M optimizer runs for efficient bytecode
-- **Sub-Second Resolution**: MEV-protected fast finality on modern L2s
-- **Production Proven**: Live on mainnet processing real value, not testnet experiments
+- **No Bridges Required**: HTLC-based swaps without bridge dependency
+- **Atomicity**: Cryptographic guarantees via hashlocks
+- **Gas Settings**: Configured with 1M optimizer runs
+- **Deployment**: Contracts deployed to mainnet (not actively used)
+- **Status**: Prototype implementation, not production-ready
 
-### Key Differentiators
+### Technical Approach
 
-1. **Independent Innovation**: Forked from 1inch's limit-order-protocol but completely reimplemented core infrastructure
-2. **Enhanced Security**: Proprietary BMN extension system with circuit breakers and rate limiting
-3. **Performance Optimized**: Gas refund mechanism rewards efficient usage
-4. **Resolver Network**: Staking-based reputation system ensures reliability
-5. **Enterprise Ready**: Built for institutional-grade volume with proven scalability
+1. **Based on 1inch**: Uses 1inch's limit-order-protocol for order management
+2. **Extension System**: Basic resolver validation extensions (bypassed in current implementation)
+3. **Gas Configuration**: Optimizer settings configured
+4. **Resolver Design**: Basic resolver infrastructure (separate project)
+5. **Development Stage**: Early prototype requiring significant work
 
 ---
 
 ## Architecture Overview
 
-### How We Differ from 1inch
+### Relationship with 1inch
 
-While 1inch pioneered the limit order protocol concept, BMN Protocol advances the state of the art:
+BMN Protocol builds on 1inch's limit-order-protocol foundation:
 
-| Feature | 1inch | BMN Protocol | Advantage |
-|---------|-------|--------------|-----------|
-| **Extension System** | Basic validation | BMNResolverExtension design | Enhanced security |
-| **Gas Optimization** | Standard | 1M optimizer runs | Optimized |
-| **Circuit Breakers** | None | Multi-dimensional protection | Enterprise-grade safety |
-| **MEV Protection** | Basic | Commit-reveal with time locks | MEV resistant |
-| **Resolver Network** | Open | Staked & reputation-based | Quality guaranteed |
-| **Cross-chain** | Bridge-dependent | HTLC atomic swaps | No bridge dependency |
-| **Performance Tracking** | None | Metrics capability | Performance monitoring |
+| Feature | Current Implementation | Status |
+|---------|----------------------|--------|
+| **Extension System** | Uses 1inch extensions (validation bypassed) | Needs fixing |
+| **Gas Optimization** | Configured with 1M optimizer runs | Settings applied |
+| **Circuit Breakers** | Not implemented (only TODOs) | Planned |
+| **MEV Protection** | Not implemented | Planned |
+| **Resolver Network** | Basic implementation | Prototype |
+| **Cross-chain** | HTLC atomic swaps | Working |
+| **Performance Tracking** | Basic structure, bugs present | Needs work |
 
 ### System Architecture
 
@@ -57,19 +57,19 @@ While 1inch pioneered the limit order protocol concept, BMN Protocol advances th
 │         │                        │                         │
 │         ▼                        ▼                         │
 │  ┌──────────────────────────────────────┐                 │
-│  │   CrossChainEscrowFactory v2.0.0     │                 │
-│  │   - BMNResolverExtension             │                 │
-│  │   - BMNBaseExtension                 │                 │
-│  │   - Circuit Breakers                 │                 │
-│  │   - Gas Optimization                 │                 │
+│  │   CrossChainEscrowFactory v1.1.0     │                 │
+│  │   - ResolverValidationExtension      │                 │
+│  │   - BaseExtension (stub)             │                 │
+│  │   - Circuit Breakers (TODO)          │                 │
+│  │   - Gas Settings Configured          │                 │
 │  └──────────────┬───────────────────────┘                 │
 │                 │                                          │
 │                 ▼                                          │
 │  ┌──────────────────────────────────────┐                 │
-│  │      Resolver Network (Staked)       │                 │
-│  │   - Reputation System                │                 │
-│  │   - Performance Metrics              │                 │
-│  │   - Slashing Mechanism               │                 │
+│  │      Resolver Network (Basic)        │                 │
+│  │   - Reputation (Not implemented)    │                 │
+│  │   - Metrics (Buggy)                 │                 │
+│  │   - Slashing (Not implemented)      │                 │
 │  └──────────────────────────────────────┘                 │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
@@ -107,8 +107,8 @@ All contracts deployed with CREATE3 for deterministic addresses across chains:
 #### Factory Contracts
 - **CrossChainEscrowFactory (Base & Etherlink)**: `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1`
 - **CrossChainEscrowFactory (Optimism)**: `0xB916C3edbFe574fFCBa688A6B92F72106479bD6c`
-  - Version: 2.0.0-bmn
-  - Features: Enhanced events, resolver validation, performance metrics
+  - Version: 1.1.0
+  - Features: Enhanced events (working), resolver validation (bypassed), metrics (buggy)
 
 #### Resolver Infrastructure
 - **Resolver Factory**: `0xe767202fD26104267CFD8bD8cfBd1A44450DC343`
@@ -120,22 +120,22 @@ All contracts deployed with CREATE3 for deterministic addresses across chains:
 
 ## Key Innovations
 
-### 1. BMN Extension System
+### 1. Extension System Status
 
-Our proprietary extension system replaces 1inch's basic validation with enterprise-grade features:
+The current implementation uses 1inch's extension system:
 
-#### BMNResolverExtension (Design)
-- **Staking capability**: Token-based participation
-- **Reputation system**: Performance tracking planned
-- **Metrics tracking**: Implementation pending
-- **Penalty mechanism**: Configurable parameters
-- **Selection algorithm**: To be implemented
+#### ResolverValidationExtension
+- **Source**: 1inch limit-order-protocol
+- **Status**: Validation bypassed (always returns true)
+- **Staking**: Not implemented
+- **Reputation**: Not implemented
+- **Metrics**: Basic structure with bugs
 
-#### BMNBaseExtension (Design)
-- **Circuit breakers**: Risk management planned
-- **Gas optimization**: Efficient execution patterns
-- **MEV protection**: Commit-reveal implementation
-- **Emergency controls**: Admin functions available
+#### BaseExtension
+- **Status**: Stub implementation only
+- **Circuit breakers**: TODO comments only
+- **MEV protection**: Not implemented
+- **Emergency controls**: Not implemented
 
 ### 2. Gas Optimization Technology
 
@@ -154,26 +154,20 @@ Batching capability: Available
 
 ### 3. Advanced Security Features
 
-#### Circuit Breakers (Planned)
-- **Volume limits**: Configurable
-- **Rate limiting**: Implementation pending
-- **Error protection**: To be implemented
-- **Recovery mechanism**: Design phase
+#### Security Features Status
+- **Circuit Breakers**: Not implemented (only TODO comments)
+- **Rate limiting**: Code exists in RateLimiter.sol but not integrated
+- **Volume limits**: Not enforced
+- **MEV Protection**: Not implemented
+- **Emergency pause**: Not implemented
 
-#### MEV Protection
-- **Commit-Reveal**: 1-block delay minimum
-- **Time-lock Enforcement**: Prevents front-running
-- **Private Mempool**: Optional flashbot integration
+### 4. Performance Metrics Status
 
-### 4. Performance Metrics System
-
-Metrics capability for:
-- Volume tracking
-- Success rates
-- Completion times
-- Gas usage
-- Resolver activity
-- Chain metrics
+Metrics structure exists but has issues:
+- Basic event emission
+- Metrics calculation has bugs (division by zero)
+- Not actively tracking real data
+- Needs significant rework
 
 ---
 
