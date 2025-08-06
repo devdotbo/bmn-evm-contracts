@@ -9,7 +9,10 @@ import { EscrowDst } from "./EscrowDst.sol";
 import { EscrowSrc } from "./EscrowSrc.sol";
 import { MerkleStorageInvalidator } from "./MerkleStorageInvalidator.sol";
 import { IBaseEscrow } from "./interfaces/IBaseEscrow.sol";
-import { Address } from "solidity-utils/contracts/libraries/AddressLib.sol";
+import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
+import { Timelocks, TimelocksLib } from "./libraries/TimelocksLib.sol";
+import { ImmutablesLib } from "./libraries/ImmutablesLib.sol";
+import { SafeERC20 } from "solidity-utils/contracts/libraries/SafeERC20.sol";
 
 /**
  * @title SimplifiedCrossChainEscrowFactory
@@ -18,8 +21,16 @@ import { Address } from "solidity-utils/contracts/libraries/AddressLib.sol";
  * @custom:security-contact security@bridgemenot.io
  */
 contract SimplifiedCrossChainEscrowFactory is BaseEscrowFactory {
+    using AddressLib for Address;
+    using TimelocksLib for Timelocks;
+    using ImmutablesLib for IBaseEscrow.Immutables;
+    using SafeERC20 for IERC20;
+    
     /// @notice Version identifier for this implementation
     string public constant VERSION = "1.2.0-simplified";
+    
+    /// @notice Timestamp tolerance (from BaseEscrowFactory)
+    uint256 private constant TIMESTAMP_TOLERANCE = 300;
     
     /// @notice Track total volume for basic metrics
     uint256 public totalVolume;
@@ -38,9 +49,6 @@ contract SimplifiedCrossChainEscrowFactory is BaseEscrowFactory {
         uint256 srcChainId,
         uint256 dstChainId
     );
-    
-    event ResolverWhitelisted(address indexed resolver, address indexed admin);
-    event ResolverRemoved(address indexed resolver, address indexed admin);
     
     /**
      * @notice Constructor initializes the factory
@@ -134,7 +142,7 @@ contract SimplifiedCrossChainEscrowFactory is BaseEscrowFactory {
         // Emit simplified event (we don't have all the complex data extraction)
         emit SwapInitiated(
             address(0), // Escrow address will be computed by indexers
-            order.maker,
+            order.maker.get(),
             taker,
             makingAmount,
             block.chainid,
@@ -156,8 +164,29 @@ contract SimplifiedCrossChainEscrowFactory is BaseEscrowFactory {
             revert ResolverNotWhitelisted(resolver);
         }
         
-        // Call parent implementation
-        super.createDstEscrow(dstImmutables, srcCancellationTimestamp);
+        // Call parent implementation inline (since we're overriding virtual)
+        address token = dstImmutables.token.get();
+        uint256 nativeAmount = dstImmutables.safetyDeposit;
+        if (token == address(0)) {
+            nativeAmount += dstImmutables.amount;
+        }
+        if (msg.value != nativeAmount) revert InsufficientEscrowBalance();
+
+        IBaseEscrow.Immutables memory immutables = dstImmutables;
+        immutables.timelocks = immutables.timelocks.setDeployedAt(block.timestamp);
+        
+        // Check that the escrow cancellation will start not later than the cancellation time on the source chain
+        if (immutables.timelocks.get(TimelocksLib.Stage.DstCancellation) > srcCancellationTimestamp + TIMESTAMP_TOLERANCE) {
+            revert InvalidCreationTime();
+        }
+
+        bytes32 salt = immutables.hashMem();
+        address escrow = _deployEscrow(salt, msg.value, ESCROW_DST_IMPLEMENTATION);
+        if (token != address(0)) {
+            IERC20(token).safeTransferFrom(msg.sender, escrow, immutables.amount);
+        }
+
+        emit DstEscrowCreated(escrow, dstImmutables.hashlock, dstImmutables.taker);
         
         // Record successful transaction
         _recordResolverTransaction(resolver, true);

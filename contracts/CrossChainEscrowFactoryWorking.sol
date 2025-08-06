@@ -51,8 +51,6 @@ contract CrossChainEscrowFactoryWorking is BaseEscrowFactory {
     error RateLimitExceeded(address user);
     error DailyVolumeExceeded(address user, uint256 attempted, uint256 limit);
     error InvalidTimestamp();
-    error InsufficientEscrowBalance();
-    error InvalidCreationTime();
     
     /// @notice Events
     event SwapInitiated(
@@ -118,15 +116,16 @@ contract CrossChainEscrowFactoryWorking is BaseEscrowFactory {
         }
         
         // Rate limiting
-        if (lastSwapTimestamp[order.maker] > 0) {
-            if (block.timestamp < lastSwapTimestamp[order.maker] + MIN_SWAP_DELAY) {
-                revert RateLimitExceeded(order.maker);
+        address maker = order.maker.get();
+        if (lastSwapTimestamp[maker] > 0) {
+            if (block.timestamp < lastSwapTimestamp[maker] + MIN_SWAP_DELAY) {
+                revert RateLimitExceeded(maker);
             }
         }
-        lastSwapTimestamp[order.maker] = block.timestamp;
+        lastSwapTimestamp[maker] = block.timestamp;
         
         // Daily volume check
-        _checkDailyVolume(order.maker, makingAmount);
+        _checkDailyVolume(maker, makingAmount);
         
         // Update metrics
         totalVolume += makingAmount;
@@ -151,7 +150,7 @@ contract CrossChainEscrowFactoryWorking is BaseEscrowFactory {
         // Emit event
         emit SwapInitiated(
             address(0), // Will be computed by indexers
-            order.maker,
+            order.maker.get(),
             taker,
             makingAmount,
             block.chainid
@@ -170,7 +169,7 @@ contract CrossChainEscrowFactoryWorking is BaseEscrowFactory {
     function createDstEscrow(
         IBaseEscrow.Immutables calldata dstImmutables,
         uint256 srcCancellationTimestamp
-    ) external payable {
+    ) external payable override {
         // Validate resolver
         address resolver = dstImmutables.taker.get();
         if (!isWhitelistedResolver(resolver)) {
