@@ -2,6 +2,31 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⛔ ATTENTION CLAUDE CODE: Security Protocol
+
+**I MUST follow these rules to prevent security breaches:**
+
+1. **NEVER write actual API keys, tokens, or secrets** - even if provided by the user
+2. **ALWAYS replace secrets with placeholders** before writing to ANY file
+3. **DETECT and SANITIZE** all RPC URLs and connection strings
+4. **REFUSE to commit** if any actual secrets are detected
+5. **WARN the user** whenever I detect and replace a potential secret
+
+**Pattern Recognition - I will detect and replace:**
+- Any string that looks like an API key (20+ alphanumeric characters after 'key', 'token', 'secret')
+- RPC URLs with embedded keys (e.g., `https://provider.com/network/actualkey123`)
+- Private keys (64 hex characters starting with 0x)
+- Mnemonic phrases (12 or 24 word sequences)
+- Database connection strings with passwords
+
+**My Response When Detecting Secrets:**
+```
+⚠️ SECURITY: Detected potential secret in content.
+Replacing with placeholder: YOUR_KEY_HERE
+Original pattern: [first 4 chars]...[last 4 chars]
+Please use environment variables instead.
+```
+
 ## 🚨 CRITICAL SECURITY RULES - READ FIRST!
 
 ### ❌ NEVER COMMIT THESE (Even in Documentation!)
@@ -144,6 +169,28 @@ source .env && forge script ...
 5. **GitHub Actions** - Use secrets, never hardcode
 
 ## Important Instructions
+
+### 🔴 CRITICAL: Security-First Development
+
+**BEFORE WRITING ANY FILE (even documentation):**
+1. **STOP and CHECK**: Am I about to write an actual API key, token, or secret?
+2. **ALWAYS use placeholders**: Replace ALL real values with `YOUR_KEY_HERE` or environment variables
+3. **DOUBLE-CHECK URLs**: Never paste RPC URLs directly from .env - always sanitize them first
+4. **REVIEW before saving**: Re-read the file for any exposed secrets before saving
+
+**When creating deployment documentation:**
+- **NEVER copy-paste from terminal output** that might contain real keys
+- **NEVER copy values from .env files** - always write placeholders
+- **ALWAYS sanitize URLs** before adding them to any file:
+  ```bash
+  # From .env: https://rpc.provider.com/network/abc123realkey456
+  # In docs:  https://rpc.provider.com/network/YOUR_API_KEY_HERE
+  ```
+
+**If Claude Code is about to write a secret:**
+- I will REFUSE to write the actual secret
+- I will REPLACE it with a placeholder automatically
+- I will WARN you that a secret was detected and replaced
 
 **ALWAYS source .env before running forge commands.** All forge commands should be prefixed with `source .env &&` to ensure environment variables are loaded.
 
