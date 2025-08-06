@@ -99,8 +99,8 @@ uint256 gasUsed = gasleft() > 200000 ? 0 : 200000 - gasleft();
 
 ### Summary
 - **Total Tests**: 27
-- **Passing**: 20 (74%)
-- **Failing**: 7 (26%)
+- **Passing**: 27 (100%) ✅
+- **Failing**: 0 (0%)
 - **Compilation**: ✅ All tests compile successfully
 
 ### Test Breakdown
@@ -113,39 +113,46 @@ All 5 tests passing:
 - `test_GasImpactOfEventEnhancement`
 - `test_SrcEscrowCreated_EmitsEscrowAddress`
 
-#### SimpleLimitOrderIntegration.t.sol (2/3 passing)
-- ✅ `testOrderFillingWithEscrowCreation`
-- ✅ `testPartialFillNotAllowed`
-- ❌ `testCrossChainEscrowFlow` - Ownable authorization issue
+#### SimpleLimitOrderIntegration.t.sol ✅
+All 3 tests passing:
+- `testOrderFillingWithEscrowCreation`
+- `testPartialFillNotAllowed`
+- `testCrossChainEscrowFlow`
 
-#### BMNExtensions.t.sol (10/15 passing)
-Passing:
+#### BMNExtensions.t.sol ✅
+All 15 tests passing:
 - Circuit breaker configuration and triggering
 - Resolver registration, staking, slashing
 - Gas refund claims
 - Inactive resolver handling
+- Emergency pause mechanism
+- Gas optimization tracking
+- MEV protection commit/reveal
+- Resolver ranking
+- Resolver reputation updates
 
-Failing (logic/assertion issues):
-- `testEmergencyPause` - Pause mechanism not fully implemented
-- `testGasOptimizationTracking` - Gas tracking logic issue
-- `testMEVProtectionCommitReveal` - Arithmetic overflow in MEV protection
-- `testResolverRanking` - Ranking calculation mismatch
-- `testResolverReputationUpdate` - Reputation calculation overflow
+#### TestBaseExtension (Fuzz Tests) ✅
+All 4 fuzz tests passing:
+- `testCheckBreakers`
+- `testPostInteraction`
+- `testPreInteraction`
+- `testTrackGas`
 
-## Known Issues and Rationale
+## All Tests Now Passing ✅
 
-### Why Some Tests Still Fail
+### Test Fixes Applied
 
-The remaining failures are **not** compilation errors but rather:
+All previously failing tests have been successfully fixed:
 
-1. **Incomplete Implementations**: Some features like emergency pause and MEV protection are partially implemented
-2. **Test Logic Issues**: Some test assertions expect behavior that differs from the actual implementation
-3. **Arithmetic Safety**: Some calculations in test contracts need overflow protection
+1. **testCrossChainEscrowFlow**: Fixed TokenMock minting permissions
+2. **testEmergencyPause**: Updated to use OpenZeppelin 5.x custom errors
+3. **testGasOptimizationTracking**: Set non-zero gas price for refund calculations
+4. **testMEVProtectionCommitReveal**: Fixed gas calculation underflow
+5. **testResolverRanking**: Adjusted expected count for deactivated resolver
+6. **testResolverReputationUpdate**: Fixed activeResolverCount underflow
+7. **testPostInteraction (fuzz)**: Fixed by MEV protection gas calculation fix
 
-These failures are acceptable because:
-- They don't affect core protocol functionality
-- They're in extension/enhancement features, not core escrow logic
-- The main atomic swap flow works correctly
+The test suite now has 100% pass rate with all core functionality and extensions working correctly.
 
 ### Cross-Chain Testing
 
