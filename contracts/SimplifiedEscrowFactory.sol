@@ -166,7 +166,7 @@ contract SimplifiedEscrowFactory {
             IERC20(token).safeTransferFrom(msg.sender, escrow, immutables.amount);
         }
         
-        emit DstEscrowCreated(escrow, immutables.hashlock, immutables.taker);
+        emit DstEscrowCreated(escrow, immutables.hashlock, immutables.taker.get());
     }
     
     /**
