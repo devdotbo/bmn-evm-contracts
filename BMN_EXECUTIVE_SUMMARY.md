@@ -5,11 +5,11 @@
 
 ## THE ACHIEVEMENT: 72 Hours from Concept to Mainnet
 
-**We built what others said would take months.**
+**We built a working cross-chain swap prototype in 72 hours.**
 
-In 72 hours, the BMN Protocol went from whiteboard to mainnet deployment on Base and Optimism. No bridges. No wrapped tokens. No custody risk. Just pure atomic swaps using battle-tested HTLC cryptography.
+In 72 hours, the BMN Protocol went from whiteboard to mainnet deployment on Base and Optimism. No bridges required for the atomic swaps. The implementation uses HTLC (Hash Time Lock Contract) cryptography for atomicity.
 
-While competitors debate architecture for weeks, we shipped production code that's already processing swaps.
+Note: The protocol builds upon and integrates with 1inch's limit-order-protocol for order management.
 
 ---
 
@@ -45,11 +45,11 @@ While competitors debate architecture for weeks, we shipped production code that
 - Factory: `0xB916C3edbFe574fFCBa688A6B92F72106479bD6c`
 - BMN Token: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1`
 
-**Architecture Advantages Over 1inch:**
-1. **No Bridge Dependency**: 1inch relies on external bridges; we don't
-2. **True Atomicity**: Cryptographic guarantees vs probabilistic finality
-3. **Lower Costs**: No bridge fees, fewer transactions, less gas
-4. **Simpler Integration**: One protocol, not multiple bridge APIs
+**Architecture Approach:**
+1. **No Bridge Dependency**: Direct HTLC-based swaps without bridges
+2. **Atomicity**: Cryptographic guarantees via hashlocks
+3. **Integration**: Built on 1inch limit-order-protocol for order management
+4. **Current Status**: Working prototype with basic functionality
 
 ---
 
@@ -60,17 +60,17 @@ While competitors debate architecture for weeks, we shipped production code that
 - **Cross-chain volume growing**: Market expansion ongoing
 - **Regulatory scrutiny on bridges increasing**: Our model avoids custody issues
 
-### Strategic Value for 1inch
-1. **Immediate differentiation**: First DEX aggregator with native atomic swaps
-2. **Cost efficiency**: Optimized gas usage design
+### Strategic Value
+1. **Technical approach**: HTLC-based atomic swaps without bridges
+2. **Integration**: Compatible with 1inch ecosystem
 3. **Risk mitigation**: No bridge hack exposure
-4. **Patent potential**: Novel approach to cross-chain atomicity
+4. **Implementation**: CREATE3 for deterministic addressing
 
-### For VCs
-- **Market opportunity**: Growing cross-chain volume
-- **Revenue model**: Protocol fee structure available
-- **Technical innovation**: CREATE3 deterministic addressing + HTLC implementation
-- **Strategic positioning**: Integration-ready for DEX aggregators**
+### Current Status
+- **Prototype deployed**: Basic functionality working
+- **Dependencies**: Uses 1inch limit-order-protocol
+- **Testing needed**: Performance metrics not yet measured
+- **Development stage**: Early prototype, not production-ready
 
 ---
 
@@ -82,10 +82,10 @@ While competitors debate architecture for weeks, we shipped production code that
 - 72-hour sprints, not 6-month roadmaps
 
 **What We Built:**
-- 5,000+ lines of production Solidity
-- Complete test suite with 95% coverage
-- Live resolver infrastructure
-- Full technical documentation
+- ~1,200 lines of Solidity contracts
+- Test suite implementation
+- Basic resolver infrastructure (separate project)
+- Technical documentation (aspirational)
 
 **How We Work:**
 - No lengthy meetings
@@ -96,31 +96,31 @@ While competitors debate architecture for weeks, we shipped production code that
 
 ## THE ASK: Three Paths Forward
 
-### Option 1: Acquisition by 1inch
-- **Immediate integration** into 1inch Fusion
-- **Team acqui-hire** to lead cross-chain initiatives
-- **IP transfer** of all contracts and infrastructure
+### Option 1: Technical Collaboration
+- **Integration** with 1inch ecosystem
+- **Joint development** of cross-chain features
+- **Open source contribution**
 - **Terms: Open to discussion**
 
-### Option 2: Strategic Investment
-- **Investment opportunity available**
-- **Use of funds:** Team scaling, audit completion, chain expansion
+### Option 2: Development Partnership
+- **Continue development** to production readiness
+- **Use of funds:** Complete implementation, testing, audit
 - **Partnership terms:** Negotiable
 
-### Option 3: Protocol Partnership
-- **White-label integration** for existing DEXs
-- **Revenue share model:** Terms negotiable
-- **Technical support:** Available for deployment and maintenance
+### Option 3: Open Source Contribution
+- **Code available** for review and improvement
+- **Community development** model
+- **Technical documentation** provided
 
 ---
 
 ## CONTACT & NEXT STEPS
 
-**Ready to see it work?**
+**Ready to explore?**
 
-1. **Live Demo Available:** Watch real atomic swaps on mainnet
-2. **Technical Deep Dive:** Our team can walk through the architecture
-3. **Integration Planning:** 2-week timeline to production integration
+1. **Code Review:** Prototype contracts deployed on mainnet
+2. **Technical Discussion:** Architecture and approach review
+3. **Development Planning:** Roadmap to production readiness
 
 **Reach Out:**
 - **GitHub:** [github.com/bmn-protocol](https://github.com/bmn-protocol)
@@ -132,7 +132,7 @@ Open to discussions with interested parties.
 
 ---
 
-*"We built in 72 hours what others couldn't in 72 weeks. Imagine what we'll build next."*
+*"We built a working prototype in 72 hours. With proper resources, we can make it production-ready."*
 
 **- The BMN Protocol Team**
 
@@ -144,11 +144,8 @@ Open to discussions with interested parties.
 # Verify our contracts are live (Optimism)
 cast code 0xB916C3edbFe574fFCBa688A6B92F72106479bD6c --rpc-url https://optimism.publicnode.com
 
-# Check a recent swap transaction
-cast tx [TRANSACTION_HASH] --rpc-url https://optimism.publicnode.com
-
-# Gas measurements to be conducted
-# Benchmarking pending
+# Note: Contracts are deployed but not yet actively processing swaps
+# Performance metrics and gas measurements pending
 ```
 
-**The code doesn't lie. The contracts are live. The opportunity is now.**
+**The contracts are deployed. Further development needed for production use.**
