@@ -1,26 +1,26 @@
-# BMN Protocol Deployment & Testing Strategy
+# BMN Protocol Deployment & Development Roadmap
 
-## IMMEDIATE ACTIONS (Next 24 Hours)
+## CURRENT STATUS
 
-### 1. Factory Deployment (Hour 0-2)
+### Deployed Contracts
 ```bash
-# Deploy CrossChainEscrowFactory to Base and Optimism
-source .env && forge script script/DeployWithCREATE3.s.sol --rpc-url $BASE_RPC_URL --broadcast --verify
-source .env && forge script script/DeployWithCREATE3.s.sol --rpc-url $OPTIMISM_RPC_URL --broadcast --verify
-
-# Expected addresses (CREATE3 deterministic):
+# Already deployed to mainnet:
 # Base Factory: 0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1
 # Optimism Factory: 0xB916C3edbFe574fFCBa688A6B92F72106479bD6c
+
+# Status: Deployed but not actively used
+# Needs: Testing, bug fixes, production readiness
 ```
 
-### 2. Initial Test Transactions (Hour 2-6)
-```bash
-# Test 1: Minimal swap (0.001 ETH worth)
-# Base -> Optimism: 0.001 WETH for USDC
-# Optimism -> Base: 1 USDC for WETH
-
-# Test 2: Token-to-token swap
-# Base USDC -> Optimism USDT (0.1 USDC)
+### Required Development Work
+```
+1. Fix resolver validation (currently bypassed)
+2. Implement circuit breakers (only TODOs exist)
+3. Add MEV protection (not implemented)
+4. Fix metrics bugs (division by zero issues)
+5. Complete rate limiting integration
+6. Add emergency pause functionality
+7. Implement proper access controls
 ```
 
 ### 3. Gas Usage Baseline (Hour 6-12)
@@ -37,46 +37,42 @@ source .env && forge script script/DeployWithCREATE3.s.sol --rpc-url $OPTIMISM_R
 // Alert thresholds: >5 min without heartbeat, any revert, gas spike >2x
 ```
 
-## TESTING PHASE (Days 2-4)
+## DEVELOPMENT ROADMAP
 
-### Day 2: Progressive Value Testing
-| Test | Amount | Chains | Success Criteria |
-|------|--------|--------|-----------------|
-| Small | $1-10 | Base<->Optimism | Track success rate |
-| Medium | $10-100 | Base<->Optimism | Track success rate |
-| Large | $100-1000 | Base<->Optimism | Track success rate |
+### Phase 1: Fix Critical Issues (Week 1-2)
+| Issue | Priority | Status |
+|-------|----------|--------|
+| Resolver validation bypass | Critical | TODO |
+| Metrics calculation bugs | High | TODO |
+| Access control implementation | High | TODO |
+| Circuit breaker implementation | Medium | TODO |
 
-### Day 3: Cross-Chain Matrix Testing
-```
-Base -> Optimism: WETH, USDC, USDT, DAI
-Optimism -> Base: WETH, USDC, USDT, OP
-Base -> Etherlink: WETH, USDC (if bridge available)
-```
+### Phase 2: Testing & Validation (Week 3-4)
+- Unit tests for all contracts
+- Integration testing
+- Gas optimization analysis
+- Security review
 
-### Day 4: Performance Benchmarking
-| Metric | To Measure | Benchmark Against |
-|--------|------------|------------------|
-| Gas Cost | Actual usage | Industry standards |
-| Completion Time | Actual time | Alternative solutions |
-| Success Rate | Actual rate | Track over time |
-| Max Slippage | Actual slippage | Market conditions |
+### Phase 3: Production Readiness (Week 5-6)
+| Task | Status |
+|------|--------|
+| External audit | Not started |
+| Performance benchmarking | Not started |
+| Documentation completion | In progress |
+| Mainnet testing | Not started |
 
-## PRODUCTION ROLLOUT (Days 5-7)
+## FUTURE PRODUCTION ROLLOUT (After Development Complete)
 
-### Day 5: Soft Launch
-- Remove 0.1 ETH limit, increase to 1 ETH
-- Enable whitelisted beta testers (10-20 users)
-- Monitor every transaction manually
+### Prerequisites
+- All critical bugs fixed
+- Security audit completed
+- Comprehensive testing done
+- Performance metrics validated
 
-### Day 6: Gradual Opening
-- Increase limit to 10 ETH
-- Open to public with rate limiting (1 swap/address/hour)
-- Deploy redundant resolver nodes
-
-### Day 7: Full Production
-- Remove all limits
-- Enable all supported tokens
-- Launch marketing campaign
+### Gradual Rollout Plan
+- Phase 1: Limited beta testing
+- Phase 2: Gradual public access
+- Phase 3: Full production launch
 
 ## METRICS TO TRACK
 
@@ -178,25 +174,25 @@ forge script script/EmergencyUpgrade.s.sol --broadcast
 
 ## COMPETITIVE ADVANTAGES TO HIGHLIGHT
 
-### vs 1inch Fusion
-- **No bridges needed**: Direct cross-chain swaps
-- **Speed**: Performance to be measured
-- **Cost**: Gas usage to be benchmarked
-- **Reliability**: Atomic execution design
+### Technical Approach
+- **HTLC-based swaps**: No bridge dependency
+- **Speed**: Not yet measured
+- **Cost**: Not yet benchmarked
+- **Integration**: Uses 1inch limit-order-protocol
 
 ### vs Traditional Bridges
-- **No wrapped tokens**: Native assets only
-- **No bridge risk**: No honeypot TVL
-- **Instant finality**: No waiting periods
-- **Lower fees**: No bridge toll
+- **No bridge required**: Direct atomic swaps
+- **Cryptographic security**: Hashlock-based
+- **Status**: Prototype implementation
+- **Production ready**: No
 
 ## GO-TO-MARKET CHECKLIST
 
 ### Technical
-- [x] Mainnet contracts deployed
-- [ ] Monitoring dashboard live
-- [ ] Resolver redundancy active
-- [ ] Emergency procedures tested
+- [x] Prototype contracts deployed
+- [ ] Fix critical bugs
+- [ ] Complete testing
+- [ ] Security audit
 
 ### Product
 - [ ] UI/UX finalized
