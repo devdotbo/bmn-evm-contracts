@@ -34,8 +34,8 @@ All contracts have been deployed using CREATE3, ensuring identical addresses acr
 4. Update documentation to reflect Optimism as a supported chain
 
 ## RPC Configuration
-- **Optimism RPC**: `https://rpc.ankr.com/optimism/***REMOVED***`
-- **Optimism WS**: `wss://rpc.ankr.com/optimism/ws/***REMOVED***`
+- **Optimism RPC**: `https://rpc.ankr.com/optimism/YOUR_API_KEY_HERE`
+- **Optimism WS**: `wss://rpc.ankr.com/optimism/ws/YOUR_API_KEY_HERE`
 
 ## Deployment Transaction Logs
 - Full deployment logs saved in: `broadcast/DeployWithCREATE3*.s.sol/10/run-latest.json`
