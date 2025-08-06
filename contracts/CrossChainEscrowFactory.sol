@@ -11,6 +11,9 @@ import { EscrowSrc } from "./EscrowSrc.sol";
 import { MerkleStorageInvalidator } from "./MerkleStorageInvalidator.sol";
 import { IBaseEscrow } from "./interfaces/IBaseEscrow.sol";
 import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
+import { ImmutablesLib } from "./libraries/ImmutablesLib.sol";
+import { Timelocks, TimelocksLib } from "./libraries/TimelocksLib.sol";
+import { SafeERC20 } from "solidity-utils/contracts/libraries/SafeERC20.sol";
 
 /**
  * @title CrossChainEscrowFactory
@@ -20,6 +23,9 @@ import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressL
  */
 contract CrossChainEscrowFactory is BaseEscrowFactory {
     using AddressLib for Address;
+    using ImmutablesLib for IBaseEscrow.Immutables;
+    using TimelocksLib for Timelocks;
+    using SafeERC20 for IERC20;
     
     /// @notice Version identifier for this implementation
     string public constant VERSION = "2.1.0-bmn-secure";
@@ -207,8 +213,33 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
         // CRITICAL: Validate caller is whitelisted resolver
         require(whitelistedResolvers[msg.sender], "Resolver not whitelisted");
         
-        // Call parent implementation
-        super.createDstEscrow(dstImmutables, srcCancellationTimestamp);
+        // Call the base implementation directly (it's not overrideable in BaseEscrowFactory)
+        // We need to manually implement the logic here
+        address token = dstImmutables.token.get();
+        uint256 nativeAmount = dstImmutables.safetyDeposit;
+        if (token == address(0)) {
+            nativeAmount += dstImmutables.amount;
+        }
+        require(msg.value == nativeAmount, "Insufficient escrow balance");
+
+        IBaseEscrow.Immutables memory immutables = dstImmutables;
+        immutables.timelocks = immutables.timelocks.setDeployedAt(block.timestamp);
+        
+        // Check cancellation timing with tolerance
+        uint256 TIMESTAMP_TOLERANCE = 300; // 5 minutes
+        require(
+            immutables.timelocks.get(TimelocksLib.Stage.DstCancellation) <= srcCancellationTimestamp + TIMESTAMP_TOLERANCE,
+            "Invalid creation time"
+        );
+
+        bytes32 salt = immutables.hashMem();
+        address escrow = _deployEscrow(salt, msg.value, ESCROW_DST_IMPLEMENTATION);
+        
+        if (token != address(0)) {
+            IERC20(token).safeTransferFrom(msg.sender, escrow, immutables.amount);
+        }
+
+        emit DstEscrowCreated(escrow, dstImmutables.hashlock, dstImmutables.taker);
     }
     
     /**
