@@ -55,12 +55,12 @@ contract TestBMNProtocol is Script {
             config.factory = vm.parseJsonAddress(json, ".factory");
             console.log("Loaded factory from deployment:", config.factory);
         } catch {
-            console.log("No deployment found, using default addresses");
-            // Default addresses for testing
+            console.log("No deployment found, using deployed addresses");
+            // Newly deployed addresses
             if (block.chainid == 8453) { // Base
-                config.factory = address(0); // Will be set after deployment
+                config.factory = 0xd599b1543467433F5A6f195Ccc4E01FcbF5AA157;
             } else if (block.chainid == 10) { // Optimism
-                config.factory = address(0); // Will be set after deployment
+                config.factory = 0xA6342E61d1a0897A31a1ABAFB4B1669C0A5eaa56;
             }
         }
         
