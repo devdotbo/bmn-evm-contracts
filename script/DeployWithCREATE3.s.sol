@@ -4,7 +4,7 @@ pragma solidity 0.8.23;
 import "forge-std/Script.sol";
 import { EscrowSrc } from "../contracts/EscrowSrc.sol";
 import { EscrowDst } from "../contracts/EscrowDst.sol";
-import { CrossChainEscrowFactory } from "../contracts/CrossChainEscrowFactory.sol";
+import { SimplifiedEscrowFactory } from "../contracts/SimplifiedEscrowFactory.sol";
 import { Constants } from "../contracts/Constants.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
@@ -26,12 +26,7 @@ contract DeployWithCREATE3 is Script {
     // Deterministic salts for cross-chain consistency
     bytes32 constant SRC_IMPL_SALT = keccak256("BMN-EscrowSrc-v1.0.0");
     bytes32 constant DST_IMPL_SALT = keccak256("BMN-EscrowDst-v1.0.0");
-    bytes32 constant FACTORY_SALT = keccak256("BMN-CrossChainEscrowFactory-v1.0.0");
-    
-    // Known mainnet addresses
-    address constant LIMIT_ORDER_PROTOCOL = 0x1111111254EEB25477B68fb85Ed929f73A960582;
-    address constant FEE_TOKEN = Constants.BMN_TOKEN;
-    address constant ACCESS_TOKEN = Constants.BMN_TOKEN;
+    bytes32 constant FACTORY_SALT = keccak256("BMN-SimplifiedEscrowFactory-v1.0.0");
     
     // Deployment results
     address public srcImplementation;
@@ -66,7 +61,7 @@ contract DeployWithCREATE3 is Script {
             console.log("\nDeploying EscrowSrc implementation...");
             bytes memory srcBytecode = abi.encodePacked(
                 type(EscrowSrc).creationCode,
-                abi.encode(604800, IERC20(ACCESS_TOKEN)) // 7 days rescue delay
+                abi.encode(604800, IERC20(Constants.BMN_TOKEN)) // 7 days rescue delay
             );
             
             address deployedSrc = ICREATE3(CREATE3_FACTORY).deploy(SRC_IMPL_SALT, srcBytecode);
@@ -80,7 +75,7 @@ contract DeployWithCREATE3 is Script {
             console.log("\nDeploying EscrowDst implementation...");
             bytes memory dstBytecode = abi.encodePacked(
                 type(EscrowDst).creationCode,
-                abi.encode(604800, IERC20(ACCESS_TOKEN)) // 7 days rescue delay
+                abi.encode(604800, IERC20(Constants.BMN_TOKEN)) // 7 days rescue delay
             );
             
             address deployedDst = ICREATE3(CREATE3_FACTORY).deploy(DST_IMPL_SALT, dstBytecode);
@@ -92,24 +87,21 @@ contract DeployWithCREATE3 is Script {
         
         // Deploy factory
         if (factory.code.length == 0) {
-            console.log("\nDeploying CrossChainEscrowFactory...");
+            console.log("\nDeploying SimplifiedEscrowFactory...");
             bytes memory factoryBytecode = abi.encodePacked(
-                type(CrossChainEscrowFactory).creationCode,
+                type(SimplifiedEscrowFactory).creationCode,
                 abi.encode(
-                    LIMIT_ORDER_PROTOCOL,
-                    IERC20(FEE_TOKEN),
-                    IERC20(ACCESS_TOKEN),
-                    deployer, // owner
                     srcImplementation,
-                    dstImplementation
+                    dstImplementation,
+                    deployer // owner
                 )
             );
             
             address deployedFactory = ICREATE3(CREATE3_FACTORY).deploy(FACTORY_SALT, factoryBytecode);
             require(deployedFactory == factory, "Factory address mismatch");
-            console.log("CrossChainEscrowFactory deployed at:", deployedFactory);
+            console.log("SimplifiedEscrowFactory deployed at:", deployedFactory);
         } else {
-            console.log("CrossChainEscrowFactory already deployed at:", factory);
+            console.log("SimplifiedEscrowFactory already deployed at:", factory);
         }
         
         vm.stopBroadcast();
