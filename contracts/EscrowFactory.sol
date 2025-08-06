@@ -30,11 +30,20 @@ contract EscrowFactory is BaseEscrowFactory {
         uint32 rescueDelayDst
     )
     MerkleStorageInvalidator(limitOrderProtocol) {
-        // Note: In production, BaseExtension and ResolverValidationExtension would have constructors
-        // Our stub implementations don't require initialization
+        // Initialize the resolver validation extension
+        _initializeResolverExtension();
+        
+        // Deploy escrow implementations
         ESCROW_SRC_IMPLEMENTATION = address(new EscrowSrc(rescueDelaySrc, accessToken));
         ESCROW_DST_IMPLEMENTATION = address(new EscrowDst(rescueDelayDst, accessToken));
         _PROXY_SRC_BYTECODE_HASH = ProxyHashLib.computeProxyBytecodeHash(ESCROW_SRC_IMPLEMENTATION);
         _PROXY_DST_BYTECODE_HASH = ProxyHashLib.computeProxyBytecodeHash(ESCROW_DST_IMPLEMENTATION);
+        
+        // Transfer ownership if needed
+        if (owner != msg.sender) {
+            _owner = owner;
+            admins[owner] = true;
+            emit AdminAdded(owner);
+        }
     }
 }
