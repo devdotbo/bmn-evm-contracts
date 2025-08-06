@@ -16,20 +16,20 @@ While competitors debate architecture for weeks, we shipped production code that
 ## THE NUMBERS: Performance That Matters
 
 ### Gas Efficiency
-- **50% less gas** than bridge-based solutions
-- **No bridge fees** (typically 0.1-0.3% on competitors)
-- **Single transaction** per chain (vs 3-4 for bridges)
+- **Gas optimization implemented** with 1M optimizer runs
+- **No bridge fees** required
+- **Single transaction** per chain design
 
 ### Technical Metrics
 - **100% atomic**: Both swaps complete or both fail
 - **Zero custody risk**: No central bridge holding funds
-- **Deterministic addresses**: Same escrow address across all chains
-- **5-minute settlement**: Fast enough for traders, secure enough for institutions
+- **Deterministic addresses**: Same escrow address across all chains via CREATE3
+- **Configurable timelocks**: Customizable settlement periods
 
 ### Deployment Stats
-- **3 mainnets live**: Base, Optimism, Etherlink
-- **$0 infrastructure costs**: No bridge validators to maintain
-- **100% uptime**: No bridge downtime risk
+- **3 mainnets deployed**: Base, Optimism, Etherlink
+- **No bridge validators** required
+- **Decentralized operation**: No single point of failure
 
 ---
 
@@ -56,21 +56,21 @@ While competitors debate architecture for weeks, we shipped production code that
 ## THE OPPORTUNITY: Why Now Matters
 
 ### Market Timing
-- **Bridge hacks exceeded $2.8B in 2022-2024**: Users want alternatives
-- **Cross-chain volume growing 300% YoY**: Market expanding rapidly
+- **Bridge security concerns**: Industry seeking alternatives
+- **Cross-chain volume growing**: Market expansion ongoing
 - **Regulatory scrutiny on bridges increasing**: Our model avoids custody issues
 
 ### Strategic Value for 1inch
 1. **Immediate differentiation**: First DEX aggregator with native atomic swaps
-2. **Cost leadership**: Pass 50% gas savings to users
+2. **Cost efficiency**: Optimized gas usage design
 3. **Risk mitigation**: No bridge hack exposure
 4. **Patent potential**: Novel approach to cross-chain atomicity
 
 ### For VCs
-- **TAM: $50B+ daily cross-chain volume**
-- **Revenue model: 0.05% protocol fee = $25M daily opportunity**
-- **Defensible moat: CREATE3 deterministic addressing + HTLC expertise**
-- **Exit strategy: Natural acquisition target for DEX aggregators**
+- **Market opportunity**: Growing cross-chain volume
+- **Revenue model**: Protocol fee structure available
+- **Technical innovation**: CREATE3 deterministic addressing + HTLC implementation
+- **Strategic positioning**: Integration-ready for DEX aggregators**
 
 ---
 
@@ -100,18 +100,17 @@ While competitors debate architecture for weeks, we shipped production code that
 - **Immediate integration** into 1inch Fusion
 - **Team acqui-hire** to lead cross-chain initiatives
 - **IP transfer** of all contracts and infrastructure
-- **Price: Let's talk** (Comparable: Hop Protocol valued at $1B)
+- **Terms: Open to discussion**
 
 ### Option 2: Strategic Investment
-- **Seeking: $2-5M Series A**
-- **Valuation: $20M** (10x revenue multiple on projected Year 1)
+- **Investment opportunity available**
 - **Use of funds:** Team scaling, audit completion, chain expansion
-- **Lead investor perks:** Board seat, protocol governance rights
+- **Partnership terms:** Negotiable
 
 ### Option 3: Protocol Partnership
 - **White-label integration** for existing DEXs
-- **Revenue share model:** 50/50 split on protocol fees
-- **Technical support:** Our team handles deployment and maintenance
+- **Revenue share model:** Terms negotiable
+- **Technical support:** Available for deployment and maintenance
 
 ---
 
@@ -128,8 +127,8 @@ While competitors debate architecture for weeks, we shipped production code that
 - **Technical Docs:** [bmn-protocol.dev](https://bmn-protocol.dev)
 - **Email:** partnerships@bmn-protocol.dev
 
-**Decision Timeline:**
-We're in discussions with multiple parties. First mover advantage expires in 14 days.
+**Next Steps:**
+Open to discussions with interested parties.
 
 ---
 
@@ -148,9 +147,8 @@ cast code 0xB916C3edbFe574fFCBa688A6B92F72106479bD6c --rpc-url https://optimism.
 # Check a recent swap transaction
 cast tx [TRANSACTION_HASH] --rpc-url https://optimism.publicnode.com
 
-# See the gas efficiency yourself
-# BMN: ~150,000 gas total
-# Bridge-based: ~300,000+ gas total
+# Gas measurements to be conducted
+# Benchmarking pending
 ```
 
 **The code doesn't lie. The contracts are live. The opportunity is now.**
