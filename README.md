@@ -80,21 +80,30 @@ The factory deployment includes critical security enhancements:
 - **[Resolver Update Guide](docs/RESOLVER_UPDATE_GUIDE.md)** - Resolver infrastructure updates
 - **[Completed Plans](docs/completed/)** - Archive of implemented features
 
-### Current Deployment (v2.1.0)
+### Current Deployment (v2.2.0)
 
-**Deployed**: August 6, 2025  
+**Deployed**: January 7, 2025  
 **Status**: ACTIVE on Base and Optimism
 
 | Contract | Address | Networks |
 |----------|---------|----------|
 | CREATE3 Factory | `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` | All |
-| **CrossChainEscrowFactory v2.1.0** | `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` | Base, Optimism |
+| **SimplifiedEscrowFactory v2.2.0** | `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` | Base, Optimism |
 | BMN Token | `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` | All |
 | EscrowSrc | `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535` | All |
 | EscrowDst | `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b` | All |
 | Resolver Factory | `0xe767202fD26104267CFD8bD8cfBd1A44450DC343` | All |
 
-⚠️ **Previous v1.1.0 factories are DEPRECATED** - All resolvers should migrate to v2.1.0
+### Previous Deployment (v2.1.0)
+
+**Deployed**: August 6, 2025  
+**Status**: DEPRECATED
+
+| Contract | Address | Networks |
+|----------|---------|----------|
+| CrossChainEscrowFactory v2.1.0 | `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` | Base, Optimism |
+
+⚠️ **Previous v1.1.0 and v2.1.0 factories are DEPRECATED** - All resolvers should migrate to v2.2.0
 
 See [Current Deployment Status](deployments/current/MAINNET-STATUS.md) for live status.
 
