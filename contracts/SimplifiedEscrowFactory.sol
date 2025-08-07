@@ -8,13 +8,15 @@ import { IBaseEscrow } from "./interfaces/IBaseEscrow.sol";
 import { ImmutablesLib } from "./libraries/ImmutablesLib.sol";
 import { Timelocks, TimelocksLib } from "./libraries/TimelocksLib.sol";
 import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
+import { IPostInteraction } from "../dependencies/limit-order-protocol/contracts/interfaces/IPostInteraction.sol";
+import { IOrderMixin } from "../dependencies/limit-order-protocol/contracts/interfaces/IOrderMixin.sol";
 
 /**
  * @title SimplifiedEscrowFactory
  * @notice Minimal factory for immediate mainnet deployment
  * @dev Stripped down version focusing on core functionality and security
  */
-contract SimplifiedEscrowFactory {
+contract SimplifiedEscrowFactory is IPostInteraction {
     using Clones for address;
     using SafeERC20 for IERC20;
     using ImmutablesLib for IBaseEscrow.Immutables;
@@ -67,6 +69,13 @@ contract SimplifiedEscrowFactory {
     event MakerRemoved(address indexed maker);
     event EmergencyPause(bool paused);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event PostInteractionEscrowCreated(
+        address indexed escrow,
+        bytes32 indexed hashlock,
+        address indexed protocol,
+        address taker,
+        uint256 amount
+    );
     
     /// @notice Modifiers
     modifier onlyOwner() {
@@ -178,6 +187,110 @@ contract SimplifiedEscrowFactory {
     ) external view returns (address) {
         address implementation = isSrc ? ESCROW_SRC_IMPLEMENTATION : ESCROW_DST_IMPLEMENTATION;
         return Clones.predictDeterministicAddress(implementation, immutables.hash(), address(this));
+    }
+    
+    /**
+     * @notice Called by SimpleLimitOrderProtocol after order fill
+     * @dev Decodes extension data and creates source escrow
+     * @param order The order that was filled
+     * @param orderHash The hash of the filled order
+     * @param taker Address that filled the order (resolver)
+     * @param makingAmount Amount of maker asset transferred
+     * @param extraData Encoded parameters for escrow creation
+     */
+    function postInteraction(
+        IOrderMixin.Order calldata order,
+        bytes calldata /* extension */,
+        bytes32 orderHash,
+        address taker,
+        uint256 makingAmount,
+        uint256 /* takingAmount */,
+        uint256 /* remainingMakingAmount */,
+        bytes calldata extraData
+    ) external override whenNotPaused {
+        // Validate resolver
+        require(whitelistedResolvers[taker], "Resolver not whitelisted");
+        
+        // Decode the extraData which contains escrow parameters
+        // Format: abi.encode(hashlock, dstChainId, dstToken, deposits, timelocks)
+        (
+            bytes32 hashlock,
+            uint256 dstChainId,
+            address dstToken,
+            uint256 deposits,
+            uint256 timelocks
+        ) = abi.decode(extraData, (bytes32, uint256, address, uint256, uint256));
+        
+        // Prevent duplicate escrows by checking if the hashlock already has an escrow
+        require(escrows[hashlock] == address(0), "Escrow already exists");
+        
+        // Extract safety deposits (packed as: dstDeposit << 128 | srcDeposit)
+        uint256 srcSafetyDeposit = deposits & type(uint128).max;
+        uint256 dstSafetyDeposit = deposits >> 128;
+        
+        // Extract timelocks (packed as: srcCancellation << 128 | dstWithdrawal)
+        uint256 dstWithdrawalTimestamp = timelocks & type(uint128).max;
+        uint256 srcCancellationTimestamp = timelocks >> 128;
+        
+        // Build timelocks for source escrow by packing values
+        // Timelocks stores offsets from deployment time, not absolute timestamps
+        uint256 packedTimelocks = uint256(uint32(block.timestamp)) << 224; // deployedAt
+        packedTimelocks |= uint256(uint32(300)) << 0; // srcWithdrawal: 5 minutes offset
+        packedTimelocks |= uint256(uint32(600)) << 32; // srcPublicWithdrawal: 10 minutes offset
+        packedTimelocks |= uint256(uint32(srcCancellationTimestamp - block.timestamp)) << 64; // srcCancellation offset
+        packedTimelocks |= uint256(uint32(srcCancellationTimestamp - block.timestamp + 300)) << 96; // srcPublicCancellation offset
+        packedTimelocks |= uint256(uint32(dstWithdrawalTimestamp - block.timestamp)) << 128; // dstWithdrawal offset
+        packedTimelocks |= uint256(uint32(dstWithdrawalTimestamp - block.timestamp + 300)) << 160; // dstPublicWithdrawal offset
+        packedTimelocks |= uint256(uint32(7200)) << 192; // dstCancellation: 2 hours offset
+        
+        Timelocks srcTimelocks = Timelocks.wrap(packedTimelocks);
+        
+        // Build immutables for source escrow
+        IBaseEscrow.Immutables memory srcImmutables = IBaseEscrow.Immutables({
+            orderHash: orderHash,
+            hashlock: hashlock,
+            maker: Address.wrap(uint160(order.maker.get())),
+            taker: Address.wrap(uint160(taker)),
+            token: order.makerAsset,
+            amount: makingAmount,
+            safetyDeposit: srcSafetyDeposit,
+            timelocks: srcTimelocks
+        });
+        
+        // Create the source escrow
+        address escrowAddress = _createSrcEscrowInternal(srcImmutables);
+        
+        // The SimpleLimitOrderProtocol has already transferred tokens from maker to taker (resolver)
+        // The resolver must have approved this factory to transfer tokens to the escrow
+        // We need to transfer them from taker to the escrow
+        IERC20(order.makerAsset.get()).safeTransferFrom(taker, escrowAddress, makingAmount);
+        
+        // Emit event for tracking
+        emit PostInteractionEscrowCreated(
+            escrowAddress,
+            hashlock,
+            msg.sender,
+            taker,
+            makingAmount
+        );
+    }
+    
+    /**
+     * @notice Internal function to create source escrow
+     * @dev Extracted from createSrcEscrow for reuse
+     */
+    function _createSrcEscrowInternal(
+        IBaseEscrow.Immutables memory srcImmutables
+    ) internal returns (address escrow) {
+        // Deploy escrow using CREATE2
+        // Calculate hash manually for memory parameter
+        bytes32 salt = keccak256(abi.encode(srcImmutables));
+        escrow = ESCROW_SRC_IMPLEMENTATION.cloneDeterministic(salt);
+        
+        // Track escrow by hashlock for duplicate detection
+        escrows[srcImmutables.hashlock] = escrow;
+        
+        return escrow;
     }
     
     // === Admin Functions ===
