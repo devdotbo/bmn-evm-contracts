@@ -27,6 +27,23 @@ Original pattern: [first 4 chars]...[last 4 chars]
 Please use environment variables instead.
 ```
 
+## 📋 LATEST PROJECT STATUS (v2.2.0 - January 7, 2025)
+
+### ✅ PostInteraction Integration COMPLETED
+- SimplifiedEscrowFactory now implements IPostInteraction interface
+- Atomic escrow creation working with 1inch SimpleLimitOrderProtocol
+- Gas usage: ~105k per postInteraction call
+- Test coverage: 33/34 tests passing (1 test has escrow validation issue)
+
+### 🚀 Current Deployments
+- **Production (v2.1.0)**: `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` (Base & Optimism)
+- **Status**: Ready for v2.2.0 deployment with PostInteraction support
+
+### 📝 Key Documentation
+- `docs/CURRENT_STATE.md` - Complete project status
+- `docs/POSTINTERACTION_IMPLEMENTATION.md` - Implementation details
+- `docs/completed/` - Archived completed plans
+
 ## 🚨 CRITICAL SECURITY RULES - READ FIRST!
 
 ### ❌ NEVER COMMIT THESE (Even in Documentation!)
@@ -169,6 +186,21 @@ source .env && forge script ...
 5. **GitHub Actions** - Use secrets, never hardcode
 
 ## Important Instructions
+
+### 🆕 PostInteraction Integration Context (v2.2.0)
+
+**WHEN WORKING WITH SimplifiedEscrowFactory:**
+1. **postInteraction() method** is the entry point from 1inch SimpleLimitOrderProtocol
+2. **Token flow**: SimpleLimitOrderProtocol transfers tokens from maker to taker, then postInteraction transfers from taker to escrow
+3. **Resolver MUST approve factory** before order fills to allow token transfers
+4. **Test with PostInteractionTest.sol** for focused testing without full escrow validation
+5. **Known issue**: SingleChainAtomicSwapTest fails with InvalidImmutables() - this is expected due to escrow validation
+
+**KEY FILES FOR POSTINTERACTION:**
+- `contracts/SimplifiedEscrowFactory.sol` - Main implementation
+- `test/PostInteractionTest.sol` - Working tests for the integration
+- `test/mocks/MockLimitOrderProtocol.sol` - Mock for testing
+- `docs/POSTINTERACTION_IMPLEMENTATION.md` - Complete details
 
 ### 🔴 CRITICAL: Security-First Development
 

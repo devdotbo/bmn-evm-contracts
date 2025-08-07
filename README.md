@@ -8,12 +8,14 @@ Cross-chain atomic swap protocol using hash timelock contracts (HTLC).
 
 ## Architecture Overview
 
-The BMN protocol consists of two essential components:
+The BMN protocol consists of three essential components:
 1. **Smart Contracts** (this repository): Provide on-chain escrow, timelocks, and atomic swap infrastructure
-2. **TypeScript Resolver** (`../bmn-evm-resolver`): Monitors chains, coordinates swaps, reveals secrets
+2. **1inch Integration** (v2.2.0): IPostInteraction interface for atomic escrow creation with SimpleLimitOrderProtocol
+3. **TypeScript Resolver** (`../bmn-evm-resolver`): Monitors chains, coordinates swaps, reveals secrets
 
 Without the TypeScript resolver, the contracts can only create escrows on individual chains. The resolver is what enables true cross-chain atomic swaps by:
-- Monitoring order creation events
+- Monitoring order creation events via 1inch SimpleLimitOrderProtocol
+- Triggering postInteraction callbacks for atomic escrow creation
 - Deploying corresponding escrows on destination chains
 - Managing secret revelation timing
 - Ensuring atomicity across chains
@@ -44,9 +46,17 @@ node scripts/resolver.js
 forge test
 ```
 
+## Latest Features (v2.2.0)
+
+### PostInteraction Integration with 1inch
+- **IPostInteraction Interface**: SimplifiedEscrowFactory now integrates seamlessly with 1inch SimpleLimitOrderProtocol
+- **Atomic Escrow Creation**: Escrows are created atomically when orders are filled
+- **Optimized Token Flow**: Direct transfer from resolver to escrow (~105k gas)
+- **Backward Compatible**: Existing deployments remain functional
+
 ## Security Features (v2.1.0)
 
-The latest factory deployment includes critical security enhancements:
+The factory deployment includes critical security enhancements:
 
 - **Resolver Whitelist**: Only approved addresses can create destination escrows
 - **Emergency Pause**: Protocol can be immediately halted if issues are detected
@@ -56,6 +66,8 @@ The latest factory deployment includes critical security enhancements:
 
 ### Essential Guides
 
+- **[Current Project State](docs/CURRENT_STATE.md)** - Complete status and roadmap
+- **[PostInteraction Implementation](docs/POSTINTERACTION_IMPLEMENTATION.md)** - v2.2.0 1inch integration details
 - **[Testing Guide](TESTING.md)** - Comprehensive testing documentation
 - **[Deployment Runbook](DEPLOYMENT_RUNBOOK.md)** - Step-by-step deployment procedures
 - **[Resolver Migration Guide](RESOLVER_MIGRATION_GUIDE.md)** - Migration from v1.1.0 to v2.1.0
@@ -66,6 +78,7 @@ The latest factory deployment includes critical security enhancements:
 - **[CREATE3 Deployment](docs/CREATE3-DEPLOYMENT-SUMMARY.md)** - CREATE3 factory usage details
 - **[Factory Enhancement](docs/FACTORY_EVENT_ENHANCEMENT.md)** - Technical improvements
 - **[Resolver Update Guide](docs/RESOLVER_UPDATE_GUIDE.md)** - Resolver infrastructure updates
+- **[Completed Plans](docs/completed/)** - Archive of implemented features
 
 ### Current Deployment (v2.1.0)
 

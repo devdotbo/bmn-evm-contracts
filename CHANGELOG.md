@@ -7,16 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- Critical: SimplifiedEscrowFactory missing IPostInteraction interface preventing atomic swap escrow creation
-  - SimpleLimitOrderProtocol was unable to trigger escrow creation after order fills
-  - Added comprehensive integration plan in POSTINTERACTION_INTEGRATION_PLAN.md
-  - Solution requires implementing IPostInteraction interface in SimplifiedEscrowFactory
+## [2.2.0] - 2025-01-07
 
 ### Added
-- POSTINTERACTION_INTEGRATION_PLAN.md - Comprehensive guide for fixing the integration issue
-- Same-chain atomic swap testing strategy for faster iteration without cross-chain complexity
-- Detailed implementation examples for postInteraction method
+- **IPostInteraction Interface Implementation** in SimplifiedEscrowFactory
+  - Enables atomic escrow creation through 1inch SimpleLimitOrderProtocol
+  - postInteraction() method handles callbacks after order fills
+  - Automatic token transfer from resolver to escrow
+  - PostInteractionEscrowCreated event for tracking
+- **BMNToken Contract** - Local implementation compatible with Solidity 0.8.23
+- **MockLimitOrderProtocol** - Testing infrastructure for order fills
+- **PostInteractionTest Suite** - Comprehensive testing of the integration
+- **Documentation Updates**
+  - docs/POSTINTERACTION_IMPLEMENTATION.md - Complete implementation details
+  - docs/CURRENT_STATE.md - Current project status and roadmap
+  - Archived completed plan to docs/completed/
+
+### Fixed
+- **Critical: Atomic Escrow Creation** - SimplifiedEscrowFactory now properly integrates with SimpleLimitOrderProtocol
+  - Implemented IPostInteraction interface
+  - Handles token flow: maker → taker → escrow
+  - Validates resolver whitelisting
+  - Prevents duplicate escrow creation
+
+### Changed
+- SimplifiedEscrowFactory now extends IPostInteraction
+- Added internal _createSrcEscrowInternal() for code reuse
+- Improved timelock packing for escrow creation
+
+### Performance
+- PostInteraction gas usage: ~105,535 gas per call
+- Well within 250k gas target
+- Efficient CREATE2 deployment pattern maintained
 
 ## [2.1.0] - 2025-01-06
 

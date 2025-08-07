@@ -8,7 +8,7 @@ via_ir = true
 evm_version = 'cancun'
 solc_version = '0.8.23'
 fs_permissions = [{ access = "read-write", path = "./deployments" }]
-allow_paths = ["../bmn-evm-contracts-limit-order"]
+allow_paths = ["../bmn-evm-contracts-limit-order", "../bmn-evm-token"]
 remappings = [
     "forge-std/=dependencies/forge-std-1.10.0/src/",
     "openzeppelin-contracts/contracts/=dependencies/@openzeppelin-contracts-5.1.0/",
@@ -19,7 +19,9 @@ remappings = [
     "@1inch/solidity-utils/=dependencies/solidity-utils/",
     "murky/=dependencies/murky/src/",
     "create3-factory/=dependencies/zeframlou-create3-factory-567d6ec78cd0545f2fb18135dcb68298a5a1ef09/src/",
-    "SimpleLimitOrderProtocol/=../bmn-evm-contracts-limit-order/contracts/"
+    "SimpleLimitOrderProtocol/=../bmn-evm-contracts-limit-order/contracts/",
+    "bmn-token/=../bmn-evm-token/src/",
+    "solmate/=../bmn-evm-token/dependencies/solmate-6.8.0/src/"
 ]
 
 [fmt]
