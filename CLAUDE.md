@@ -29,15 +29,15 @@ Please use environment variables instead.
 
 ## 📋 LATEST PROJECT STATUS (v2.2.0 - January 7, 2025)
 
-### ✅ PostInteraction Integration COMPLETED
+### ✅ PostInteraction Integration DEPLOYED
 - SimplifiedEscrowFactory now implements IPostInteraction interface
 - Atomic escrow creation working with 1inch SimpleLimitOrderProtocol
 - Gas usage: ~105k per postInteraction call
-- Test coverage: 33/34 tests passing (1 test has escrow validation issue)
+- Deployed to production on Base & Optimism
 
 ### 🚀 Current Deployments
-- **Production (v2.1.0)**: `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` (Base & Optimism)
-- **Status**: Ready for v2.2.0 deployment with PostInteraction support
+- **Production (v2.2.0)**: `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` (Base & Optimism)
+- **Features**: PostInteraction support, Resolver whitelist, Emergency pause mechanism
 
 ### 📝 Key Documentation
 - `docs/CURRENT_STATE.md` - Complete project status
@@ -359,14 +359,17 @@ Timelocks are packed into a single uint256 with stages:
 
 ### Production Deployments
 
-**Current Deployments (v2.1.0 - ACTIVE)**:
-**Deployment Date**: August 6, 2025
-**Security Features**: Resolver whitelist, Emergency pause mechanism
+**Current Deployments (v2.2.0 - ACTIVE)**:
+**Deployment Date**: January 7, 2025
+**Features**: PostInteraction integration, Resolver whitelist, Emergency pause mechanism
 
-- CrossChainEscrowFactory v2.1.0: `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` (Base & Optimism)
+- SimplifiedEscrowFactory v2.2.0: `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` (Base & Optimism)
 - BMN Token: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` (All chains)
 - EscrowSrc: `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535` (All chains)
 - EscrowDst: `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b` (All chains)
+
+**Previous Deployments (v2.1.0 - DEPRECATED)**:
+- CrossChainEscrowFactory: `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` (Base & Optimism)
 
 **Previous Deployments (v1.1.0 - DEPRECATED)**:
 - CrossChainEscrowFactory: `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1` (Base & Etherlink)
@@ -377,7 +380,12 @@ Timelocks are packed into a single uint256 with stages:
 
 ### Deployment History
 
-**v2.1.0 (Current - ACTIVE)**:
+**v2.2.0 (Current - ACTIVE)**:
+- SimplifiedEscrowFactory: `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` (Base & Optimism)
+- Features: PostInteraction integration with 1inch SimpleLimitOrderProtocol
+- Deployed: January 7, 2025
+
+**v2.1.0 (DEPRECATED)**:
 - CrossChainEscrowFactory: `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` (Base & Optimism)
 - Security Features: Resolver whitelist, Emergency pause mechanism
 - Deployed: August 6, 2025
@@ -421,10 +429,10 @@ Key components:
 When contracts are updated:
 1. Run `forge build` to generate new ABIs
 2. Copy required ABIs to resolver: `cp out/<Contract>.sol/<Contract>.json ../bmn-evm-resolver/abis/`
-3. Key ABIs needed: CrossChainEscrowFactory, EscrowSrc, EscrowDst, TokenMock, LimitOrderProtocol, IERC20
-4. Ensure resolver is configured to use the new factory address (v2.1.0): `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A`
+3. Key ABIs needed: SimplifiedEscrowFactory, EscrowSrc, EscrowDst, TokenMock, LimitOrderProtocol, IERC20
+4. Ensure resolver is configured to use the new factory address (v2.2.0): `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68`
 5. The enhanced factory events include escrow addresses, simplifying resolver implementation
-6. **IMPORTANT**: v2.1.0 requires resolver whitelisting - contact factory owner for whitelist access
+6. **IMPORTANT**: v2.2.0 requires resolver whitelisting - contact factory owner for whitelist access
 
 ### TestEscrowFactory for Development
 For local testing, we deploy `TestEscrowFactory` instead of the regular `EscrowFactory`:
