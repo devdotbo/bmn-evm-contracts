@@ -28,3 +28,5 @@ mprocs.log
 # macOS
 .DS_Store
 node_modules
+scripts/whitelist-resolver-mainnet.sh
+.env.bak
