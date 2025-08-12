@@ -23,18 +23,9 @@ abstract contract SoladyEIP712 {
         bytes32 versionHash = keccak256(bytes(version));
         _cachedNameHash = nameHash;
         _cachedVersionHash = versionHash;
-
-        bytes32 separator;
-        assembly {
-            let m := mload(0x40)
-            mstore(m, _DOMAIN_TYPEHASH)
-            mstore(add(m, 0x20), nameHash)
-            mstore(add(m, 0x40), versionHash)
-            mstore(add(m, 0x60), chainid())
-            mstore(add(m, 0x80), address())
-            separator := keccak256(m, 0xa0)
-        }
-        _cachedDomainSeparator = separator;
+        _cachedDomainSeparator = keccak256(
+            abi.encode(_DOMAIN_TYPEHASH, nameHash, versionHash, block.chainid, address(this))
+        );
     }
 
     /// @dev Override to return the domain name and version.
@@ -45,27 +36,15 @@ abstract contract SoladyEIP712 {
         if (_cachedDomainSeparatorInvalidated()) {
             bytes32 nameHash = _cachedNameHash;
             bytes32 versionHash = _cachedVersionHash;
-            assembly {
-                let m := mload(0x40)
-                mstore(m, _DOMAIN_TYPEHASH)
-                mstore(add(m, 0x20), nameHash)
-                mstore(add(m, 0x40), versionHash)
-                mstore(add(m, 0x60), chainid())
-                mstore(add(m, 0x80), address())
-                separator := keccak256(m, 0xa0)
-            }
+            separator = keccak256(
+                abi.encode(_DOMAIN_TYPEHASH, nameHash, versionHash, block.chainid, address(this))
+            );
         }
     }
 
     function _hashTypedData(bytes32 structHash) internal view returns (bytes32 digest) {
         bytes32 separator = _domainSeparator();
-        assembly {
-            mstore(0x00, 0x1901000000000000)
-            mstore(0x1a, separator)
-            mstore(0x3a, structHash)
-            digest := keccak256(0x18, 0x42)
-            mstore(0x3a, 0)
-        }
+        digest = keccak256(abi.encodePacked("\x19\x01", separator, structHash));
     }
 
     function _cachedDomainSeparatorInvalidated() private view returns (bool result) {

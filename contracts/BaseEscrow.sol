@@ -78,7 +78,7 @@ abstract contract BaseEscrow is IBaseEscrow, SoladyEIP712 {
     );
 
     function _hashPublicAction(bytes32 orderHash, address caller, string memory action)
-        internal
+        public
         view
         returns (bytes32)
     {
@@ -99,7 +99,7 @@ abstract contract BaseEscrow is IBaseEscrow, SoladyEIP712 {
         if (!IResolverValidation(factory).isWhitelistedResolver(recovered)) revert InvalidCaller();
     }
 
-    function _recover(bytes32 digest, bytes calldata sig) internal pure returns (address signer) {
+    function _recover(bytes32 digest, bytes calldata sig) public pure returns (address signer) {
         if (sig.length != 65) return address(0);
         bytes32 r;
         bytes32 s;
