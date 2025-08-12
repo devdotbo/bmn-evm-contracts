@@ -10,13 +10,15 @@ import { ImmutablesLib } from "./libraries/ImmutablesLib.sol";
 import { Timelocks, TimelocksLib } from "./libraries/TimelocksLib.sol";
 
 import { IBaseEscrow } from "./interfaces/IBaseEscrow.sol";
+import { IResolverValidation } from "./interfaces/IResolverValidation.sol";
+import { SoladyEIP712 } from "./utils/SoladyEIP712.sol";
 
 /**
  * @title Base abstract Escrow contract for cross-chain atomic swap.
  * @dev {IBaseEscrow-withdraw}, {IBaseEscrow-cancel} and _validateImmutables functions must be implemented in the derived contracts.
  * @custom:security-contact security@1inch.io
  */
-abstract contract BaseEscrow is IBaseEscrow {
+abstract contract BaseEscrow is IBaseEscrow, SoladyEIP712 {
     using AddressLib for Address;
     using SafeERC20 for IERC20;
     using TimelocksLib for Timelocks;
@@ -33,6 +35,11 @@ abstract contract BaseEscrow is IBaseEscrow {
     constructor(uint32 rescueDelay, IERC20 accessToken) {
         RESCUE_DELAY = rescueDelay;
         _ACCESS_TOKEN = accessToken;
+    }
+
+    function _domainNameAndVersion() internal pure override returns (string memory name, string memory version) {
+        name = "BMN-Escrow";
+        version = "2.3";
     }
 
     modifier onlyTaker(Immutables calldata immutables) {
@@ -63,6 +70,46 @@ abstract contract BaseEscrow is IBaseEscrow {
     modifier onlyAccessTokenHolder() {
         if (_ACCESS_TOKEN.balanceOf(msg.sender) == 0) revert InvalidCaller();
         _;
+    }
+
+    // ============ EIP-712 Typed Data Helpers ============
+    bytes32 internal constant _PUBLIC_ACTION_TYPEHASH = keccak256(
+        "PublicAction(bytes32 orderHash,address caller,string action)"
+    );
+
+    function _hashPublicAction(bytes32 orderHash, address caller, string memory action)
+        internal
+        view
+        returns (bytes32)
+    {
+        bytes32 structHash = keccak256(
+            abi.encode(_PUBLIC_ACTION_TYPEHASH, orderHash, caller, keccak256(bytes(action)))
+        );
+        return _hashTypedData(structHash);
+    }
+
+    function _requireValidResolverSig(
+        bytes32 orderHash,
+        string memory action,
+        bytes calldata signature
+    ) internal view {
+        // Resolve whitelist from factory
+        address factory = FACTORY;
+        address recovered = _recover(_hashPublicAction(orderHash, msg.sender, action), signature);
+        if (!IResolverValidation(factory).isWhitelistedResolver(recovered)) revert InvalidCaller();
+    }
+
+    function _recover(bytes32 digest, bytes calldata sig) internal pure returns (address signer) {
+        if (sig.length != 65) return address(0);
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+        assembly {
+            r := calldataload(sig.offset)
+            s := calldataload(add(sig.offset, 32))
+            v := byte(0, calldataload(add(sig.offset, 64)))
+        }
+        signer = ecrecover(digest, v, r, s);
     }
 
     /**

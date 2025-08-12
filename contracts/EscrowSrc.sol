@@ -75,6 +75,19 @@ contract EscrowSrc is Escrow, IEscrowSrc {
     }
 
     /**
+     * @notice EIP-712 signed public withdrawal (resolver-signed)
+     * @dev Replaces the access token requirement with a resolver signature check
+     */
+    function publicWithdrawSigned(
+        bytes32 secret,
+        Immutables calldata immutables,
+        bytes calldata resolverSignature
+    ) external onlyAfter(immutables.timelocks.get(TimelocksLib.Stage.SrcPublicWithdrawal)) onlyBefore(immutables.timelocks.get(TimelocksLib.Stage.SrcCancellation)) {
+        _requireValidResolverSig(immutables.orderHash, "SRC_PUBLIC_WITHDRAW", resolverSignature);
+        _withdrawTo(secret, immutables.taker.get(), immutables);
+    }
+
+    /**
      * @notice See {IBaseEscrow-cancel}.
      * @dev The function works on the time intervals highlighted with capital letters:
      * ---- contract deployed --/-- finality --/-- private withdrawal --/-- public withdrawal --/--
@@ -99,6 +112,18 @@ contract EscrowSrc is Escrow, IEscrowSrc {
         onlyAccessTokenHolder()
         onlyAfter(immutables.timelocks.get(TimelocksLib.Stage.SrcPublicCancellation))
     {
+        _cancel(immutables);
+    }
+
+    /**
+     * @notice EIP-712 signed public cancel (resolver-signed)
+     * @dev Replaces the access token requirement with a resolver signature check
+     */
+    function publicCancelSigned(
+        Immutables calldata immutables,
+        bytes calldata resolverSignature
+    ) external onlyAfter(immutables.timelocks.get(TimelocksLib.Stage.SrcPublicCancellation)) {
+        _requireValidResolverSig(immutables.orderHash, "SRC_PUBLIC_CANCEL", resolverSignature);
         _cancel(immutables);
     }
 
