@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2025-08-12
+
+### Added
+- EIP-712 resolver-signed public actions in escrows
+  - `publicWithdrawSigned` and `publicCancelSigned` in `EscrowSrc`/`EscrowDst`
+  - Solady-style EIP-712 helper (`contracts/utils/SoladyEIP712.sol`)
+  - Domain: name "BMN-Escrow", version "2.3"
+- Factory compatibility view `isWhitelistedResolver(address)` in `SimplifiedEscrowFactory`
+- Unified v2.3 deploy script: `script/DeployV2_3_Mainnet.s.sol`
+- v2.3 factory that deploys its own escrows: `contracts/SimplifiedEscrowFactoryV2_3.sol`
+- Unit test `test/EIP712Escrow.t.sol` for domain/digest and signature recovery
+
+### Changed
+- `BaseEscrow` now extends EIP-712 helper and exposes digest/recover for testing
+- Kept token-gated methods for backward compatibility alongside signed variants
+
+### Deployment
+- Deployed and verified on Base (8453) and Optimism (10) at the same address via CREATE3:
+  - Factory v2.3: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A`
+  - Deployment envs: `deployments/v2.3.0-mainnet-{8453,10}.env`
+
+### Removed/Archived
+- Consolidated deployment scripts; use only `DeployV2_3_Mainnet.s.sol` for mainnet.
+
 ## [2.2.0] - 2025-01-07
 
 ### Added

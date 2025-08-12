@@ -4,19 +4,18 @@
 
 This document tracks all production deployments of the Bridge Me Not protocol across Base, Etherlink, and Optimism chains.
 
-## Current Production Deployment (v1.1.0)
+## Current Production Deployment (v2.3.0)
 
-**Deployment Date**: August 5, 2025
+**Deployment Date**: August 12, 2025
 
 ### Core Protocol Contracts
 
 | Contract | Address | Chains | Notes |
 |----------|---------|--------|-------|
 | BMN Token | `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` | Base, Etherlink, Optimism | Fee and access token |
-| EscrowSrc | `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535` | Base, Etherlink, Optimism | Implementation for source escrows |
-| EscrowDst | `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b` | Base, Etherlink, Optimism | Implementation for destination escrows |
-| CrossChainEscrowFactory | `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1` | Base, Etherlink | **v1.1.0** - Enhanced with escrow address events |
-| CrossChainEscrowFactory | `0xB916C3edbFe574fFCBa688A6B92F72106479bD6c` | Optimism | **v1.1.0** - Enhanced with escrow address events |
+| EscrowSrc Impl | Deterministic via factory | Base, Optimism | Deployed by v2.3 factory constructor |
+| EscrowDst Impl | Deterministic via factory | Base, Optimism | Deployed by v2.3 factory constructor |
+| SimplifiedEscrowFactoryV2_3 | `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` | Base, Optimism | **v2.3.0** - EIP-712 resolver-signed actions, CREATE3 |
 
 ### Resolver Infrastructure
 
@@ -30,9 +29,16 @@ This document tracks all production deployments of the Bridge Me Not protocol ac
 |----------|---------|--------|-------|
 | CREATE3 Factory | `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` | Base, Etherlink, Optimism | Used for deterministic deployments |
 
-## Previous Deployment (v1.0.0)
+## Previous Deployments
 
-**Deployment Date**: Initial deployment
+### v2.2.0 (January 7, 2025)
+PostInteraction-enabled SimplifiedEscrowFactory deployed to Base and Optimism (see `deployments/v2.2.0-mainnet-*.env`).
+
+### v1.1.0
+Enhanced events for indexers; see historical entries below.
+
+### v1.0.0
+Initial deployment.
 
 ### Core Protocol Contracts
 

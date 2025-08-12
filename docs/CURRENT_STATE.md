@@ -4,10 +4,10 @@
 
 Bridge-Me-Not is a cross-chain atomic swap protocol that enables trustless token exchanges without bridges, using Hash Timelock Contracts (HTLC) and deterministic escrow addresses. The protocol integrates with the 1inch SimpleLimitOrderProtocol for order execution and escrow creation.
 
-## Current Status: Production Ready with PostInteraction Integration
+## Current Status: Production Ready (EIP-712 v2.3.0)
 
-**Last Updated**: January 2025  
-**Protocol Version**: v2.1.0 with PostInteraction Integration  
+**Last Updated**: August 2025  
+**Protocol Version**: v2.3.0 (EIP-712 resolver-signed actions)  
 **Status**: ✅ Production Ready  
 
 ## What's Working
@@ -20,11 +20,10 @@ Bridge-Me-Not is a cross-chain atomic swap protocol that enables trustless token
    - Trustless secret revelation mechanism
    - Timelock-based cancellation and withdrawal windows
 
-2. **1inch Integration - PostInteraction ✅**
-   - **COMPLETED**: IPostInteraction interface implemented in SimplifiedEscrowFactory
-   - **COMPLETED**: Atomic escrow creation on limit order fills
-   - **COMPLETED**: Proper token flow management (maker → taker → escrow)
-   - **COMPLETED**: Comprehensive test suite with 100% PostInteraction coverage
+2. **EIP-712 Resolver-Signed Actions ✅**
+   - **COMPLETED**: Signed `publicWithdraw`/`publicCancel` for resolver flows
+   - **COMPLETED**: Solady-style domain helper (name: BMN-Escrow, version: 2.3)
+   - **COMPLETED**: Factory exposes `isWhitelistedResolver(address)` for checks
 
 3. **Security Infrastructure ✅**
    - Resolver whitelisting system
@@ -63,11 +62,11 @@ Bridge-Me-Not is a cross-chain atomic swap protocol that enables trustless token
 
 ## Active Deployments
 
-### Production Deployments (v2.1.0)
+### Production Deployments (v2.3.0)
 
-**CrossChainEscrowFactory v2.1.0**: `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A`
+**SimplifiedEscrowFactory v2.3.0**: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A`
 - **Networks**: Base & Optimism
-- **Status**: ✅ Active with PostInteraction support
+- **Status**: ✅ Active, verified
 - **Security**: Resolver whitelist enabled, emergency pause ready
 - **Features**: Full atomic swap functionality, 1inch integration
 
@@ -92,11 +91,11 @@ Bridge-Me-Not is a cross-chain atomic swap protocol that enables trustless token
 
 ## Key Contract Addresses
 
-### Live Production Addresses
+### Live Production Addresses (v2.3.0)
 
 ```
 # Main Protocol
-CrossChainEscrowFactory v2.1.0: 0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A (Base & Optimism)
+SimplifiedEscrowFactory v2.3.0: 0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A (Base & Optimism)
 BMN Token:                      0x8287CD2aC7E227D9D927F998EB600a0683a832A1 (All chains)
 EscrowSrc Implementation:       0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535 (All chains)
 EscrowDst Implementation:       0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b (All chains)

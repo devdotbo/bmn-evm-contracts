@@ -46,13 +46,24 @@ node scripts/resolver.js
 forge test
 ```
 
-## Latest Features (v2.2.0)
+## Latest Features (v2.3.0)
 
-### PostInteraction Integration with 1inch
-- **IPostInteraction Interface**: SimplifiedEscrowFactory now integrates seamlessly with 1inch SimpleLimitOrderProtocol
-- **Atomic Escrow Creation**: Escrows are created atomically when orders are filled
-- **Optimized Token Flow**: Direct transfer from resolver to escrow (~105k gas)
-- **Backward Compatible**: Existing deployments remain functional
+### EIP-712 Resolver-Signed Actions
+- Escrow contracts add `publicWithdrawSigned` and `publicCancelSigned` guarded by resolver EIP-712 signatures.
+- Solady-style EIP-712 helper provides domain (name: "BMN-Escrow", version: "2.3").
+- Backward compatible: token-gated public functions remain.
+
+### Deployment (v2.3.0)
+- Unified mainnet deploy script: `script/DeployV2_3_Mainnet.s.sol`
+- CREATE3 deterministic address across Base and Optimism:
+  - Factory v2.3: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A`
+  - Verified on Basescan and Optimistic Etherscan
+  
+To deploy:
+```bash
+forge script script/DeployV2_3_Mainnet.s.sol --rpc-url $BASE_RPC_URL --broadcast --verify --slow
+forge script script/DeployV2_3_Mainnet.s.sol --rpc-url $OPTIMISM_RPC_URL --broadcast --verify --slow
+```
 
 ## Security Features (v2.1.0)
 
@@ -80,15 +91,15 @@ The factory deployment includes critical security enhancements:
 - **[Resolver Update Guide](docs/RESOLVER_UPDATE_GUIDE.md)** - Resolver infrastructure updates
 - **[Completed Plans](docs/completed/)** - Archive of implemented features
 
-### Current Deployment (v2.2.0)
+### Current Deployment (v2.3.0)
 
-**Deployed**: January 7, 2025  
+**Deployed**: August 12, 2025  
 **Status**: ACTIVE on Base and Optimism
 
 | Contract | Address | Networks |
 |----------|---------|----------|
 | CREATE3 Factory | `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` | All |
-| **SimplifiedEscrowFactory v2.2.0** | `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` | Base, Optimism |
+| **SimplifiedEscrowFactory v2.3.0** | `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` | Base, Optimism |
 | BMN Token | `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` | All |
 | EscrowSrc | `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535` | All |
 | EscrowDst | `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b` | All |
