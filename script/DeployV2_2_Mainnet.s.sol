@@ -90,13 +90,9 @@ contract DeployV2_2_Mainnet is Script {
         console.log("EscrowDst Implementation:", dstImplementation);
         console.log("SimplifiedEscrowFactory v2.2.0:", factory);
         
-        // Setup initial resolvers from environment (optional)
+        // Setup initial resolvers from environment (comma-separated)
         string memory resolverList = vm.envOr("INITIAL_RESOLVERS", string(""));
-        if (bytes(resolverList).length > 0) {
-            // Parse comma-separated resolver addresses
-            // For production, this would be populated with verified resolver addresses
-            console.log("\nInitial Resolvers:", resolverList);
-        }
+        address[] memory parsedResolvers = parseResolvers(resolverList);
         
         vm.startBroadcast(deployerPrivateKey);
         
@@ -147,13 +143,13 @@ contract DeployV2_2_Mainnet is Script {
             console.log("       SUCCESS: SimplifiedEscrowFactory v2.2.0 deployed at", deployedFactory);
             
             // Configure initial resolvers if provided
-            if (initialResolvers.length > 0) {
+            if (parsedResolvers.length > 0) {
                 SimplifiedEscrowFactory factoryInstance = SimplifiedEscrowFactory(deployedFactory);
                 console.log("\n[4/4] Configuring initial resolver whitelist...");
-                for (uint256 i = 0; i < initialResolvers.length; i++) {
-                    if (!factoryInstance.whitelistedResolvers(initialResolvers[i])) {
-                        factoryInstance.addResolver(initialResolvers[i]);
-                        console.log("       Whitelisted resolver:", initialResolvers[i]);
+                for (uint256 i = 0; i < parsedResolvers.length; i++) {
+                    if (!factoryInstance.whitelistedResolvers(parsedResolvers[i])) {
+                        factoryInstance.addResolver(parsedResolvers[i]);
+                        console.log("       Whitelisted resolver:", parsedResolvers[i]);
                     }
                 }
             }
@@ -238,8 +234,55 @@ contract DeployV2_2_Mainnet is Script {
      * @dev This would be called if INITIAL_RESOLVERS env var is provided
      */
     function parseResolvers(string memory resolverList) internal pure returns (address[] memory) {
-        // Implementation would parse comma-separated addresses
-        // For now, returning empty array - production deployment would implement this
-        return new address[](0);
+        bytes memory b = bytes(resolverList);
+        if (b.length == 0) return new address[](0);
+        // Count commas
+        uint256 count = 1;
+        for (uint256 i = 0; i < b.length; i++) {
+            if (b[i] == ",") count++;
+        }
+        address[] memory result = new address[](count);
+        uint256 idx = 0;
+        uint256 start = 0;
+        for (uint256 i = 0; i <= b.length; i++) {
+            if (i == b.length || b[i] == ",") {
+                uint256 len = i - start;
+                if (len > 0) {
+                    bytes memory slice = new bytes(len);
+                    for (uint256 j = 0; j < len; j++) {
+                        slice[j] = b[start + j];
+                    }
+                    // Trim spaces
+                    uint256 s = 0; while (s < slice.length && slice[s] == 0x20) s++;
+                    uint256 e = slice.length; while (e > s && slice[e-1] == 0x20) e--;
+                    bytes memory trimmed = new bytes(e - s);
+                    for (uint256 k = 0; k < trimmed.length; k++) trimmed[k] = slice[s + k];
+                    // Expect 0x-prefixed address string
+                    if (trimmed.length >= 42) {
+                        result[idx] = parseAddress(trimmed);
+                        idx++;
+                    }
+                }
+                start = i + 1;
+            }
+        }
+        assembly { mstore(result, idx) }
+        return result;
+    }
+
+    function parseAddress(bytes memory s) internal pure returns (address a) {
+        // s expected like "0x....40hex"
+        require(s.length >= 42, "bad addr");
+        uint160 acc = 0;
+        for (uint256 i = 2; i < 42; i++) {
+            uint8 c = uint8(s[i]);
+            uint8 v;
+            if (c >= 48 && c <= 57) v = c - 48;           // 0-9
+            else if (c >= 97 && c <= 102) v = 10 + c - 97; // a-f
+            else if (c >= 65 && c <= 70) v = 10 + c - 65;  // A-F
+            else revert("bad hex");
+            acc = uint160(acc * 16 + v);
+        }
+        a = address(acc);
     }
 }

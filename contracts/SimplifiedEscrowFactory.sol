@@ -317,6 +317,13 @@ contract SimplifiedEscrowFactory is IPostInteraction {
         resolverCount--;
         emit ResolverRemoved(resolver);
     }
+
+    /**
+     * @notice Compatibility method for resolver checks from escrows
+     */
+    function isWhitelistedResolver(address resolver) external view returns (bool) {
+        return whitelistedResolvers[resolver];
+    }
     
     /**
      * @notice Add maker to whitelist
