@@ -36,8 +36,8 @@ Please use environment variables instead.
 - Deployed to production on Base & Optimism
 
 ### 🚀 Current Deployments
-- **Production (v2.2.0)**: `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` (Base & Optimism)
-- **Features**: PostInteraction support, Resolver whitelist, Emergency pause mechanism
+- **Production (v2.3.0)**: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` (Base & Optimism)
+- **Features**: EIP-712 resolver-signed actions, PostInteraction support, Resolver whitelist, Emergency pause mechanism
 
 ### 📝 Key Documentation
 - `docs/CURRENT_STATE.md` - Complete project status
@@ -359,14 +359,18 @@ Timelocks are packed into a single uint256 with stages:
 
 ### Production Deployments
 
-**Current Deployments (v2.2.0 - ACTIVE)**:
-**Deployment Date**: January 7, 2025
-**Features**: PostInteraction integration, Resolver whitelist, Emergency pause mechanism
+**Current Deployments (v2.3.0 - ACTIVE)**:
+**Deployment Date**: January 8, 2025
+**Features**: EIP-712 resolver-signed actions, PostInteraction integration, Resolver whitelist, Emergency pause mechanism
 
-- SimplifiedEscrowFactory v2.2.0: `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` (Base & Optimism)
+- SimplifiedEscrowFactory v2.3.0: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` (Base & Optimism)
 - BMN Token: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` (All chains)
-- EscrowSrc: `0x77CC1A51dC5855bcF0d9f1c1FceaeE7fb855a535` (All chains)
-- EscrowDst: `0x36938b7899A17362520AA741C0E0dA0c8EfE5e3b` (All chains)
+- EscrowSrc Implementation: `0x80C3D0e98C62930dD3f6ab855b34d085Ca9aDf59` (All chains)
+- EscrowDst Implementation: `0x32e98F40D1D4643b251D8Ee99fd95918A3A8b306` (All chains)
+
+**Previous Deployments (v2.2.0 - DEPRECATED)**:
+**Deployment Date**: January 7, 2025
+- SimplifiedEscrowFactory v2.2.0: `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` (Base & Optimism)
 
 **Previous Deployments (v2.1.0 - DEPRECATED)**:
 - CrossChainEscrowFactory: `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` (Base & Optimism)
@@ -380,7 +384,12 @@ Timelocks are packed into a single uint256 with stages:
 
 ### Deployment History
 
-**v2.2.0 (Current - ACTIVE)**:
+**v2.3.0 (Current - ACTIVE)**:
+- SimplifiedEscrowFactory: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` (Base & Optimism)
+- Features: EIP-712 resolver-signed actions, PostInteraction integration with 1inch SimpleLimitOrderProtocol
+- Deployed: January 8, 2025
+
+**v2.2.0 (DEPRECATED)**:
 - SimplifiedEscrowFactory: `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` (Base & Optimism)
 - Features: PostInteraction integration with 1inch SimpleLimitOrderProtocol
 - Deployed: January 7, 2025
