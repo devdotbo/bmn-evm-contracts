@@ -362,11 +362,12 @@ Timelocks are packed into a single uint256 with stages:
 **Current Deployments (v2.3.0 - ACTIVE)**:
 **Deployment Date**: January 8, 2025
 **Features**: EIP-712 resolver-signed actions, PostInteraction integration, Resolver whitelist, Emergency pause mechanism
+**Verification Status**: All contracts verified on Etherscan
 
-- SimplifiedEscrowFactory v2.3.0: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` (Base & Optimism)
-- BMN Token: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` (All chains)
-- EscrowSrc Implementation: `0x80C3D0e98C62930dD3f6ab855b34d085Ca9aDf59` (All chains)
-- EscrowDst Implementation: `0x32e98F40D1D4643b251D8Ee99fd95918A3A8b306` (All chains)
+- SimplifiedEscrowFactory v2.3.0: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` (Base & Optimism) ✅ Verified
+- BMN Token: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` (All chains) ✅ Verified
+- EscrowSrc Implementation: `0x80C3D0e98C62930dD3f6ab855b34d085Ca9aDf59` (Base & Optimism) ✅ Verified
+- EscrowDst Implementation: `0x32e98F40D1D4643b251D8Ee99fd95918A3A8b306` (Base & Optimism) ✅ Verified
 
 **Previous Deployments (v2.2.0 - DEPRECATED)**:
 **Deployment Date**: January 7, 2025
@@ -385,9 +386,12 @@ Timelocks are packed into a single uint256 with stages:
 ### Deployment History
 
 **v2.3.0 (Current - ACTIVE)**:
-- SimplifiedEscrowFactory: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` (Base & Optimism)
+- SimplifiedEscrowFactory: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` (Base & Optimism) ✅ Verified
+- EscrowSrc Implementation: `0x80C3D0e98C62930dD3f6ab855b34d085Ca9aDf59` ✅ Verified
+- EscrowDst Implementation: `0x32e98F40D1D4643b251D8Ee99fd95918A3A8b306` ✅ Verified
 - Features: EIP-712 resolver-signed actions, PostInteraction integration with 1inch SimpleLimitOrderProtocol
 - Deployed: January 8, 2025
+- Verification: All contracts verified on Basescan and Optimistic Etherscan
 
 **v2.2.0 (DEPRECATED)**:
 - SimplifiedEscrowFactory: `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` (Base & Optimism)

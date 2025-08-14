@@ -93,17 +93,18 @@ The factory deployment includes critical security enhancements:
 
 ### Current Deployment (v2.3.0)
 
-**Deployed**: August 12, 2025  
-**Status**: ACTIVE on Base and Optimism
+**Deployed**: January 8, 2025  
+**Status**: ACTIVE on Base and Optimism  
+**Verification**: ✅ All contracts verified on Basescan and Optimistic Etherscan
 
-| Contract | Address | Networks |
-|----------|---------|----------|
-| CREATE3 Factory | `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` | All |
-| **SimplifiedEscrowFactory v2.3.0** | `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` | Base, Optimism |
-| BMN Token | `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` | All |
-| EscrowSrc Implementation | `0x80C3D0e98C62930dD3f6ab855b34d085Ca9aDf59` | Base, Optimism |
-| EscrowDst Implementation | `0x32e98F40D1D4643b251D8Ee99fd95918A3A8b306` | Base, Optimism |
-| Resolver Factory | `0xe767202fD26104267CFD8bD8cfBd1A44450DC343` | All |
+| Contract | Address | Networks | Status |
+|----------|---------|----------|--------|
+| CREATE3 Factory | `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` | All | ✅ |
+| **SimplifiedEscrowFactory v2.3.0** | `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` | Base, Optimism | ✅ |
+| BMN Token | `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` | All | ✅ |
+| EscrowSrc Implementation | `0x80C3D0e98C62930dD3f6ab855b34d085Ca9aDf59` | Base, Optimism | ✅ |
+| EscrowDst Implementation | `0x32e98F40D1D4643b251D8Ee99fd95918A3A8b306` | Base, Optimism | ✅ |
+| Resolver Factory | `0xe767202fD26104267CFD8bD8cfBd1A44450DC343` | All | ✅ |
 
 ### Previous Deployment (v2.2.0)
 
