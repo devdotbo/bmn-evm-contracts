@@ -7,9 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Whitelist bypass functionality for testing environments
+  - New `whitelistBypassed` flag in SimplifiedEscrowFactory
+  - Set to `true` by default in constructor for easier testing
+  - Allows all addresses to act as resolvers without whitelisting
+
 ### Changed
+- Reduced timing constraints for testing environments:
+  - TIMESTAMP_TOLERANCE set to 60 seconds (previously 300 seconds)
+  - srcWithdrawal: 0 seconds (immediate withdrawal for taker)
+  - srcPublicWithdrawal: 60 seconds
 - Updated WhitelistResolver script to use v2.3.0 factory address and environment variables for RPC URLs
 - Improved security by removing hardcoded RPC endpoints from scripts
+- Cleaned up foundry.toml dependencies section - removed unused entries
+
+### Fixed
+- Restored zeframlou-create3-factory dependency files that were accidentally removed
 
 ## [2.3.0] - 2025-08-12
 
