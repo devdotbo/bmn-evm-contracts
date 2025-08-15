@@ -10,12 +10,11 @@ import "../contracts/SimplifiedEscrowFactory.sol";
  * @dev Used to fix the factory configuration and enable atomic swaps
  */
 contract WhitelistResolver is Script {
-    // Factory addresses
-    address constant BASE_FACTORY = 0xd599b1543467433F5A6f195Ccc4E01FcbF5AA157;
-    address constant OPTIMISM_FACTORY = 0xA6342E61d1a0897A31a1ABAFB4B1669C0A5eaa56;
+    // Factory addresses (v2.3 via CREATE3, same on both chains)
+    address constant FACTORY_V2_3 = 0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A;
     
     // Resolver to whitelist
-    address constant RESOLVER = 0xc18c3C96E20FaD1c656a5c4ed2F4f7871BD42be1;
+    address constant RESOLVER = 0xfdF1dDeB176BEA06c7430166e67E615bC312b7B5; // Bob
     
     function run() external {
         // Get deployer private key (factory owner)
@@ -23,13 +22,13 @@ contract WhitelistResolver is Script {
         
         // Whitelist on Base
         console.log("\n=== WHITELISTING RESOLVER ON BASE ===");
-        vm.createSelectFork("https://base.rpc.thirdweb.com");
-        _whitelistResolver(BASE_FACTORY, RESOLVER, deployerPrivateKey, "BASE");
+        vm.createSelectFork(vm.envString("BASE_RPC_URL"));
+        _whitelistResolver(FACTORY_V2_3, RESOLVER, deployerPrivateKey, "BASE");
         
         // Whitelist on Optimism
         console.log("\n=== WHITELISTING RESOLVER ON OPTIMISM ===");
-        vm.createSelectFork("https://mainnet.optimism.io");
-        _whitelistResolver(OPTIMISM_FACTORY, RESOLVER, deployerPrivateKey, "OPTIMISM");
+        vm.createSelectFork(vm.envString("OPTIMISM_RPC_URL"));
+        _whitelistResolver(FACTORY_V2_3, RESOLVER, deployerPrivateKey, "OPTIMISM");
         
         console.log("\n=== WHITELISTING COMPLETE ===");
         console.log("Resolver %s is now whitelisted on both chains", RESOLVER);
