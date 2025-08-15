@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.1] - 2025-01-15
+## [3.0.1] - 2025-01-18
 
 ### Fixed
 - **CRITICAL**: Fixed `InvalidCreationTime` error that made all atomic swaps fail in v3.0.0
@@ -19,6 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `dstCancellation` now dynamically calculated to match `srcCancellation` offset
 - Added validation requiring `srcCancellationTimestamp` and `dstWithdrawalTimestamp` to be in the future
 
+### Deployed
+- Successfully deployed and verified on Base (8453) and Optimism (10) mainnet
+- **Base Addresses**:
+  - Factory: `0x4E03F2dA3433626c4ed65544b6A99a013f5768d2` ✅ Verified
+  - EscrowSrc: `0xA835C525d0BD76baFC56920230E13fD37015E7D2` ✅ Verified
+  - EscrowDst: `0xaAB8a9cd52f55c536b776172e2C2CfdB6444359e` ✅ Verified
+- **Optimism Addresses**:
+  - Factory: `0x0EB761170E01d403a84d6237b5A1776eE2091eA3` ✅ Verified
+  - EscrowSrc: `0x92BB1E1c068fF5d26fCf4031193618FEaCfcC593` ✅ Verified
+  - EscrowDst: `0xbFa072CCB0d0a6d31b00A70718b75C1CDA09De73` ✅ Verified
+
 ### Impact
 - Restores full protocol functionality
 - Enables instant atomic swaps with any cancellation time (5 minutes, 1 hour, etc.)
@@ -26,9 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No changes to external interfaces - fully backward compatible
 
 ### Migration
-- Deploy new factory contract at new address
-- Update resolver configurations to point to v3.0.1 factory
+- Update resolver configurations to point to v3.0.1 factory addresses
 - v3.0.0 factory should be considered deprecated and unusable
+- No code changes required - interfaces remain the same
 
 ## [3.0.0] - 2025-08-15 [DEPRECATED - CRITICAL BUG]
 
