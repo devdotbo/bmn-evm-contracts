@@ -7,23 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2025-08-15
+
 ### Added
-- Whitelist bypass functionality for testing environments
+- Whitelist bypass functionality for permissionless access
   - New `whitelistBypassed` flag in SimplifiedEscrowFactory
-  - Set to `true` by default in constructor for easier testing
+  - Set to `true` by default in constructor for easier onboarding
   - Allows all addresses to act as resolvers without whitelisting
+- Comprehensive test suite for v3.0.0 changes (`test/V3_0_Changes.t.sol`)
+- Unified deployment script (`script/DeployMainnet.s.sol`) for all versions
+- Deployment automation script (`scripts/deploy-mainnet.sh`) with verification
+- Contract verification instructions in CLAUDE.md
 
 ### Changed
-- Reduced timing constraints for testing environments:
-  - TIMESTAMP_TOLERANCE set to 60 seconds (previously 300 seconds)
-  - srcWithdrawal: 0 seconds (immediate withdrawal for taker)
-  - srcPublicWithdrawal: 60 seconds
-- Updated WhitelistResolver script to use v2.3.0 factory address and environment variables for RPC URLs
-- Improved security by removing hardcoded RPC endpoints from scripts
-- Cleaned up foundry.toml dependencies section - removed unused entries
+- **BREAKING**: Reduced timing constraints for improved UX:
+  - TIMESTAMP_TOLERANCE reduced from 300 to 60 seconds
+  - srcWithdrawal: Can now be 0 seconds (immediate withdrawal supported)
+  - srcPublicWithdrawal: Reduced to 10 minutes (was 30 minutes)
+  - srcCancellation: Reduced to 20 minutes (was 1 hour)
+  - All timelock periods proportionally reduced
+- Updated factory constructor to fix argument order (rescueDelay, accessToken)
+- Consolidated deployment scripts into single unified version
+- Improved deployment documentation with verification status tracking
 
 ### Fixed
+- Constructor argument order in factory deployment scripts
 - Restored zeframlou-create3-factory dependency files that were accidentally removed
+
+### Deployment
+- Successfully deployed v3.0.0 to Base (8453) and Optimism (10) mainnet
+- All contracts verified on both Basescan and Optimistic Etherscan
+- Deterministic addresses via CREATE3:
+  - Factory: `0xa820F5dB10AE506D22c7654036a4B74F861367dB`
+  - EscrowSrc: `0xaf7D19bfAC3479627196Cc9C9aDF0FB67A4441AE`
+  - EscrowDst: `0x334787690D3112a4eCB10ACAa1013c12A3893E74`
+
+### Removed
+- Legacy v2.2 and v2.3 deployment scripts (replaced with unified version)
 
 ## [2.3.0] - 2025-08-12
 

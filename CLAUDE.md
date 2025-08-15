@@ -258,6 +258,52 @@ forge fmt               # Format code
 forge fmt --check       # Check formatting without changes
 ```
 
+### Contract Verification (Etherscan/Basescan/Optimistic Etherscan)
+
+**Deploy and Verify in One Command:**
+```bash
+# Replace with appropriate network RPC and explorer API key
+source .env && forge create --broadcast \
+  --rpc-url $BASE_RPC_URL \
+  --private-key $DEPLOYER_PRIVATE_KEY \
+  src/SimplifiedEscrowFactory.sol:SimplifiedEscrowFactory \
+  --verify --verifier etherscan \
+  --etherscan-api-key $ETHERSCAN_API_KEY
+```
+
+**Verify Already Deployed Contract:**
+```bash
+# For Base network
+source .env && forge verify-contract --watch \
+  --chain base \
+  0xYOUR_CONTRACT_ADDRESS \
+  src/SimplifiedEscrowFactory.sol:SimplifiedEscrowFactory \
+  --verifier etherscan \
+  --etherscan-api-key $BASESCAN_API_KEY
+
+# For Optimism network  
+source .env && forge verify-contract --watch \
+  --chain optimism \
+  0xYOUR_CONTRACT_ADDRESS \
+  src/SimplifiedEscrowFactory.sol:SimplifiedEscrowFactory \
+  --verifier etherscan \
+  --etherscan-api-key $OPTIMISM_ETHERSCAN_API_KEY
+```
+
+**Configuration in foundry.toml:**
+```toml
+[etherscan]
+base = { key = "${BASESCAN_API_KEY}" }
+optimism = { key = "${OPTIMISM_ETHERSCAN_API_KEY}" }
+mainnet = { key = "${ETHERSCAN_API_KEY}" }
+```
+
+**Important Notes:**
+- The `--watch` flag monitors verification status until complete
+- Use chain-specific API keys (Basescan for Base, Optimistic Etherscan for Optimism)
+- Constructor arguments are automatically detected from broadcast files
+- For complex constructor args, use `--constructor-args $(cast abi-encode "constructor(address,uint256)" 0x... 123)`
+
 ### Local Development
 ```bash
 # Start multi-chain test environment (2 Anvil instances)
@@ -359,15 +405,21 @@ Timelocks are packed into a single uint256 with stages:
 
 ### Production Deployments
 
-**Current Deployments (v2.3.0 - ACTIVE)**:
-**Deployment Date**: January 8, 2025
-**Features**: EIP-712 resolver-signed actions, PostInteraction integration, Resolver whitelist, Emergency pause mechanism
-**Verification Status**: All contracts verified on Etherscan
+**Current Deployments (v3.0.0 - ACTIVE)**:
+**Deployment Date**: August 15, 2025
+**Features**: Reduced timing constraints (60s tolerance), Whitelist bypass enabled by default, Immediate withdrawals supported
+**Verification Status**: Verified on Base, Pending on Optimism
 
-- SimplifiedEscrowFactory v2.3.0: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` (Base & Optimism) ✅ Verified
-- BMN Token: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` (All chains) ✅ Verified
-- EscrowSrc Implementation: `0x80C3D0e98C62930dD3f6ab855b34d085Ca9aDf59` (Base & Optimism) ✅ Verified
-- EscrowDst Implementation: `0x32e98F40D1D4643b251D8Ee99fd95918A3A8b306` (Base & Optimism) ✅ Verified
+- SimplifiedEscrowFactory v3.0.0: `0xa820F5dB10AE506D22c7654036a4B74F861367dB` (Base & Optimism)
+- EscrowSrc Implementation: `0xaf7D19bfAC3479627196Cc9C9aDF0FB67A4441AE` (Base ✅ Verified, Optimism pending)
+- EscrowDst Implementation: `0x334787690D3112a4eCB10ACAa1013c12A3893E74` (Base ✅ Verified, Optimism pending)
+- BMN Token: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` (All chains)
+
+**Previous Deployments (v2.3.0 - DEPRECATED)**:
+**Deployment Date**: January 8, 2025
+- SimplifiedEscrowFactory v2.3.0: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` (Base & Optimism)
+- EscrowSrc Implementation: `0x80C3D0e98C62930dD3f6ab855b34d085Ca9aDf59` (Base & Optimism)
+- EscrowDst Implementation: `0x32e98F40D1D4643b251D8Ee99fd95918A3A8b306` (Base & Optimism)
 
 **Previous Deployments (v2.2.0 - DEPRECATED)**:
 **Deployment Date**: January 7, 2025
