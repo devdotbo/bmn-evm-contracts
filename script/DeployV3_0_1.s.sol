@@ -61,11 +61,8 @@ contract DeployV3_0_1 is Script {
         // 4. Configure factory
         SimplifiedEscrowFactory factoryContract = SimplifiedEscrowFactory(factory);
         
-        // Whitelist deployer as initial resolver
-        factoryContract.addResolver(deployer);
-        console.log("Whitelisted deployer as resolver");
-        
-        // Enable whitelist bypass for easier testing initially
+        // Deployer is already whitelisted in constructor, so skip that
+        // Just enable whitelist bypass for easier testing initially
         factoryContract.setWhitelistBypassed(true);
         console.log("Whitelist bypass enabled for testing");
         
