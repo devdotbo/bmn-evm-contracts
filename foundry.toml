@@ -37,9 +37,5 @@ remappings_location = "config"
 recursive_deps = false
 
 [dependencies]
-zeframlou-create3-factory = "567d6ec78cd0545f2fb18135dcb68298a5a1ef09"
 forge-std = "1.10.0"
 "@openzeppelin-contracts" = "5.1.0"
-limit-order-protocol = "4.0.1"
-limit-order-settlement = "1.0.0"
-solidity-utils = "1.33.0"
