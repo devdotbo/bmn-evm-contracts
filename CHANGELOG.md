@@ -7,7 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.0] - 2025-08-15
+## [3.0.1] - 2025-01-15
+
+### Fixed
+- **CRITICAL**: Fixed `InvalidCreationTime` error that made all atomic swaps fail in v3.0.0
+  - Root cause: Hardcoded 2-hour `dstCancellation` timeout incompatible with reduced 60s `TIMESTAMP_TOLERANCE`
+  - Solution: Aligned `dstCancellation` with `srcCancellation` to ensure validation always passes
+  - Added timestamp validation to prevent underflow when timestamps are in the past
+
+### Changed
+- `dstCancellation` now dynamically calculated to match `srcCancellation` offset
+- Added validation requiring `srcCancellationTimestamp` and `dstWithdrawalTimestamp` to be in the future
+
+### Impact
+- Restores full protocol functionality
+- Enables instant atomic swaps with any cancellation time (5 minutes, 1 hour, etc.)
+- Maintains tight 60-second cross-chain timing validation
+- No changes to external interfaces - fully backward compatible
+
+### Migration
+- Deploy new factory contract at new address
+- Update resolver configurations to point to v3.0.1 factory
+- v3.0.0 factory should be considered deprecated and unusable
+
+## [3.0.0] - 2025-08-15 [DEPRECATED - CRITICAL BUG]
+
+### WARNING
+- **DO NOT USE THIS VERSION** - Contains critical bug that breaks all atomic swaps
+- All escrow creation fails with `InvalidCreationTime` error
+- Use v3.0.1 instead which contains the fix
 
 ### Added
 - Whitelist bypass functionality for permissionless access

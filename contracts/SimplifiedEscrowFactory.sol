@@ -238,6 +238,10 @@ contract SimplifiedEscrowFactory is IPostInteraction {
         uint256 dstWithdrawalTimestamp = timelocks & type(uint128).max;
         uint256 srcCancellationTimestamp = timelocks >> 128;
         
+        // Validate timestamps are in the future to prevent underflow
+        require(srcCancellationTimestamp > block.timestamp, "srcCancellation must be future");
+        require(dstWithdrawalTimestamp > block.timestamp, "dstWithdrawal must be future");
+        
         // Build timelocks for source escrow by packing values
         // Timelocks stores offsets from deployment time, not absolute timestamps
         uint256 packedTimelocks = uint256(uint32(block.timestamp)) << 224; // deployedAt
@@ -247,7 +251,9 @@ contract SimplifiedEscrowFactory is IPostInteraction {
         packedTimelocks |= uint256(uint32(srcCancellationTimestamp - block.timestamp + 60)) << 96; // srcPublicCancellation offset
         packedTimelocks |= uint256(uint32(dstWithdrawalTimestamp - block.timestamp)) << 128; // dstWithdrawal offset
         packedTimelocks |= uint256(uint32(dstWithdrawalTimestamp - block.timestamp + 60)) << 160; // dstPublicWithdrawal offset
-        packedTimelocks |= uint256(uint32(7200)) << 192; // dstCancellation: 2 hours offset
+        // FIX: Make dstCancellation relative to srcCancellation to ensure validation passes
+        uint32 dstCancellationOffset = uint32(srcCancellationTimestamp - block.timestamp);
+        packedTimelocks |= uint256(dstCancellationOffset) << 192; // dstCancellation aligned with srcCancellation
         
         Timelocks srcTimelocks = Timelocks.wrap(packedTimelocks);
         
