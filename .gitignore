@@ -30,3 +30,11 @@ mprocs.log
 node_modules
 scripts/whitelist-resolver-mainnet.sh
 .env.bak
+
+# Debug files and logs
+debug-*.sh
+get-error.sh
+decode-protocol-error.sh
+*-debug.log
+scripts/debug-*.sh
+script/DebugOrder.s.sol

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Updated WhitelistResolver script to use v2.3.0 factory address and environment variables for RPC URLs
+- Improved security by removing hardcoded RPC endpoints from scripts
+
 ## [2.3.0] - 2025-08-12
 
 ### Added
