@@ -12,19 +12,17 @@ January 18, 2025
 - **Solution**: Aligned `dstCancellation` with `srcCancellation` to ensure validation always passes
 - **Impact**: Restores full protocol functionality for instant atomic swaps
 
-## Deployed Addresses
+## Deployed Addresses (Same on All Chains via CREATE3)
 
-### Base (Chain ID: 8453)
-- **SimplifiedEscrowFactory**: `0x4E03F2dA3433626c4ed65544b6A99a013f5768d2` ✅ Verified
-- **EscrowSrc Implementation**: `0xA835C525d0BD76baFC56920230E13fD37015E7D2` ✅ Verified
-- **EscrowDst Implementation**: `0xaAB8a9cd52f55c536b776172e2C2CfdB6444359e` ✅ Verified
-- **Basescan**: https://basescan.org/address/0x4E03F2dA3433626c4ed65544b6A99a013f5768d2
+### All Chains (Base & Optimism)
+- **SimplifiedEscrowFactory**: `0xF99e2f0772f9c381aD91f5037BF7FF7dE8a68DDc` ✅ Verified
+- **EscrowSrc Implementation**: `0xF899Ee616C512f5E9Ea499fbd4F60AAA1DdC2D6f` ✅ Verified
+- **EscrowDst Implementation**: `0x42fc825085a2aAd6c4b536Ba3321aCA8B32982B1` ✅ Verified
+- **CREATE3 Factory Used**: `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d`
 
-### Optimism (Chain ID: 10)
-- **SimplifiedEscrowFactory**: `0x0EB761170E01d403a84d6237b5A1776eE2091eA3` ✅ Verified
-- **EscrowSrc Implementation**: `0x92BB1E1c068fF5d26fCf4031193618FEaCfcC593` ✅ Verified
-- **EscrowDst Implementation**: `0xbFa072CCB0d0a6d31b00A70718b75C1CDA09De73` ✅ Verified
-- **Optimistic Etherscan**: https://optimistic.etherscan.io/address/0x0EB761170E01d403a84d6237b5A1776eE2091eA3
+### Verification Links
+- **Basescan**: https://basescan.org/address/0xF99e2f0772f9c381aD91f5037BF7FF7dE8a68DDc
+- **Optimistic Etherscan**: https://optimistic.etherscan.io/address/0xF99e2f0772f9c381aD91f5037BF7FF7dE8a68DDc
 
 ## Key Features
 - **Instant Withdrawals**: 0 second delay supported
@@ -42,11 +40,8 @@ January 18, 2025
 
 ### For Integrators
 ```javascript
-// Base
-const FACTORY_ADDRESS_BASE = "0x4E03F2dA3433626c4ed65544b6A99a013f5768d2";
-
-// Optimism
-const FACTORY_ADDRESS_OPTIMISM = "0x0EB761170E01d403a84d6237b5A1776eE2091eA3";
+// Same address on all chains (Base & Optimism)
+const FACTORY_ADDRESS = "0xF99e2f0772f9c381aD91f5037BF7FF7dE8a68DDc";
 ```
 
 ## Configuration
@@ -72,11 +67,11 @@ require(srcCancellationTimestamp > block.timestamp, "srcCancellation must be fut
 require(dstWithdrawalTimestamp > block.timestamp, "dstWithdrawal must be future");
 ```
 
-## Gas Costs
-- **Deployment Gas (Base)**: ~3,907,217 gas
-- **Deployment Cost (Base)**: ~0.000009 ETH
-- **Deployment Gas (Optimism)**: ~3,907,201 gas
-- **Deployment Cost (Optimism)**: ~0.00000009 ETH
+## Gas Costs (CREATE3 Deployment)
+- **Deployment Gas (Base)**: ~4,392,833 gas
+- **Deployment Cost (Base)**: ~0.0000069 ETH
+- **Deployment Gas (Optimism)**: ~4,392,833 gas
+- **Deployment Cost (Optimism)**: ~0.000000046 ETH
 
 ## Verification Status
 All contracts have been successfully verified on both chains:
@@ -99,6 +94,6 @@ For questions or issues with the v3.0.1 deployment:
 - Security: security@1inch.io
 
 ## Deployment Artifacts
-- Base: `./deployments/v3_0_1_8453_1755299333.json`
-- Optimism: `./deployments/v3_0_1_10_1755299417.json`
-- Broadcast: `./broadcast/DeployV3_0_1.s.sol/`
+- Base CREATE3: `./deployments/v3_0_1_CREATE3_8453_1755301295.json`
+- Optimism CREATE3: `./deployments/v3_0_1_CREATE3_10_1755301363.json`
+- Broadcast: `./broadcast/DeployV3_0_1_CREATE3.s.sol/`

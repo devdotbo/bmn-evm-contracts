@@ -20,15 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added validation requiring `srcCancellationTimestamp` and `dstWithdrawalTimestamp` to be in the future
 
 ### Deployed
-- Successfully deployed and verified on Base (8453) and Optimism (10) mainnet
-- **Base Addresses**:
-  - Factory: `0x4E03F2dA3433626c4ed65544b6A99a013f5768d2` ✅ Verified
-  - EscrowSrc: `0xA835C525d0BD76baFC56920230E13fD37015E7D2` ✅ Verified
-  - EscrowDst: `0xaAB8a9cd52f55c536b776172e2C2CfdB6444359e` ✅ Verified
-- **Optimism Addresses**:
-  - Factory: `0x0EB761170E01d403a84d6237b5A1776eE2091eA3` ✅ Verified
-  - EscrowSrc: `0x92BB1E1c068fF5d26fCf4031193618FEaCfcC593` ✅ Verified
-  - EscrowDst: `0xbFa072CCB0d0a6d31b00A70718b75C1CDA09De73` ✅ Verified
+- Successfully deployed using CREATE3 for cross-chain address consistency
+- Verified on Base (8453) and Optimism (10) mainnet
+- **Same Addresses on All Chains**:
+  - Factory: `0xF99e2f0772f9c381aD91f5037BF7FF7dE8a68DDc` ✅ Verified
+  - EscrowSrc: `0xF899Ee616C512f5E9Ea499fbd4F60AAA1DdC2D6f` ✅ Verified
+  - EscrowDst: `0x42fc825085a2aAd6c4b536Ba3321aCA8B32982B1` ✅ Verified
+  - CREATE3 Factory: `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d`
 
 ### Impact
 - Restores full protocol functionality
