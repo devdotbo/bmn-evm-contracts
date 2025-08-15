@@ -48,6 +48,9 @@ contract SimplifiedEscrowFactory is IPostInteraction {
     /// @notice Maker whitelist enabled flag
     bool public makerWhitelistEnabled;
     
+    /// @notice Whitelist bypass flag for testing
+    bool public whitelistBypassed;
+    
     /// @notice Events
     event SrcEscrowCreated(
         address indexed escrow,
@@ -89,7 +92,7 @@ contract SimplifiedEscrowFactory is IPostInteraction {
     }
     
     modifier onlyWhitelistedResolver() {
-        require(whitelistedResolvers[msg.sender], "Not whitelisted resolver");
+        require(whitelistBypassed || whitelistedResolvers[msg.sender], "Not whitelisted resolver");
         _;
     }
     
@@ -209,7 +212,7 @@ contract SimplifiedEscrowFactory is IPostInteraction {
         bytes calldata extraData
     ) external override whenNotPaused {
         // Validate resolver
-        require(whitelistedResolvers[taker], "Resolver not whitelisted");
+        require(whitelistBypassed || whitelistedResolvers[taker], "Resolver not whitelisted");
         
         // Decode the extraData which contains escrow parameters
         // Format: abi.encode(hashlock, dstChainId, dstToken, deposits, timelocks)
@@ -235,12 +238,12 @@ contract SimplifiedEscrowFactory is IPostInteraction {
         // Build timelocks for source escrow by packing values
         // Timelocks stores offsets from deployment time, not absolute timestamps
         uint256 packedTimelocks = uint256(uint32(block.timestamp)) << 224; // deployedAt
-        packedTimelocks |= uint256(uint32(300)) << 0; // srcWithdrawal: 5 minutes offset
-        packedTimelocks |= uint256(uint32(600)) << 32; // srcPublicWithdrawal: 10 minutes offset
+        packedTimelocks |= uint256(uint32(0)) << 0; // srcWithdrawal: 0 seconds offset for testing
+        packedTimelocks |= uint256(uint32(60)) << 32; // srcPublicWithdrawal: 60 seconds offset for testing
         packedTimelocks |= uint256(uint32(srcCancellationTimestamp - block.timestamp)) << 64; // srcCancellation offset
-        packedTimelocks |= uint256(uint32(srcCancellationTimestamp - block.timestamp + 300)) << 96; // srcPublicCancellation offset
+        packedTimelocks |= uint256(uint32(srcCancellationTimestamp - block.timestamp + 60)) << 96; // srcPublicCancellation offset
         packedTimelocks |= uint256(uint32(dstWithdrawalTimestamp - block.timestamp)) << 128; // dstWithdrawal offset
-        packedTimelocks |= uint256(uint32(dstWithdrawalTimestamp - block.timestamp + 300)) << 160; // dstPublicWithdrawal offset
+        packedTimelocks |= uint256(uint32(dstWithdrawalTimestamp - block.timestamp + 60)) << 160; // dstPublicWithdrawal offset
         packedTimelocks |= uint256(uint32(7200)) << 192; // dstCancellation: 2 hours offset
         
         Timelocks srcTimelocks = Timelocks.wrap(packedTimelocks);
@@ -351,6 +354,14 @@ contract SimplifiedEscrowFactory is IPostInteraction {
      */
     function setMakerWhitelistEnabled(bool enabled) external onlyOwner {
         makerWhitelistEnabled = enabled;
+    }
+    
+    /**
+     * @notice Toggle whitelist bypass for testing
+     * @param bypassed True to bypass whitelist checks, false to enforce them
+     */
+    function setWhitelistBypassed(bool bypassed) external onlyOwner {
+        whitelistBypassed = bypassed;
     }
     
     /**

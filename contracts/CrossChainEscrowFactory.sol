@@ -226,7 +226,7 @@ contract CrossChainEscrowFactory is BaseEscrowFactory {
         immutables.timelocks = immutables.timelocks.setDeployedAt(block.timestamp);
         
         // Check cancellation timing with tolerance
-        uint256 TIMESTAMP_TOLERANCE = 300; // 5 minutes
+        uint256 TIMESTAMP_TOLERANCE = 0; // 0 seconds for testing
         require(
             immutables.timelocks.get(TimelocksLib.Stage.DstCancellation) <= srcCancellationTimestamp + TIMESTAMP_TOLERANCE,
             "Invalid creation time"
