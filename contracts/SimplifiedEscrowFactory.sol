@@ -115,6 +115,9 @@ contract SimplifiedEscrowFactory is IPostInteraction {
         ESCROW_DST_IMPLEMENTATION = dstImpl;
         owner = _owner;
         
+        // Default to bypassing whitelist for easier testing
+        whitelistBypassed = true;
+        
         // Whitelist owner as initial resolver for testing
         whitelistedResolvers[_owner] = true;
         resolverCount = 1;
