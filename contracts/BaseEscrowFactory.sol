@@ -35,9 +35,9 @@ abstract contract BaseEscrowFactory is IEscrowFactory, IPostInteraction, BaseExt
     using SafeERC20 for IERC20;
     using TimelocksLib for Timelocks;
 
-    /// @notice Timestamp tolerance for cross-chain operations (0 seconds for testing)
-    /// @dev Set to 0 for immediate testing, production should use higher value
-    uint256 private constant TIMESTAMP_TOLERANCE = 0; // 0 seconds for testing
+    /// @notice Timestamp tolerance for cross-chain operations (60 seconds)
+    /// @dev Allows for reasonable timestamp drift between chains
+    uint256 private constant TIMESTAMP_TOLERANCE = 60; // 60 seconds - minimal safe tolerance
 
     /// @notice See {IEscrowFactory-ESCROW_SRC_IMPLEMENTATION}.
     address public immutable ESCROW_SRC_IMPLEMENTATION;
