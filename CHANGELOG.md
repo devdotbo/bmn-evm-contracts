@@ -29,9 +29,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validation in `_validateImmutables` now passes correctly
 
 ### Deployment
+- Successfully deployed and verified on Base (8453) and Optimism (10) mainnet
 - Factory deployed via CREATE3 with salt: `keccak256("BMN-SimplifiedEscrowFactory-v3.0.2")`
-- Implementation addresses will differ per chain (deployed by factory)
-- Predicted factory address: Will be deterministic across all chains
+- **Same Factory Address on All Chains**: `0xAbF126d74d6A438a028F33756C0dC21063F72E96` ✅ Verified
+- **Base Implementation Addresses**:
+  - EscrowSrc: `0x294389f7e07fa7913Cb0cEf42174D70206690F64` ✅ Verified
+  - EscrowDst: `0x286373DA6A1B41b3D9c7f863EA0d772C0efC4484` ✅ Verified
+- **Optimism Implementation Addresses**:
+  - EscrowSrc: `0x294389f7e07fa7913Cb0cEf42174D70206690F64` ✅ Verified
+  - EscrowDst: `0x286373DA6A1B41b3D9c7f863EA0d772C0efC4484` ✅ Verified
+- Note: Implementation addresses happen to be the same due to deterministic deployment order
 
 ### Impact
 - Restores full protocol functionality broken in v3.0.0 and v3.0.1
