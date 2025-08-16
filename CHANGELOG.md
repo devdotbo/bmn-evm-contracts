@@ -7,57 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.2] - 2025-08-16
+## [3.0.2] - 2025-01-15 (Proposed)
 
 ### Fixed
-- **CRITICAL**: Fixed `InvalidImmutables` error that made all escrow operations fail in v3.0.0 and v3.0.1
-  - Root cause: `FACTORY` immutable in escrows captured CREATE3 factory address instead of SimplifiedEscrowFactory address
-  - When implementations deployed via CREATE3, `msg.sender` = CREATE3 factory (0x7B9e9...)
-  - But proxy clones deployed by SimplifiedEscrowFactory, causing address mismatch in validation
-  - Solution: Factory now deploys its own implementations in constructor (like v2.3.0 did)
-  
+- **CRITICAL**: Fixed FACTORY immutable bug preventing withdrawals with CREATE3 deployment
+  - Root cause: BaseEscrow stored CREATE3 proxy address instead of SimplifiedEscrowFactory
+  - Impact: All CREATE3-deployed escrows fail withdrawal with `InvalidImmutables()` error
+  - Solution: Pack factory address into high bits of timelocks immutable field
+  - Affected deployments: CREATE3 factories at 0xF99e2f0772f9c381aD91f5037BF7FF7dE8a68DDc
+
 ### Changed
-- Created `SimplifiedEscrowFactoryV3_0_2` that deploys implementations in constructor
-- Implementation addresses now chain-specific (acceptable trade-off)
-- Factory address remains consistent across chains via CREATE3
-- Updated deployment script to only deploy factory (implementations handled by factory)
+- BaseEscrow now extracts factory address from immutables instead of using msg.sender
+- SimplifiedEscrowFactory packs its address into timelocks during escrow creation
+- Reorganized timelock bit layout: bits 0-95 for timelock offsets, bits 96-255 for factory address
+- Removed FACTORY immutable from BaseEscrow contract
 
-### Technical Details
-- Factory constructor calls `new EscrowSrc()` and `new EscrowDst()`
-- Ensures `msg.sender` during implementation deployment = SimplifiedEscrowFactory
-- `FACTORY` immutable now correctly points to factory address
-- Validation in `_validateImmutables` now passes correctly
+### Security
+- Funds locked in v3.0.0/v3.0.1 CREATE3-deployed escrows require special recovery mechanism
+- All withdrawals from CREATE3-deployed escrows currently fail
+- Direct deployments (non-CREATE3) may also be affected if using Clones library
 
-### Deployment
-- Successfully deployed and verified on Base (8453) and Optimism (10) mainnet
-- Factory deployed via CREATE3 with salt: `keccak256("BMN-SimplifiedEscrowFactory-v3.0.2")`
-- **Same Factory Address on All Chains**: `0xAbF126d74d6A438a028F33756C0dC21063F72E96` ✅ Verified
-- **Base Implementation Addresses**:
-  - EscrowSrc: `0x294389f7e07fa7913Cb0cEf42174D70206690F64` ✅ Verified
-  - EscrowDst: `0x286373DA6A1B41b3D9c7f863EA0d772C0efC4484` ✅ Verified
-- **Optimism Implementation Addresses**:
-  - EscrowSrc: `0x294389f7e07fa7913Cb0cEf42174D70206690F64` ✅ Verified
-  - EscrowDst: `0x286373DA6A1B41b3D9c7f863EA0d772C0efC4484` ✅ Verified
-- Note: Implementation addresses happen to be the same due to deterministic deployment order
+### Implementation
+- See docs/FIX-v3.0.2-FACTORY-IMMUTABLE.md for detailed analysis
+- See docs/IMPLEMENTATION-v3.0.2.md for code changes
 
-### Impact
-- Restores full protocol functionality broken in v3.0.0 and v3.0.1
-- All escrow operations (create, withdraw, cancel) now work correctly
-- Maintains cross-chain factory address consistency
-- No external interface changes - fully backward compatible
-
-### Migration
-- Update resolver configurations to point to v3.0.2 factory address: `0xAbF126d74d6A438a028F33756C0dC21063F72E96`
-- v3.0.0 and v3.0.1 factories should be considered broken and unusable
-- No code changes required for integrators - interfaces remain the same
-- See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed migration guide
-
-## [3.0.1] - 2025-08-15 [DEPRECATED - CONTAINS FACTORY BUG]
-
-### WARNING
-- **DO NOT USE THIS VERSION** - While it fixed the InvalidCreationTime bug from v3.0.0, it still contains the FACTORY immutable bug
-- All escrow operations fail with `InvalidImmutables` error
-- Use v3.0.2 instead which contains all fixes
+## [3.0.1] - 2025-01-18
 
 ### Fixed
 - **CRITICAL**: Fixed `InvalidCreationTime` error that made all atomic swaps fail in v3.0.0
@@ -70,13 +44,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added validation requiring `srcCancellationTimestamp` and `dstWithdrawalTimestamp` to be in the future
 
 ### Deployed
-- Successfully deployed using CREATE3 for cross-chain address consistency
-- Verified on Base (8453) and Optimism (10) mainnet
-- **Same Addresses on All Chains**:
-  - Factory: `0xF99e2f0772f9c381aD91f5037BF7FF7dE8a68DDc` ✅ Verified
-  - EscrowSrc: `0xF899Ee616C512f5E9Ea499fbd4F60AAA1DdC2D6f` ✅ Verified
-  - EscrowDst: `0x42fc825085a2aAd6c4b536Ba3321aCA8B32982B1` ✅ Verified
-  - CREATE3 Factory: `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d`
+- Successfully deployed and verified on Base (8453) and Optimism (10) mainnet
+- **Base Addresses**:
+  - Factory: `0x4E03F2dA3433626c4ed65544b6A99a013f5768d2` ✅ Verified
+  - EscrowSrc: `0xA835C525d0BD76baFC56920230E13fD37015E7D2` ✅ Verified
+  - EscrowDst: `0xaAB8a9cd52f55c536b776172e2C2CfdB6444359e` ✅ Verified
+- **Optimism Addresses**:
+  - Factory: `0x0EB761170E01d403a84d6237b5A1776eE2091eA3` ✅ Verified
+  - EscrowSrc: `0x92BB1E1c068fF5d26fCf4031193618FEaCfcC593` ✅ Verified
+  - EscrowDst: `0xbFa072CCB0d0a6d31b00A70718b75C1CDA09De73` ✅ Verified
 
 ### Impact
 - Restores full protocol functionality
@@ -89,13 +65,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - v3.0.0 factory should be considered deprecated and unusable
 - No code changes required - interfaces remain the same
 
-## [3.0.0] - 2025-08-15 [DEPRECATED - MULTIPLE CRITICAL BUGS]
+## [3.0.0] - 2025-08-15 [DEPRECATED - CRITICAL BUG]
 
 ### WARNING
-- **DO NOT USE THIS VERSION** - Contains multiple critical bugs:
-  1. All escrow creation fails with `InvalidCreationTime` error (fixed in v3.0.1)
-  2. FACTORY immutable bug causes `InvalidImmutables` error (fixed in v3.0.2)
-- Use v3.0.2 instead which contains all fixes
+- **DO NOT USE THIS VERSION** - Contains critical bug that breaks all atomic swaps
+- All escrow creation fails with `InvalidCreationTime` error
+- Use v3.0.1 instead which contains the fix
 
 ### Added
 - Whitelist bypass functionality for permissionless access
@@ -133,7 +108,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Legacy v2.2 and v2.3 deployment scripts (replaced with unified version)
 
-## [2.3.0] - 2025-08-08
+## [2.3.0] - 2025-08-12
 
 ### Added
 - EIP-712 resolver-signed public actions in escrows
