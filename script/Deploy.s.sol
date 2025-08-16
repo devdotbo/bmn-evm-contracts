@@ -9,22 +9,16 @@ import { ICREATE3Factory } from "create3-factory/ICREATE3Factory.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 /**
- * @title DeployV3_0_2
- * @notice Deployment script for SimplifiedEscrowFactory v3.0.2
+ * @title Deploy
+ * @notice Deployment script for SimplifiedEscrowFactory
  * @dev Uses CREATE3 for deterministic cross-chain addresses
- * 
- * Current Production Deployment:
- * - Factory: 0xAbF126d74d6A438a028F33756C0dC21063F72E96 (Base & Optimism)
- * - Deployed: August 16, 2025
- * 
- * This script is provided for reference and future deployments.
  */
-contract DeployV3_0_2 is Script {
+contract Deploy is Script {
     // CREATE3 Factory address (same on all chains)
     address constant CREATE3_FACTORY = 0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d;
     
-    // Salt for deterministic deployment
-    bytes32 constant SALT = keccak256("BMN_V3_0_2_FACTORY");
+    // Salt for deterministic deployment - change this for new deployments
+    bytes32 constant SALT = keccak256("BMN_FACTORY");
     
     function run() external {
         // Get deployer private key from environment
@@ -62,10 +56,6 @@ contract DeployV3_0_2 is Script {
         address factory = create3.deploy(SALT, factoryBytecode);
         
         console.log("SimplifiedEscrowFactory deployed at:", factory);
-        console.log("Expected address: 0xAbF126d74d6A438a028F33756C0dC21063F72E96");
-        
-        // Verify deployment
-        require(factory == 0xAbF126d74d6A438a028F33756C0dC21063F72E96, "Factory address mismatch");
         
         // Log configuration
         SimplifiedEscrowFactory deployedFactory = SimplifiedEscrowFactory(factory);
@@ -83,23 +73,23 @@ contract DeployV3_0_2 is Script {
     }
     
     /**
-     * @notice Verify deployment addresses match expected values
-     * @dev Run this after deployment to confirm everything is correct
+     * @notice Verify deployment by checking a specific factory address
+     * @dev Pass the factory address as an environment variable FACTORY_ADDRESS
      */
     function verify() external view {
-        address expectedFactory = 0xAbF126d74d6A438a028F33756C0dC21063F72E96;
+        address factoryAddress = vm.envAddress("FACTORY_ADDRESS");
         
         // Check factory exists
-        require(expectedFactory.code.length > 0, "Factory not deployed");
+        require(factoryAddress.code.length > 0, "Factory not deployed");
         
-        SimplifiedEscrowFactory factory = SimplifiedEscrowFactory(expectedFactory);
+        SimplifiedEscrowFactory factory = SimplifiedEscrowFactory(factoryAddress);
         
         // Verify implementations are set
         require(factory.ESCROW_SRC_IMPLEMENTATION() != address(0), "Src implementation not set");
         require(factory.ESCROW_DST_IMPLEMENTATION() != address(0), "Dst implementation not set");
         
         console.log("Verification passed!");
-        console.log("Factory:", expectedFactory);
+        console.log("Factory:", factoryAddress);
         console.log("Src Implementation:", factory.ESCROW_SRC_IMPLEMENTATION());
         console.log("Dst Implementation:", factory.ESCROW_DST_IMPLEMENTATION());
         console.log("Owner:", factory.owner());

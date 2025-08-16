@@ -391,14 +391,14 @@ For current deployment addresses and instructions, see `deployments/deployment.m
 ### Deployment Commands
 ```bash
 # Deploy to mainnet with CREATE3
-source .env && forge script script/DeployV3_0_2.s.sol --rpc-url $BASE_RPC_URL --broadcast
-source .env && forge script script/DeployV3_0_2.s.sol --rpc-url $OPTIMISM_RPC_URL --broadcast
+source .env && forge script script/Deploy.s.sol --rpc-url $BASE_RPC_URL --broadcast
+source .env && forge script script/Deploy.s.sol --rpc-url $OPTIMISM_RPC_URL --broadcast
 
-# Deploy locally for testing
-source .env && forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8545 --broadcast
+# Verify existing deployment
+FACTORY_ADDRESS=0x... forge script script/Deploy.s.sol:Deploy --sig "verify()" --rpc-url $BASE_RPC_URL
 
-# Verify contracts after deployment
-forge script script/VerifyContracts.s.sol --rpc-url $BASE_RPC_URL
+# Get verification commands
+FACTORY_ADDRESS=0x... forge script script/Verify.s.sol --rpc-url $BASE_RPC_URL
 ```
 
 ## Key Test Accounts (Anvil)
@@ -425,12 +425,6 @@ When contracts are updated:
 5. The factory events include escrow addresses and block timestamps
 6. **IMPORTANT**: Resolvers must read block.timestamp from event blocks for immutables calculation
 
-### TestEscrowFactory for Development
-For local testing, we deploy `TestEscrowFactory` instead of the regular `EscrowFactory`:
-- Allows direct source escrow creation without going through the limit order protocol
-- Useful for testing escrow functionality in isolation
-- **DO NOT USE IN PRODUCTION** - bypasses security checks
-- Deployed automatically by `LocalDeploy.s.sol` for local chains
 
 ## Known Issues
 
