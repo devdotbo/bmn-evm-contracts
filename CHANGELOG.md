@@ -7,7 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.1] - 2025-01-18
+## [3.0.2] - 2025-01-18
+
+### Fixed
+- **CRITICAL**: Fixed `InvalidImmutables` error that made all escrow operations fail in v3.0.0 and v3.0.1
+  - Root cause: `FACTORY` immutable in escrows captured CREATE3 factory address instead of SimplifiedEscrowFactory address
+  - When implementations deployed via CREATE3, `msg.sender` = CREATE3 factory (0x7B9e9...)
+  - But proxy clones deployed by SimplifiedEscrowFactory, causing address mismatch in validation
+  - Solution: Factory now deploys its own implementations in constructor (like v2.3.0 did)
+  
+### Changed
+- Created `SimplifiedEscrowFactoryV3_0_2` that deploys implementations in constructor
+- Implementation addresses now chain-specific (acceptable trade-off)
+- Factory address remains consistent across chains via CREATE3
+- Updated deployment script to only deploy factory (implementations handled by factory)
+
+### Technical Details
+- Factory constructor calls `new EscrowSrc()` and `new EscrowDst()`
+- Ensures `msg.sender` during implementation deployment = SimplifiedEscrowFactory
+- `FACTORY` immutable now correctly points to factory address
+- Validation in `_validateImmutables` now passes correctly
+
+### Deployment
+- Factory deployed via CREATE3 with salt: `keccak256("BMN-SimplifiedEscrowFactory-v3.0.2")`
+- Implementation addresses will differ per chain (deployed by factory)
+- Predicted factory address: Will be deterministic across all chains
+
+### Impact
+- Restores full protocol functionality broken in v3.0.0 and v3.0.1
+- All escrow operations (create, withdraw, cancel) now work correctly
+- Maintains cross-chain factory address consistency
+- No external interface changes - fully backward compatible
+
+### Migration
+- Update resolver configurations to point to v3.0.2 factory address
+- v3.0.0 and v3.0.1 factories should be considered broken and unusable
+- No code changes required for integrators - interfaces remain the same
+
+## [3.0.1] - 2025-01-18 [DEPRECATED - CONTAINS FACTORY BUG]
+
+### WARNING
+- **DO NOT USE THIS VERSION** - While it fixed the InvalidCreationTime bug from v3.0.0, it still contains the FACTORY immutable bug
+- All escrow operations fail with `InvalidImmutables` error
+- Use v3.0.2 instead which contains all fixes
 
 ### Fixed
 - **CRITICAL**: Fixed `InvalidCreationTime` error that made all atomic swaps fail in v3.0.0
@@ -39,12 +81,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - v3.0.0 factory should be considered deprecated and unusable
 - No code changes required - interfaces remain the same
 
-## [3.0.0] - 2025-08-15 [DEPRECATED - CRITICAL BUG]
+## [3.0.0] - 2025-08-15 [DEPRECATED - MULTIPLE CRITICAL BUGS]
 
 ### WARNING
-- **DO NOT USE THIS VERSION** - Contains critical bug that breaks all atomic swaps
-- All escrow creation fails with `InvalidCreationTime` error
-- Use v3.0.1 instead which contains the fix
+- **DO NOT USE THIS VERSION** - Contains multiple critical bugs:
+  1. All escrow creation fails with `InvalidCreationTime` error (fixed in v3.0.1)
+  2. FACTORY immutable bug causes `InvalidImmutables` error (fixed in v3.0.2)
+- Use v3.0.2 instead which contains all fixes
 
 ### Added
 - Whitelist bypass functionality for permissionless access
