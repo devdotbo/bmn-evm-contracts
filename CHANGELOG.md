@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **1inch Compatibility**: Full interface compatibility with 1inch protocol
+  - Added `bytes parameters` field to `DstImmutablesComplement` struct
+  - Added `escrowImmutables` storage mapping for resolver data retrieval
+  - Updated event emissions to include complete immutables structs
+  - Modified `ImmutablesLib` to use dynamic `abi.encode` for proper bytes handling
+  - Created comprehensive test suite for compatibility changes (test/Compatibility1inch.t.sol)
+
 ### Changed
 - Made deployment scripts generic and version-agnostic
   - Renamed `DeployV3_0_2.s.sol` to `Deploy.s.sol`
@@ -15,6 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation structure simplified
   - Single source of truth for deployment info in `deployments/deployment.md`
   - Removed redundant deployment documentation files
+- **ImmutablesLib**: Changed from fixed-size assembly to dynamic abi.encode for hash functions
+- **SimplifiedEscrowFactory**: Events now emit full immutables structs instead of individual fields
+
+### Fixed
+- **Critical**: Resolved 70% functionality blocker where resolver couldn't withdraw on source chain
+  - Root cause: InvalidImmutables error due to missing parameters field in hash calculation
+  - Solution: Added parameters field and emit complete immutables in events
 
 ### Removed
 - LocalDeploy.s.sol (unnecessary for production focus)
@@ -31,6 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Constants.sol (hardcoded addresses, not imported)
   - EscrowFactoryContext.sol (unused constant definition)
   - BMNToken.sol (using deployed token at 0x8287CD2aC7E227D9D927F998EB600a0683a832A1)
+- Unused helper contracts:
+  - contracts/helpers/EIP712Example.sol (example code)
+  - contracts/libraries/Create3.sol (obsolete, replaced by CREATE2)
+- Disabled test files:
+  - test/DeterministicAddresses.t.sol.disabled
+  - test/ImmutablesStorage.t.sol.disabled
 
 ## [3.0.2] - 2025-08-16 (Current Production)
 
