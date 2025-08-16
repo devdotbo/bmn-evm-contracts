@@ -7,43 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.3] - 2025-08-16 (Proposed)
+## [3.0.2] - 2025-08-16 (Current Production)
 
-### Fixed
-- **CRITICAL**: Fixed resolver withdrawal failures due to unpredictable timelocks
-  - Root cause: Factory used `block.timestamp` at deployment making immutables unpredictable
-  - Impact: Resolvers cannot calculate correct immutables for withdrawals, causing `InvalidImmutables()` errors
-  - Solution: Use predictable `deployedAt` timestamp from order data instead of `block.timestamp`
-  - Affects: All v3.0.2 and v2.3 deployments
-
-### Added
-- Enhanced `SrcEscrowCreatedWithImmutables` event that emits exact immutables array for resolver verification
-- `computeImmutables()` helper function for off-chain immutables calculation
-- Support for `deployedAt` parameter in order extraData for predictable timelock calculation
-- Timestamp validation with 5-minute tolerance window
-
-### Changed
-- `postInteraction()` now accepts and validates `deployedAt` timestamp from order data
-- Timelocks built using predictable timestamp instead of runtime `block.timestamp`
-- Backward compatible: Falls back to `block.timestamp` if `deployedAt` not provided
-
-### Security
-- Timestamp validation ensures `deployedAt` is within acceptable range (±5 minutes)
-- All existing security features maintained (whitelist, pause, etc.)
-
-### Developer Notes
-- Resolvers MUST include `deployedAt` in order extraData for predictable operations
-- Use `computeImmutables()` to verify calculations match on-chain values
-- Enhanced events provide fallback for existing v3.0.2 escrows
-
-## [3.0.2] - 2025-08-16
+### Deployment
+- **Factory Address**: `0xAbF126d74d6A438a028F33756C0dC21063F72E96` (Base & Optimism)
+- **BMN Token**: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` (all chains)
+- **Status**: Active on mainnet, verified on block explorers
 
 ### Fixed
 - **CRITICAL**: Fixed FACTORY immutable bug preventing withdrawals with CREATE3 deployment
   - Root cause: BaseEscrow stored CREATE3 proxy address instead of SimplifiedEscrowFactory
   - Impact: All CREATE3-deployed escrows fail withdrawal with `InvalidImmutables()` error
   - Solution: Pack factory address into high bits of timelocks immutable field
-  - Affected deployments: CREATE3 factories at 0xF99e2f0772f9c381aD91f5037BF7FF7dE8a68DDc
+
+### Resolver Integration Note
+- **InvalidImmutables errors**: Resolvers must use the exact `block.timestamp` from the event's block
+- **Solution**: `const block = await provider.getBlock(event.blockNumber); const deployedAt = block.timestamp;`
+- **No contract changes needed** - this is purely a resolver implementation detail
 
 ### Changed
 - BaseEscrow now extracts factory address from immutables instead of using msg.sender
