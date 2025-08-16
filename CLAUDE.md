@@ -27,22 +27,10 @@ Original pattern: [first 4 chars]...[last 4 chars]
 Please use environment variables instead.
 ```
 
-## 📋 LATEST PROJECT STATUS (v2.2.0 - January 7, 2025)
-
-### ✅ PostInteraction Integration DEPLOYED
-- SimplifiedEscrowFactory now implements IPostInteraction interface
-- Atomic escrow creation working with 1inch SimpleLimitOrderProtocol
-- Gas usage: ~105k per postInteraction call
-- Deployed to production on Base & Optimism
-
-### 🚀 Current Deployments
-- **Production (v2.3.0)**: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` (Base & Optimism)
-- **Features**: EIP-712 resolver-signed actions, PostInteraction support, Resolver whitelist, Emergency pause mechanism
-
-### 📝 Key Documentation
-- `docs/CURRENT_STATE.md` - Complete project status
-- `docs/POSTINTERACTION_IMPLEMENTATION.md` - Implementation details
-- `docs/completed/` - Archived completed plans
+## 📝 Key Documentation
+- `deployments/deployment.md` - Current deployment information
+- `docs/` - Technical documentation and implementation details
+- `CHANGELOG.md` - Version history and changes
 
 ## 🚨 CRITICAL SECURITY RULES - READ FIRST!
 
@@ -187,20 +175,17 @@ source .env && forge script ...
 
 ## Important Instructions
 
-### 🆕 PostInteraction Integration Context (v2.2.0)
+### 🆕 PostInteraction Integration Context
 
 **WHEN WORKING WITH SimplifiedEscrowFactory:**
 1. **postInteraction() method** is the entry point from 1inch SimpleLimitOrderProtocol
 2. **Token flow**: SimpleLimitOrderProtocol transfers tokens from maker to taker, then postInteraction transfers from taker to escrow
 3. **Resolver MUST approve factory** before order fills to allow token transfers
-4. **Test with PostInteractionTest.sol** for focused testing without full escrow validation
-5. **Known issue**: SingleChainAtomicSwapTest fails with InvalidImmutables() - this is expected due to escrow validation
+4. **Resolvers must read block.timestamp from event blocks** for immutables calculation
 
 **KEY FILES FOR POSTINTERACTION:**
 - `contracts/SimplifiedEscrowFactory.sol` - Main implementation
-- `test/PostInteractionTest.sol` - Working tests for the integration
 - `test/mocks/MockLimitOrderProtocol.sol` - Mock for testing
-- `docs/POSTINTERACTION_IMPLEMENTATION.md` - Complete details
 
 ### 🔴 CRITICAL: Security-First Development
 
@@ -399,80 +384,21 @@ Timelocks are packed into a single uint256 with stages:
 **Via-IR**: Enabled for better optimization
 **EVM Version**: cancun (required for CREATE3)
 
-## CREATE3 Deployment
+## Deployment Information
 
-**CREATE3 Factory**: `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` (shared across Base, Etherlink, and Optimism)
-
-### Production Deployments
-
-**Current Deployments (v3.0.0 - ACTIVE)**:
-**Deployment Date**: August 15, 2025
-**Features**: Reduced timing constraints (60s tolerance), Whitelist bypass enabled by default, Immediate withdrawals supported
-**Verification Status**: Verified on Base, Pending on Optimism
-
-- SimplifiedEscrowFactory v3.0.0: `0xa820F5dB10AE506D22c7654036a4B74F861367dB` (Base & Optimism)
-- EscrowSrc Implementation: `0xaf7D19bfAC3479627196Cc9C9aDF0FB67A4441AE` (Base ✅ Verified, Optimism pending)
-- EscrowDst Implementation: `0x334787690D3112a4eCB10ACAa1013c12A3893E74` (Base ✅ Verified, Optimism pending)
-- BMN Token: `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` (All chains)
-
-**Previous Deployments (v2.3.0 - DEPRECATED)**:
-**Deployment Date**: January 8, 2025
-- SimplifiedEscrowFactory v2.3.0: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` (Base & Optimism)
-- EscrowSrc Implementation: `0x80C3D0e98C62930dD3f6ab855b34d085Ca9aDf59` (Base & Optimism)
-- EscrowDst Implementation: `0x32e98F40D1D4643b251D8Ee99fd95918A3A8b306` (Base & Optimism)
-
-**Previous Deployments (v2.2.0 - DEPRECATED)**:
-**Deployment Date**: January 7, 2025
-- SimplifiedEscrowFactory v2.2.0: `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` (Base & Optimism)
-
-**Previous Deployments (v2.1.0 - DEPRECATED)**:
-- CrossChainEscrowFactory: `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` (Base & Optimism)
-
-**Previous Deployments (v1.1.0 - DEPRECATED)**:
-- CrossChainEscrowFactory: `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1` (Base & Etherlink)
-- CrossChainEscrowFactory: `0xB916C3edbFe574fFCBa688A6B92F72106479bD6c` (Optimism)
-
-**Resolver Infrastructure**:
-- Resolver Factory: `0xe767202fD26104267CFD8bD8cfBd1A44450DC343`
-
-### Deployment History
-
-**v2.3.0 (Current - ACTIVE)**:
-- SimplifiedEscrowFactory: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` (Base & Optimism) ✅ Verified
-- EscrowSrc Implementation: `0x80C3D0e98C62930dD3f6ab855b34d085Ca9aDf59` ✅ Verified
-- EscrowDst Implementation: `0x32e98F40D1D4643b251D8Ee99fd95918A3A8b306` ✅ Verified
-- Features: EIP-712 resolver-signed actions, PostInteraction integration with 1inch SimpleLimitOrderProtocol
-- Deployed: January 8, 2025
-- Verification: All contracts verified on Basescan and Optimistic Etherscan
-
-**v2.2.0 (DEPRECATED)**:
-- SimplifiedEscrowFactory: `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` (Base & Optimism)
-- Features: PostInteraction integration with 1inch SimpleLimitOrderProtocol
-- Deployed: January 7, 2025
-
-**v2.1.0 (DEPRECATED)**:
-- CrossChainEscrowFactory: `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` (Base & Optimism)
-- Security Features: Resolver whitelist, Emergency pause mechanism
-- Deployed: August 6, 2025
-
-**v1.1.0 (DEPRECATED)**:
-- CrossChainEscrowFactory: `0x2B2d52Cf0080a01f457A4f64F41cbca500f787b1` (Base & Etherlink)
-- CrossChainEscrowFactory: `0xB916C3edbFe574fFCBa688A6B92F72106479bD6c` (Optimism)
-- Enhancement: Factory events emit escrow addresses
-
-**v1.0.0 (DEPRECATED)**:
-- CrossChainEscrowFactory: `0x75ee15F6BfDd06Aee499ed95e8D92a114659f4d1`
-- Initial deployment without escrow address in events
+For current deployment addresses and instructions, see `deployments/deployment.md`.
 
 ### Deployment Commands
 ```bash
-# Deploy main contracts
-source .env && forge script script/DeployWithCREATE3.s.sol --rpc-url $BASE_RPC_URL --broadcast
-source .env && forge script script/DeployWithCREATE3.s.sol --rpc-url $ETHERLINK_RPC_URL --broadcast
+# Deploy to mainnet with CREATE3
+source .env && forge script script/DeployV3_0_2.s.sol --rpc-url $BASE_RPC_URL --broadcast
+source .env && forge script script/DeployV3_0_2.s.sol --rpc-url $OPTIMISM_RPC_URL --broadcast
 
-# Deploy resolver infrastructure
-source .env && forge script script/DeployResolverCREATE3.s.sol --rpc-url $BASE_RPC_URL --broadcast
-source .env && forge script script/DeployResolverCREATE3.s.sol --rpc-url $ETHERLINK_RPC_URL --broadcast
+# Deploy locally for testing
+source .env && forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8545 --broadcast
+
+# Verify contracts after deployment
+forge script script/VerifyContracts.s.sol --rpc-url $BASE_RPC_URL
 ```
 
 ## Key Test Accounts (Anvil)
@@ -495,9 +421,9 @@ When contracts are updated:
 1. Run `forge build` to generate new ABIs
 2. Copy required ABIs to resolver: `cp out/<Contract>.sol/<Contract>.json ../bmn-evm-resolver/abis/`
 3. Key ABIs needed: SimplifiedEscrowFactory, EscrowSrc, EscrowDst, TokenMock, LimitOrderProtocol, IERC20
-4. Ensure resolver is configured to use the new factory address (v2.2.0): `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68`
-5. The enhanced factory events include escrow addresses, simplifying resolver implementation
-6. **IMPORTANT**: v2.2.0 requires resolver whitelisting - contact factory owner for whitelist access
+4. Ensure resolver is configured with correct factory address from `deployments/deployment.md`
+5. The factory events include escrow addresses and block timestamps
+6. **IMPORTANT**: Resolvers must read block.timestamp from event blocks for immutables calculation
 
 ### TestEscrowFactory for Development
 For local testing, we deploy `TestEscrowFactory` instead of the regular `EscrowFactory`:
