@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- Deprecated v2.x and v3.0.1 deployment scripts
+- Deprecated factory contracts (BaseEscrowFactory, CrossChainEscrowFactory, MerkleStorageInvalidator)
+- Deprecated test files referencing old contracts
+- All v3.0.3/v3.0.4 attempted fixes (unnecessary - resolver should read block.timestamp from events)
+
 ## [3.0.2] - 2025-08-16 (Current Production)
 
 ### Deployment
