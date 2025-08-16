@@ -7,7 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.2] - 2025-01-15 (Proposed)
+## [3.0.3] - 2025-08-16 (Proposed)
+
+### Fixed
+- **CRITICAL**: Fixed resolver withdrawal failures due to unpredictable timelocks
+  - Root cause: Factory used `block.timestamp` at deployment making immutables unpredictable
+  - Impact: Resolvers cannot calculate correct immutables for withdrawals, causing `InvalidImmutables()` errors
+  - Solution: Use predictable `deployedAt` timestamp from order data instead of `block.timestamp`
+  - Affects: All v3.0.2 and v2.3 deployments
+
+### Added
+- Enhanced `SrcEscrowCreatedWithImmutables` event that emits exact immutables array for resolver verification
+- `computeImmutables()` helper function for off-chain immutables calculation
+- Support for `deployedAt` parameter in order extraData for predictable timelock calculation
+- Timestamp validation with 5-minute tolerance window
+
+### Changed
+- `postInteraction()` now accepts and validates `deployedAt` timestamp from order data
+- Timelocks built using predictable timestamp instead of runtime `block.timestamp`
+- Backward compatible: Falls back to `block.timestamp` if `deployedAt` not provided
+
+### Security
+- Timestamp validation ensures `deployedAt` is within acceptable range (±5 minutes)
+- All existing security features maintained (whitelist, pause, etc.)
+
+### Developer Notes
+- Resolvers MUST include `deployedAt` in order extraData for predictable operations
+- Use `computeImmutables()` to verify calculations match on-chain values
+- Enhanced events provide fallback for existing v3.0.2 escrows
+
+## [3.0.2] - 2025-08-16
 
 ### Fixed
 - **CRITICAL**: Fixed FACTORY immutable bug preventing withdrawals with CREATE3 deployment
@@ -31,7 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - See docs/FIX-v3.0.2-FACTORY-IMMUTABLE.md for detailed analysis
 - See docs/IMPLEMENTATION-v3.0.2.md for code changes
 
-## [3.0.1] - 2025-01-18
+## [3.0.1] - 2025-08-15
 
 ### Fixed
 - **CRITICAL**: Fixed `InvalidCreationTime` error that made all atomic swaps fail in v3.0.0

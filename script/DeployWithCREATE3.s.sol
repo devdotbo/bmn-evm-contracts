@@ -2,7 +2,7 @@
 pragma solidity 0.8.23;
 
 import "forge-std/Script.sol";
-import { SimplifiedEscrowFactoryV3_0_2 } from "../contracts/SimplifiedEscrowFactoryV3_0_2.sol";
+import { SimplifiedEscrowFactoryV3_0_3 } from "../contracts/SimplifiedEscrowFactoryV3_0_3.sol";
 import { Constants } from "../contracts/Constants.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
@@ -14,16 +14,16 @@ interface ICREATE3 {
 
 /**
  * @title DeployWithCREATE3
- * @notice Deploy BMN protocol v3.0.2 factory using CREATE3 for cross-chain consistency
+ * @notice Deploy BMN protocol v3.0.3 factory using CREATE3 for cross-chain consistency
  * @dev Uses verified CREATE3 factory at 0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d
- *      v3.0.2 fixes the FACTORY immutable bug by having the factory deploy its own implementations
+ *      v3.0.3 fixes resolver compatibility by using predictable timelocks
  */
 contract DeployWithCREATE3 is Script {
     // CREATE3 factory deployed on both Base and Etherlink
     address constant CREATE3_FACTORY = 0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d;
     
-    // Deterministic salt for v3.0.2 factory
-    bytes32 constant FACTORY_SALT = keccak256("BMN-SimplifiedEscrowFactory-v3.0.2");
+    // Deterministic salt for v3.0.3 factory
+    bytes32 constant FACTORY_SALT = keccak256("BMN-SimplifiedEscrowFactory-v3.0.3");
     
     // Deployment result
     address public factory;
@@ -33,7 +33,7 @@ contract DeployWithCREATE3 is Script {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
         
-        console.log("Deploying BMN Protocol v3.0.2 with CREATE3");
+        console.log("Deploying BMN Protocol v3.0.3 with CREATE3");
         console.log("============================================");
         console.log("Deployer:", deployer);
         console.log("Chain ID:", block.chainid);
@@ -43,17 +43,17 @@ contract DeployWithCREATE3 is Script {
         factory = ICREATE3(CREATE3_FACTORY).getDeployed(deployer, FACTORY_SALT);
         
         console.log("\nPredicted factory address:");
-        console.log("SimplifiedEscrowFactoryV3_0_2:", factory);
+        console.log("SimplifiedEscrowFactoryV3_0_3:", factory);
         
         vm.startBroadcast(deployerPrivateKey);
         
         // Deploy factory (which will deploy its own implementations)
         if (factory.code.length == 0) {
-            console.log("\nDeploying SimplifiedEscrowFactoryV3_0_2...");
-            console.log("Note: Factory will deploy its own implementations to fix FACTORY immutable bug");
+            console.log("\nDeploying SimplifiedEscrowFactoryV3_0_3...");
+            console.log("Note: Factory fixes resolver compatibility with predictable timelocks");
             
             bytes memory factoryBytecode = abi.encodePacked(
-                type(SimplifiedEscrowFactoryV3_0_2).creationCode,
+                type(SimplifiedEscrowFactoryV3_0_3).creationCode,
                 abi.encode(
                     IERC20(Constants.BMN_TOKEN),  // accessToken
                     deployer,                      // owner
@@ -63,18 +63,18 @@ contract DeployWithCREATE3 is Script {
             
             address deployedFactory = ICREATE3(CREATE3_FACTORY).deploy(FACTORY_SALT, factoryBytecode);
             require(deployedFactory == factory, "Factory address mismatch");
-            console.log("SimplifiedEscrowFactoryV3_0_2 deployed at:", deployedFactory);
+            console.log("SimplifiedEscrowFactoryV3_0_3 deployed at:", deployedFactory);
             console.log("Factory has deployed its own EscrowSrc and EscrowDst implementations");
         } else {
-            console.log("SimplifiedEscrowFactoryV3_0_2 already deployed at:", factory);
+            console.log("SimplifiedEscrowFactoryV3_0_3 already deployed at:", factory);
         }
         
         vm.stopBroadcast();
         
         // Save deployment info
         string memory deploymentInfo = string(abi.encodePacked(
-            "# BMN Protocol v3.0.2 CREATE3 Deployment\n",
-            "# Factory deploys its own implementations to fix FACTORY immutable bug\n",
+            "# BMN Protocol v3.0.3 CREATE3 Deployment\n",
+            "# Factory fixes resolver compatibility with predictable timelocks\n",
             "CHAIN_ID=", vm.toString(block.chainid), "\n",
             "CREATE3_FACTORY=", vm.toString(CREATE3_FACTORY), "\n",
             "FACTORY=", vm.toString(factory), "\n",
@@ -83,7 +83,7 @@ contract DeployWithCREATE3 is Script {
         ));
         
         string memory filename = string(abi.encodePacked(
-            "deployments/create3-v3.0.2-",
+            "deployments/create3-v3.0.3-",
             vm.toString(block.chainid),
             ".env"
         ));
@@ -91,6 +91,6 @@ contract DeployWithCREATE3 is Script {
         vm.writeFile(filename, deploymentInfo);
         console.log("\nDeployment info saved to:", filename);
         console.log("\n=== Deployment Complete ===");
-        console.log("Factory v3.0.2 fixes the FACTORY immutable bug by deploying its own implementations");
+        console.log("Factory v3.0.3 fixes resolver compatibility with predictable timelocks and enhanced events");
     }
 }
