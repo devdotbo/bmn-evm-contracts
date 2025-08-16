@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecated test files referencing old contracts
 - All v3.0.3/v3.0.4 attempted fixes (unnecessary - resolver should read block.timestamp from events)
 - Redundant documentation files (DEPLOYMENT.md, DEPLOYMENT_RUNBOOK.md)
+- Unused contracts identified via dependency analysis:
+  - SimpleAtomicSwap.sol (standalone HTLC, not integrated)
+  - Create3Factory.sol (using deployed factory at 0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d)
+  - Constants.sol (hardcoded addresses, not imported)
+  - EscrowFactoryContext.sol (unused constant definition)
+  - BMNToken.sol (using deployed token at 0x8287CD2aC7E227D9D927F998EB600a0683a832A1)
 
 ## [3.0.2] - 2025-08-16 (Current Production)
 

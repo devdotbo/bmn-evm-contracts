@@ -38,3 +38,4 @@ decode-protocol-error.sh
 *-debug.log
 scripts/debug-*.sh
 script/DebugOrder.s.sol
+.idea
