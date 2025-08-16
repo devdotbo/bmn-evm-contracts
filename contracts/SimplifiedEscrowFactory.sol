@@ -5,6 +5,7 @@ import { Clones } from "openzeppelin-contracts/contracts/proxy/Clones.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "solidity-utils/contracts/libraries/SafeERC20.sol";
 import { IBaseEscrow } from "./interfaces/IBaseEscrow.sol";
+import { IEscrowFactory } from "./interfaces/IEscrowFactory.sol";
 import { ImmutablesLib } from "./libraries/ImmutablesLib.sol";
 import { Timelocks, TimelocksLib } from "./libraries/TimelocksLib.sol";
 import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
@@ -42,6 +43,9 @@ contract SimplifiedEscrowFactory is IPostInteraction {
     /// @notice Track deployed escrows
     mapping(bytes32 => address) public escrows;
     
+    /// @notice Store immutables for later retrieval (for 1inch compatibility)
+    mapping(bytes32 => IBaseEscrow.Immutables) public escrowImmutables;
+    
     /// @notice Resolver count for metrics
     uint256 public resolverCount;
     
@@ -51,13 +55,10 @@ contract SimplifiedEscrowFactory is IPostInteraction {
     /// @notice Whitelist bypass flag for testing
     bool public whitelistBypassed;
     
-    /// @notice Events
+    /// @notice Events (1inch compatible format)
     event SrcEscrowCreated(
-        address indexed escrow,
-        bytes32 indexed orderHash,
-        address indexed maker,
-        address taker,
-        uint256 amount
+        IBaseEscrow.Immutables srcImmutables,
+        IEscrowFactory.DstImmutablesComplement dstImmutablesComplement
     );
     
     event DstEscrowCreated(
@@ -125,21 +126,17 @@ contract SimplifiedEscrowFactory is IPostInteraction {
     }
     
     /**
-     * @notice Create source escrow
+     * @notice Create source escrow (standalone version for testing)
      * @param immutables Escrow parameters
-     * @param maker Order maker address
-     * @param token Token to be escrowed
-     * @param amount Amount to escrow
+     * @param dstComplement Destination chain parameters
      */
     function createSrcEscrow(
         IBaseEscrow.Immutables calldata immutables,
-        address maker,
-        address token,
-        uint256 amount
+        IEscrowFactory.DstImmutablesComplement calldata dstComplement
     ) external whenNotPaused returns (address escrow) {
         // Validate maker if whitelist is enabled
         if (makerWhitelistEnabled) {
-            require(whitelistedMakers[maker], "Maker not whitelisted");
+            require(whitelistedMakers[immutables.maker.get()], "Maker not whitelisted");
         }
         
         // Deploy escrow
@@ -149,16 +146,14 @@ contract SimplifiedEscrowFactory is IPostInteraction {
         // Track escrow
         escrows[salt] = escrow;
         
-        // Transfer tokens to escrow
-        IERC20(token).safeTransferFrom(msg.sender, escrow, amount);
+        // Store immutables for later retrieval
+        escrowImmutables[salt] = immutables;
         
-        emit SrcEscrowCreated(
-            escrow,
-            immutables.orderHash,
-            maker,
-            immutables.taker.get(),
-            amount
-        );
+        // Transfer tokens to escrow
+        IERC20(immutables.token.get()).safeTransferFrom(msg.sender, escrow, immutables.amount);
+        
+        // Emit complete immutables for 1inch compatibility
+        emit SrcEscrowCreated(immutables, dstComplement);
     }
     
     /**
@@ -174,6 +169,9 @@ contract SimplifiedEscrowFactory is IPostInteraction {
         
         // Track escrow
         escrows[salt] = escrow;
+        
+        // Store immutables for later retrieval
+        escrowImmutables[salt] = immutables;
         
         // Handle token transfer if not native
         address token = immutables.token.get();
@@ -266,11 +264,22 @@ contract SimplifiedEscrowFactory is IPostInteraction {
             token: order.makerAsset,
             amount: makingAmount,
             safetyDeposit: srcSafetyDeposit,
-            timelocks: srcTimelocks
+            timelocks: srcTimelocks,
+            parameters: ""  // Empty for BMN (no fees), 1inch compatibility
+        });
+        
+        // Build destination immutables complement for complete event data
+        IEscrowFactory.DstImmutablesComplement memory dstComplement = IEscrowFactory.DstImmutablesComplement({
+            maker: order.receiver.get() == address(0) ? Address.wrap(uint160(order.maker.get())) : order.receiver,
+            amount: order.takingAmount,
+            token: Address.wrap(uint160(dstToken)),
+            safetyDeposit: dstSafetyDeposit,
+            chainId: dstChainId,
+            parameters: ""  // Empty for BMN (no fees), 1inch compatibility
         });
         
         // Create the source escrow
-        address escrowAddress = _createSrcEscrowInternal(srcImmutables);
+        address escrowAddress = _createSrcEscrowInternal(srcImmutables, dstComplement);
         
         // The SimpleLimitOrderProtocol has already transferred tokens from maker to taker (resolver)
         // The resolver must have approved this factory to transfer tokens to the escrow
@@ -292,7 +301,8 @@ contract SimplifiedEscrowFactory is IPostInteraction {
      * @dev Extracted from createSrcEscrow for reuse
      */
     function _createSrcEscrowInternal(
-        IBaseEscrow.Immutables memory srcImmutables
+        IBaseEscrow.Immutables memory srcImmutables,
+        IEscrowFactory.DstImmutablesComplement memory dstComplement
     ) internal returns (address escrow) {
         // Deploy escrow using CREATE2
         // Calculate hash manually for memory parameter
@@ -301,6 +311,12 @@ contract SimplifiedEscrowFactory is IPostInteraction {
         
         // Track escrow by hashlock for duplicate detection
         escrows[srcImmutables.hashlock] = escrow;
+        
+        // Store immutables for later retrieval (enables resolver to withdraw)
+        escrowImmutables[salt] = srcImmutables;
+        
+        // Emit complete immutables for 1inch compatibility
+        emit SrcEscrowCreated(srcImmutables, dstComplement);
         
         return escrow;
     }

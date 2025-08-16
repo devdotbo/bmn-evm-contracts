@@ -28,6 +28,7 @@ interface IEscrowFactory {
         Address token;
         uint256 safetyDeposit;
         uint256 chainId;
+        bytes parameters;  // For 1inch compatibility - fee data on destination chain
     }
 
     error InsufficientEscrowBalance();
@@ -36,12 +37,12 @@ interface IEscrowFactory {
     error InvalidSecretsAmount();
 
     /**
-     * @notice Emitted on EscrowSrc deployment to recreate EscrowSrc and EscrowDst immutables off-chain.
-     * @param escrow The address of the created source escrow.
-     * @param srcImmutables The immutables of the escrow contract that are used in deployment on the source chain.
-     * @param dstImmutablesComplement Additional immutables related to the escrow contract on the destination chain.
+     * @notice Emitted on EscrowSrc deployment with complete immutables for off-chain reconstruction.
+     * @dev Matches 1inch format - emits full immutables to enable resolver withdrawal without reconstruction.
+     * @param srcImmutables The complete immutables of the escrow contract on the source chain.
+     * @param dstImmutablesComplement Additional immutables for the escrow contract on the destination chain.
      */
-    event SrcEscrowCreated(address indexed escrow, IBaseEscrow.Immutables srcImmutables, DstImmutablesComplement dstImmutablesComplement);
+    event SrcEscrowCreated(IBaseEscrow.Immutables srcImmutables, DstImmutablesComplement dstImmutablesComplement);
     /**
      * @notice Emitted on EscrowDst deployment.
      * @param escrow The address of the created escrow.

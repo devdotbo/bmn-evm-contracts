@@ -9,29 +9,23 @@ import { IBaseEscrow } from "../interfaces/IBaseEscrow.sol";
  * @custom:security-contact security@1inch.io
  */
 library ImmutablesLib {
-    uint256 internal constant ESCROW_IMMUTABLES_SIZE = 0x100;
-
     /**
      * @notice Returns the hash of the immutables.
+     * @dev Now uses abi.encode to properly handle the dynamic bytes field
      * @param immutables The immutables to hash.
-     * @return ret The computed hash.
+     * @return The computed hash.
      */
-    function hash(IBaseEscrow.Immutables calldata immutables) internal pure returns(bytes32 ret) {
-        assembly ("memory-safe") {
-            let ptr := mload(0x40)
-            calldatacopy(ptr, immutables, ESCROW_IMMUTABLES_SIZE)
-            ret := keccak256(ptr, ESCROW_IMMUTABLES_SIZE)
-        }
+    function hash(IBaseEscrow.Immutables calldata immutables) internal pure returns(bytes32) {
+        return keccak256(abi.encode(immutables));
     }
 
     /**
      * @notice Returns the hash of the immutables.
+     * @dev Now uses abi.encode to properly handle the dynamic bytes field
      * @param immutables The immutables to hash.
-     * @return ret The computed hash.
+     * @return The computed hash.
      */
-    function hashMem(IBaseEscrow.Immutables memory immutables) internal pure returns(bytes32 ret) {
-        assembly ("memory-safe") {
-            ret := keccak256(immutables, ESCROW_IMMUTABLES_SIZE)
-        }
+    function hashMem(IBaseEscrow.Immutables memory immutables) internal pure returns(bytes32) {
+        return keccak256(abi.encode(immutables));
     }
 }
