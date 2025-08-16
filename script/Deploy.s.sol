@@ -33,7 +33,7 @@ contract Deploy is Script {
         // Deploy implementation contracts directly (not via CREATE3)
         // These will have different addresses per chain, which is fine
         uint32 rescueDelay = 7 days;
-        address accessToken = address(0); // No access token for v3.0.2
+        address accessToken = address(0); // No access token required
         
         EscrowSrc escrowSrcImpl = new EscrowSrc(rescueDelay, IERC20(accessToken));
         EscrowDst escrowDstImpl = new EscrowDst(rescueDelay, IERC20(accessToken));

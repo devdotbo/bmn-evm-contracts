@@ -7,11 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Made deployment scripts generic and version-agnostic
+  - Renamed `DeployV3_0_2.s.sol` to `Deploy.s.sol`
+  - Renamed `VerifyContracts.s.sol` to `Verify.s.sol`
+  - Scripts now use environment variables instead of hardcoded addresses
+- Documentation structure simplified
+  - Single source of truth for deployment info in `deployments/deployment.md`
+  - Removed redundant deployment documentation files
+
 ### Removed
+- LocalDeploy.s.sol (unnecessary for production focus)
+- Version-specific contract files (SimplifiedEscrowFactoryV3_0_2.sol)
+- Version-specific test files (V3_0_1_BugfixSimple.t.sol)
 - Deprecated v2.x and v3.0.1 deployment scripts
 - Deprecated factory contracts (BaseEscrowFactory, CrossChainEscrowFactory, MerkleStorageInvalidator)
 - Deprecated test files referencing old contracts
 - All v3.0.3/v3.0.4 attempted fixes (unnecessary - resolver should read block.timestamp from events)
+- Redundant documentation files (DEPLOYMENT.md, DEPLOYMENT_RUNBOOK.md)
 
 ## [3.0.2] - 2025-08-16 (Current Production)
 

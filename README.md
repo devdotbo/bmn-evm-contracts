@@ -10,7 +10,7 @@ Cross-chain atomic swap protocol using hash timelock contracts (HTLC).
 
 The BMN protocol consists of three essential components:
 1. **Smart Contracts** (this repository): Provide on-chain escrow, timelocks, and atomic swap infrastructure
-2. **1inch Integration** (v2.2.0): IPostInteraction interface for atomic escrow creation with SimpleLimitOrderProtocol
+2. **1inch Integration**: IPostInteraction interface for atomic escrow creation with SimpleLimitOrderProtocol
 3. **TypeScript Resolver** (`../bmn-evm-resolver`): Monitors chains, coordinates swaps, reveals secrets
 
 Without the TypeScript resolver, the contracts can only create escrows on individual chains. The resolver is what enables true cross-chain atomic swaps by:
@@ -33,11 +33,10 @@ forge build
 # Start test chains
 ./scripts/multi-chain-setup.sh
 
-# Deploy contracts
-forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8545 --broadcast
+# Deploy contracts locally
+source .env && forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast
 
-# Run resolver
-node scripts/resolver.js
+# Run resolver (see ../bmn-evm-resolver)
 ```
 
 ## Testing
@@ -46,87 +45,45 @@ node scripts/resolver.js
 forge test
 ```
 
-## Latest Features (v2.3.0)
+## Key Features
 
 ### EIP-712 Resolver-Signed Actions
-- Escrow contracts add `publicWithdrawSigned` and `publicCancelSigned` guarded by resolver EIP-712 signatures.
-- Solady-style EIP-712 helper provides domain (name: "BMN-Escrow", version: "2.3").
-- Backward compatible: token-gated public functions remain.
+- Escrow contracts support `publicWithdrawSigned` and `publicCancelSigned` with EIP-712 signatures
+- Backward compatible with token-gated public functions
 
-### Deployment (v2.3.0)
-- Unified mainnet deploy script: `script/DeployV2_3_Mainnet.s.sol`
-- CREATE3 deterministic address across Base and Optimism:
-  - Factory v2.3: `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A`
-  - Verified on Basescan and Optimistic Etherscan
-  
-To deploy:
-```bash
-forge script script/DeployV2_3_Mainnet.s.sol --rpc-url $BASE_RPC_URL --broadcast --verify --slow
-forge script script/DeployV2_3_Mainnet.s.sol --rpc-url $OPTIMISM_RPC_URL --broadcast --verify --slow
-```
-
-## Security Features (v2.1.0)
-
-The factory deployment includes critical security enhancements:
-
+### Security Features
 - **Resolver Whitelist**: Only approved addresses can create destination escrows
 - **Emergency Pause**: Protocol can be immediately halted if issues are detected
-- **Enhanced Access Control**: Improved owner-only functions for protocol management
+- **Enhanced Access Control**: Owner-only functions for protocol management
+- **Whitelist Bypass**: Configurable for permissionless mode
+
+## Deployment
+
+For current deployment addresses and instructions, see [`deployments/deployment.md`](deployments/deployment.md).
+
+### Deploy New Instance
+```bash
+# Deploy to mainnet with CREATE3
+source .env && forge script script/Deploy.s.sol --rpc-url $BASE_RPC_URL --broadcast
+source .env && forge script script/Deploy.s.sol --rpc-url $OPTIMISM_RPC_URL --broadcast
+
+# Verify deployment
+FACTORY_ADDRESS=0x... forge script script/Deploy.s.sol:Deploy --sig "verify()" --rpc-url $BASE_RPC_URL
+```
 
 ## Documentation
 
-### Essential Guides
+### Core Documentation
 
-- **[Current Project State](docs/CURRENT_STATE.md)** - Complete status and roadmap
-- **[PostInteraction Implementation](docs/POSTINTERACTION_IMPLEMENTATION.md)** - v2.2.0 1inch integration details
+- **[Deployment Information](deployments/deployment.md)** - Current deployment addresses and instructions
+- **[Architecture Overview](docs/)** - Technical documentation and implementation details
 - **[Testing Guide](TESTING.md)** - Comprehensive testing documentation
-- **[Deployment Runbook](DEPLOYMENT_RUNBOOK.md)** - Step-by-step deployment procedures
-- **[Resolver Migration Guide](RESOLVER_MIGRATION_GUIDE.md)** - Migration from v1.1.0 to v2.1.0
+- **[Change Log](CHANGELOG.md)** - Version history and updates
 
-### Technical Documentation
+### Additional Resources
 
-- **[Deployment History](docs/DEPLOYMENT_HISTORY.md)** - Comprehensive record of all deployments
-- **[CREATE3 Deployment](docs/CREATE3-DEPLOYMENT-SUMMARY.md)** - CREATE3 factory usage details
-- **[Factory Enhancement](docs/FACTORY_EVENT_ENHANCEMENT.md)** - Technical improvements
-- **[Resolver Update Guide](docs/RESOLVER_UPDATE_GUIDE.md)** - Resolver infrastructure updates
-- **[Completed Plans](docs/completed/)** - Archive of implemented features
-
-### Current Deployment (v2.3.0)
-
-**Deployed**: January 8, 2025  
-**Status**: ACTIVE on Base and Optimism  
-**Verification**: ✅ All contracts verified on Basescan and Optimistic Etherscan
-
-| Contract | Address | Networks | Status |
-|----------|---------|----------|--------|
-| CREATE3 Factory | `0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d` | All | ✅ |
-| **SimplifiedEscrowFactory v2.3.0** | `0xdebE6F4bC7BaAD2266603Ba7AfEB3BB6dDA9FE0A` | Base, Optimism | ✅ |
-| BMN Token | `0x8287CD2aC7E227D9D927F998EB600a0683a832A1` | All | ✅ |
-| EscrowSrc Implementation | `0x80C3D0e98C62930dD3f6ab855b34d085Ca9aDf59` | Base, Optimism | ✅ |
-| EscrowDst Implementation | `0x32e98F40D1D4643b251D8Ee99fd95918A3A8b306` | Base, Optimism | ✅ |
-| Resolver Factory | `0xe767202fD26104267CFD8bD8cfBd1A44450DC343` | All | ✅ |
-
-### Previous Deployment (v2.2.0)
-
-**Deployed**: January 7, 2025  
-**Status**: DEPRECATED
-
-| Contract | Address | Networks |
-|----------|---------|----------|
-| SimplifiedEscrowFactory v2.2.0 | `0xB436dBBee1615dd80ff036Af81D8478c1FF1Eb68` | Base, Optimism |
-
-### Previous Deployment (v2.1.0)
-
-**Deployed**: August 6, 2025  
-**Status**: DEPRECATED
-
-| Contract | Address | Networks |
-|----------|---------|----------|
-| CrossChainEscrowFactory v2.1.0 | `0xBc9A20A9FCb7571B2593e85D2533E10e3e9dC61A` | Base, Optimism |
-
-⚠️ **Previous v1.1.0, v2.1.0, and v2.2.0 factories are DEPRECATED** - All resolvers should migrate to v2.3.0
-
-See [Current Deployment Status](deployments/current/MAINNET-STATUS.md) for live status.
+- **[Archived Documentation](docs/archive/)** - Historical plans and implementations
+- **[Completed Features](docs/completed/)** - Archive of implemented features
 
 ## License
 
