@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.2] - 2025-01-16
+## [3.0.2] - 2025-08-16
 
 ### Fixed
 - **CRITICAL**: Fixed `InvalidImmutables` error that made all escrow operations fail in v3.0.0 and v3.0.1
@@ -52,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No code changes required for integrators - interfaces remain the same
 - See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed migration guide
 
-## [3.0.1] - 2025-01-15 [DEPRECATED - CONTAINS FACTORY BUG]
+## [3.0.1] - 2025-08-15 [DEPRECATED - CONTAINS FACTORY BUG]
 
 ### WARNING
 - **DO NOT USE THIS VERSION** - While it fixed the InvalidCreationTime bug from v3.0.0, it still contains the FACTORY immutable bug
@@ -89,7 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - v3.0.0 factory should be considered deprecated and unusable
 - No code changes required - interfaces remain the same
 
-## [3.0.0] - 2025-01-15 [DEPRECATED - MULTIPLE CRITICAL BUGS]
+## [3.0.0] - 2025-08-15 [DEPRECATED - MULTIPLE CRITICAL BUGS]
 
 ### WARNING
 - **DO NOT USE THIS VERSION** - Contains multiple critical bugs:
@@ -133,7 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Legacy v2.2 and v2.3 deployment scripts (replaced with unified version)
 
-## [2.3.0] - 2025-01-08
+## [2.3.0] - 2025-08-08
 
 ### Added
 - EIP-712 resolver-signed public actions in escrows
