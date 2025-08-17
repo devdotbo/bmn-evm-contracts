@@ -46,6 +46,40 @@ library TimelocksLib {
     uint256 private constant _DEPLOYED_AT_OFFSET = 224;
 
     /**
+     * @dev Struct to hold individual timelock values before packing.
+     */
+    struct TimelocksStruct {
+        uint32 srcWithdrawal;
+        uint32 srcPublicWithdrawal;
+        uint32 srcCancellation;
+        uint32 srcPublicCancellation;
+        uint32 dstWithdrawal;
+        uint32 dstPublicWithdrawal;
+        uint32 dstCancellation;
+    }
+
+    /**
+     * @notice Packs individual timelock values into a single Timelocks type.
+     * @param timelocks The struct containing individual timelock values.
+     * @return The packed Timelocks value (without deployedAt, which should be set separately).
+     */
+    function pack(TimelocksStruct memory timelocks) internal pure returns (Timelocks) {
+        uint256 packedValue = 0;
+        
+        // Pack each timelock value into its corresponding bit position
+        packedValue |= uint256(timelocks.srcWithdrawal);           // bits 0-31
+        packedValue |= uint256(timelocks.srcPublicWithdrawal) << 32;  // bits 32-63
+        packedValue |= uint256(timelocks.srcCancellation) << 64;       // bits 64-95
+        packedValue |= uint256(timelocks.srcPublicCancellation) << 96;  // bits 96-127
+        packedValue |= uint256(timelocks.dstWithdrawal) << 128;        // bits 128-159
+        packedValue |= uint256(timelocks.dstPublicWithdrawal) << 160;  // bits 160-191
+        packedValue |= uint256(timelocks.dstCancellation) << 192;       // bits 192-223
+        // bits 224-255 reserved for deployedAt, set separately using setDeployedAt
+        
+        return Timelocks.wrap(packedValue);
+    }
+
+    /**
      * @notice Sets the Escrow deployment timestamp.
      * @param timelocks The timelocks to set the deployment timestamp to.
      * @param value The new Escrow deployment timestamp.

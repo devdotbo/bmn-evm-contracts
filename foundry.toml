@@ -15,6 +15,7 @@ remappings = [
     "@openzeppelin/contracts/=dependencies/@openzeppelin-contracts-5.1.0/",
     "limit-order-protocol/=dependencies/limit-order-protocol/",
     "limit-order-settlement/=dependencies/limit-order-settlement/",
+    "@1inch/limit-order-protocol-contract/=dependencies/limit-order-protocol/",
     "solidity-utils/=dependencies/solidity-utils/",
     "@1inch/solidity-utils/=dependencies/solidity-utils/",
     "murky/=dependencies/murky/src/",

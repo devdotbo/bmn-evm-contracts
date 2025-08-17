@@ -5,13 +5,73 @@ All notable changes to the BMN EVM Contracts will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.0.0] - 2025-01-17
 
 ### Added
-- **V4.0 Proposal Documentation**: Comprehensive analysis and proposal for full 1inch compatibility
-  - `docs/V4.0-PROPOSAL-1INCH-COMPATIBILITY.md`: Identified 10 compatibility issues with production 1inch cross-chain-swap
-  - `docs/V4.0-MINIMAL-WORKING-CHANGES.md`: Documented 5 critical fixes needed for working atomic swaps
-  - Clarified timestamp tolerance is already implemented via srcWithdrawal offset (finality period)
+- **Full 1inch Protocol Compatibility**: Complete implementation for seamless integration with 1inch cross-chain-swap
+  - New `SimplifiedEscrowFactoryV4.sol` with constructor-based deployment pattern
+  - Inherits from `SimpleSettlement` for native 1inch protocol support
+  - Implements internal `_postInteraction` pattern for order processing
+  - Added parameter encoding structure for fee and slippage compatibility
+  - Constructor deploys implementations to ensure correct FACTORY immutable capture
+
+- **TimelocksLib Enhancement**: Added `pack()` function for structured timelock creation
+  - New `TimelocksStruct` for type-safe timelock construction
+  - Proper bit packing into 256-bit Timelocks type
+  - Maintains backward compatibility with existing unpack functions
+
+- **Comprehensive V4 Test Suite**: 35 new tests validating all V4 functionality
+  - `SimplifiedEscrowFactoryV4.t.sol`: Core factory tests with constructor deployment
+  - `SimplifiedFactoryV4Pack.t.sol`: Timelock packing integration tests
+  - `TimelocksLibPack.t.sol`: Library pack function unit tests
+  - `ParameterEncodingV4.t.sol`: Parameter encoding validation
+  - `V4ParametersIntegration.t.sol`: End-to-end parameter flow tests
+  - `SimpleSettlementInheritance.t.sol`: 1inch inheritance validation
+  - `E2E_V4_AtomicSwap.t.sol`: Complete atomic swap flow tests
+
+- **V4 Deployment Infrastructure**:
+  - `DeployV4.s.sol`: Production deployment script with CREATE3
+  - `LocalDeployV4.s.sol`: Local testing deployment script
+  - `DeployConfigV4.s.sol`: Deployment configuration management
+  - `script/README.md`: Deployment documentation and instructions
+
+- **V4 Documentation**: Complete analysis and implementation guide
+  - `docs/V4.0-COMPLETE-ANALYSIS.md`: Comprehensive V4 architecture documentation
+  - Details all 10 identified issues and their solutions
+  - Migration guide from V3 to V4
+
+### Changed
+- **Factory Architecture**: Fundamental restructuring for 1inch compatibility
+  - Moved from separate deployment to constructor-based implementation deployment
+  - Factory now inherits from SimpleSettlement instead of custom extensions
+  - Simplified inheritance hierarchy removing BaseEscrowFactory complexity
+  - Direct implementation references ensure correct immutable capture
+
+- **Parameter Handling**: Enhanced for cross-protocol compatibility
+  - Added flexible parameter encoding/decoding system
+  - Support for fee structures and slippage tolerance
+  - Backward compatible with existing immutables structure
+
+### Fixed
+- **FACTORY Immutable Issue**: Resolved critical bug where escrows couldn't access factory
+  - Root cause: Separate deployment meant implementations had zero factory address
+  - Solution: Constructor deployment ensures factory address is captured
+  - Impact: Escrows can now correctly validate and interact with factory
+
+- **1inch Integration Blockers**: Resolved all compatibility issues
+  - Fixed inheritance chain conflicts with BaseExtension
+  - Implemented proper postInteraction hook pattern
+  - Added missing parameter fields for protocol requirements
+  - Ensured proper token flow through settlement
+
+### Security
+- **V4 Security Enhancements**:
+  - Constructor pattern prevents factory address manipulation
+  - Immutable implementation references prevent proxy attacks
+  - Comprehensive test coverage of all security paths
+  - Parameter validation prevents malformed data attacks
+
+## [Unreleased]
 
 ### Added
 - **Comprehensive Test Suite**: Added 8 new test files with 83+ tests (5,000+ lines), increasing coverage from ~33% to ~70%
