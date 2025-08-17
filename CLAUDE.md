@@ -32,6 +32,44 @@ Please use environment variables instead.
 - `docs/` - Technical documentation and implementation details
 - `CHANGELOG.md` - Version history and changes
 
+## 🏗️ Code Organization Best Practices
+
+### ❌ NEVER Use Version Numbers in Filenames or Class Names
+
+**Why:** Version numbers belong in git tags and CHANGELOG.md, NOT in code. Using version suffixes (V2, V3, V4) in filenames or class names leads to:
+- Import statement breakage on upgrades
+- Cluttered codebase with multiple versions
+- Confusion about which version is deployed
+- Unprofessional API design
+
+**Wrong Approach:**
+```solidity
+// ❌ NEVER DO THIS
+contract SimplifiedEscrowFactoryV4 { }
+// ❌ NEVER DO THIS
+import "./SimplifiedEscrowFactoryV4.sol";
+// ❌ NEVER DO THIS
+test/SimplifiedEscrowFactoryV4.t.sol
+```
+
+**Correct Approach:**
+```solidity
+// ✅ ALWAYS DO THIS
+contract SimplifiedEscrowFactory { }
+// ✅ ALWAYS DO THIS
+import "./SimplifiedEscrowFactory.sol";
+// ✅ ALWAYS DO THIS  
+test/SimplifiedEscrowFactory.t.sol
+```
+
+**Where Versions Belong:**
+- Git tags: `git tag v4.0.0`
+- CHANGELOG.md: `## [4.0.0] - 2025-01-17`
+- Deployment docs: `Factory v4.0.0 deployed at 0x...`
+- NOT in filenames or class names
+
+**If you need to reference old implementations:** Archive them in a separate directory or branch, don't keep multiple versions in the main codebase.
+
 ## 🚨 CRITICAL SECURITY RULES - READ FIRST!
 
 ### ❌ NEVER COMMIT THESE (Even in Documentation!)
