@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **V4.0 Proposal Documentation**: Comprehensive analysis and proposal for full 1inch compatibility
+  - `docs/V4.0-PROPOSAL-1INCH-COMPATIBILITY.md`: Identified 10 compatibility issues with production 1inch cross-chain-swap
+  - `docs/V4.0-MINIMAL-WORKING-CHANGES.md`: Documented 5 critical fixes needed for working atomic swaps
+  - Clarified timestamp tolerance is already implemented via srcWithdrawal offset (finality period)
+
+### Added
 - **Comprehensive Test Suite**: Added 8 new test files with 83+ tests (5,000+ lines), increasing coverage from ~33% to ~70%
   - `test/BaseEscrow.t.sol`: 13 tests covering core escrow functionality, timelocks, and rescue operations
   - `test/EscrowSrc.t.sol`: 17 tests for source chain withdrawals and cancellations
@@ -58,6 +64,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `TESTING.md`: Outdated test information showing only 27 tests when we now have 100+
   - `docs/FIX-v3.0.2-FACTORY-IMMUTABLE.md`: Described non-existent bug (295 lines)
   - `docs/IMPLEMENTATION-v3.0.2.md`: Implementation for non-existent bug (360 lines)
+  - `docs/archive/DEPLOYMENT_V3_0_1.md`: Outdated deployment instructions
+  - `docs/archive/RESOLVER_SOLUTION_SIMPLE.md`: Superseded resolver solution
+  - `docs/archive/V3_0_1_BUGFIX_PLAN.md`: Obsolete bugfix plan
 - **Unused Contracts and Files**:
   - LocalDeploy.s.sol (unnecessary for production)
   - Version-specific contracts (SimplifiedEscrowFactoryV3_0_2.sol)
