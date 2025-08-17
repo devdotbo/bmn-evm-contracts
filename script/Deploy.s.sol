@@ -3,51 +3,97 @@ pragma solidity 0.8.23;
 
 import "forge-std/Script.sol";
 import "../contracts/SimplifiedEscrowFactory.sol";
-import "../contracts/EscrowSrc.sol";
-import "../contracts/EscrowDst.sol";
+import "../test/mocks/MockLimitOrderProtocol.sol";
 import { ICREATE3Factory } from "create3-factory/ICREATE3Factory.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title Deploy
- * @notice Deployment script for SimplifiedEscrowFactory
- * @dev Uses CREATE3 for deterministic cross-chain addresses
+ * @notice Deployment script for SimplifiedEscrowFactory with 1inch integration
+ * @dev Uses constructor-based implementation deployment and SimpleSettlement inheritance
  */
 contract Deploy is Script {
-    // CREATE3 Factory address (same on all chains)
+    // CREATE3 Factory address (same on all chains) - for factory deployment only
     address constant CREATE3_FACTORY = 0x7B9e9BE124C5A0E239E04fDC93b66ead4e8C669d;
     
-    // Salt for deterministic deployment - change this for new deployments
+    // Salt for deterministic factory deployment - change this for new deployments
     bytes32 constant SALT = keccak256("BMN_FACTORY");
+    
+    // Configuration struct for deployment parameters
+    struct DeployConfig {
+        address limitOrderProtocol;
+        address owner;
+        uint32 rescueDelay;
+        address accessToken;
+        address weth;
+        bool useMockProtocol;
+        bool useCreate3;
+    }
     
     function run() external {
         // Get deployer private key from environment
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
         
+        console.log("=== SimplifiedEscrowFactory Deployment ===");
         console.log("Deployer:", deployer);
         console.log("Chain ID:", block.chainid);
         
+        // Load configuration
+        DeployConfig memory config = getDeployConfig(deployer);
+        
+        console.log("\nConfiguration:");
+        console.log("- Limit Order Protocol:", config.limitOrderProtocol);
+        console.log("- Owner:", config.owner);
+        console.log("- Rescue Delay:", config.rescueDelay, "seconds");
+        console.log("- Access Token:", config.accessToken);
+        console.log("- WETH:", config.weth);
+        console.log("- Using Mock Protocol:", config.useMockProtocol);
+        console.log("- Using CREATE3:", config.useCreate3);
+        
         vm.startBroadcast(deployerPrivateKey);
         
-        // Deploy implementation contracts directly (not via CREATE3)
-        // These will have different addresses per chain, which is fine
-        uint32 rescueDelay = 7 days;
-        address accessToken = address(0); // No access token required
+        // Deploy mock LimitOrderProtocol if needed (for testing)
+        if (config.useMockProtocol) {
+            MockLimitOrderProtocol mockProtocol = new MockLimitOrderProtocol();
+            config.limitOrderProtocol = address(mockProtocol);
+            console.log("\nDeployed MockLimitOrderProtocol at:", config.limitOrderProtocol);
+        }
         
-        EscrowSrc escrowSrcImpl = new EscrowSrc(rescueDelay, IERC20(accessToken));
-        EscrowDst escrowDstImpl = new EscrowDst(rescueDelay, IERC20(accessToken));
+        address payable factory;
         
-        console.log("EscrowSrc Implementation:", address(escrowSrcImpl));
-        console.log("EscrowDst Implementation:", address(escrowDstImpl));
+        if (config.useCreate3) {
+            // Deploy factory via CREATE3 for deterministic address
+            factory = payable(deployWithCreate3(config));
+        } else {
+            // Direct deployment (for local testing)
+            factory = payable(deployDirect(config));
+        }
+        
+        // Verify deployment
+        verifyDeployment(factory);
+        
+        vm.stopBroadcast();
+        
+        // Log deployment summary
+        logDeploymentSummary(factory, config);
+    }
+    
+    /**
+     * @notice Deploy factory using CREATE3 for deterministic address
+     */
+    function deployWithCreate3(DeployConfig memory config) internal returns (address) {
+        console.log("\nDeploying with CREATE3...");
         
         // Prepare factory deployment bytecode
         bytes memory factoryBytecode = abi.encodePacked(
             type(SimplifiedEscrowFactory).creationCode,
             abi.encode(
-                address(escrowSrcImpl),
-                address(escrowDstImpl),
-                deployer // owner
+                config.limitOrderProtocol,
+                config.owner,
+                config.rescueDelay,
+                IERC20(config.accessToken),
+                config.weth
             )
         );
         
@@ -55,31 +101,89 @@ contract Deploy is Script {
         ICREATE3Factory create3 = ICREATE3Factory(CREATE3_FACTORY);
         address factory = create3.deploy(SALT, factoryBytecode);
         
-        console.log("SimplifiedEscrowFactory deployed at:", factory);
-        
-        // Log configuration
-        SimplifiedEscrowFactory deployedFactory = SimplifiedEscrowFactory(factory);
-        console.log("Owner:", deployedFactory.owner());
-        console.log("Whitelist Bypassed:", deployedFactory.whitelistBypassed());
-        console.log("Emergency Paused:", deployedFactory.emergencyPaused());
-        
-        vm.stopBroadcast();
-        
-        console.log("\nDeployment complete!");
-        console.log("Factory is ready for use at:", factory);
-        console.log("\nResolver Integration:");
-        console.log("- Resolvers must read block.timestamp from event blocks");
-        console.log("- See deployments/deployment.md for integration instructions");
+        console.log("Factory deployed via CREATE3 at:", factory);
+        return factory;
     }
     
     /**
-     * @notice Verify deployment by checking a specific factory address
-     * @dev Pass the factory address as an environment variable FACTORY_ADDRESS
+     * @notice Deploy factory directly without CREATE3
      */
-    function verify() external view {
-        address factoryAddress = vm.envAddress("FACTORY_ADDRESS");
+    function deployDirect(DeployConfig memory config) internal returns (address) {
+        console.log("\nDeploying directly...");
         
-        // Check factory exists
+        SimplifiedEscrowFactory factory = new SimplifiedEscrowFactory(
+            config.limitOrderProtocol,
+            config.owner,
+            config.rescueDelay,
+            IERC20(config.accessToken),
+            config.weth
+        );
+        
+        console.log("Factory deployed directly at:", address(factory));
+        return address(factory);
+    }
+    
+    /**
+     * @notice Get deployment configuration based on chain and environment
+     */
+    function getDeployConfig(address deployer) internal view returns (DeployConfig memory) {
+        DeployConfig memory config;
+        
+        // Default configuration
+        config.owner = deployer;
+        config.rescueDelay = 7 days;
+        
+        // Check for environment variable overrides
+        config.rescueDelay = uint32(vm.envOr("RESCUE_DELAY", uint256(config.rescueDelay)));
+        
+        // Chain-specific configuration
+        if (block.chainid == 1) {
+            // Mainnet
+            config.limitOrderProtocol = vm.envOr("LIMIT_ORDER_PROTOCOL", address(0x119c71D3BbAC22029622cbaEc24854d3D32D2828)); // 1inch v4
+            config.weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+            config.accessToken = address(0); // No access token on mainnet
+            config.useMockProtocol = false;
+            config.useCreate3 = true;
+        } else if (block.chainid == 10) {
+            // Optimism
+            config.limitOrderProtocol = vm.envOr("LIMIT_ORDER_PROTOCOL", address(0x119c71D3BbAC22029622cbaEc24854d3D32D2828)); // 1inch v4
+            config.weth = 0x4200000000000000000000000000000000000006;
+            config.accessToken = address(0);
+            config.useMockProtocol = false;
+            config.useCreate3 = true;
+        } else if (block.chainid == 8453) {
+            // Base
+            config.limitOrderProtocol = vm.envOr("LIMIT_ORDER_PROTOCOL", address(0x119c71D3BbAC22029622cbaEc24854d3D32D2828)); // 1inch v4
+            config.weth = 0x4200000000000000000000000000000000000006;
+            config.accessToken = address(0);
+            config.useMockProtocol = false;
+            config.useCreate3 = true;
+        } else if (block.chainid == 31337) {
+            // Local Anvil - use mock protocol
+            config.limitOrderProtocol = address(0); // Will deploy mock
+            config.weth = address(0); // No WETH needed for testing
+            config.accessToken = address(0); // No access token for testing
+            config.useMockProtocol = true;
+            config.useCreate3 = vm.envOr("USE_CREATE3", false);
+        } else {
+            // Other chains - use environment variables
+            config.limitOrderProtocol = vm.envAddress("LIMIT_ORDER_PROTOCOL");
+            config.weth = vm.envOr("WETH", address(0));
+            config.accessToken = vm.envOr("ACCESS_TOKEN", address(0));
+            config.useMockProtocol = vm.envOr("USE_MOCK_PROTOCOL", false);
+            config.useCreate3 = vm.envOr("USE_CREATE3", true);
+        }
+        
+        // Allow override from environment
+        config.owner = vm.envOr("OWNER", config.owner);
+        
+        return config;
+    }
+    
+    /**
+     * @notice Verify the deployment was successful
+     */
+    function verifyDeployment(address payable factoryAddress) internal view {
         require(factoryAddress.code.length > 0, "Factory not deployed");
         
         SimplifiedEscrowFactory factory = SimplifiedEscrowFactory(factoryAddress);
@@ -88,10 +192,109 @@ contract Deploy is Script {
         require(factory.ESCROW_SRC_IMPLEMENTATION() != address(0), "Src implementation not set");
         require(factory.ESCROW_DST_IMPLEMENTATION() != address(0), "Dst implementation not set");
         
-        console.log("Verification passed!");
-        console.log("Factory:", factoryAddress);
-        console.log("Src Implementation:", factory.ESCROW_SRC_IMPLEMENTATION());
-        console.log("Dst Implementation:", factory.ESCROW_DST_IMPLEMENTATION());
-        console.log("Owner:", factory.owner());
+        // Verify proxy bytecode hashes are set
+        require(factory.ESCROW_SRC_PROXY_BYTECODE_HASH() != bytes32(0), "Src proxy hash not set");
+        require(factory.ESCROW_DST_PROXY_BYTECODE_HASH() != bytes32(0), "Dst proxy hash not set");
+        
+        console.log("\nDeployment verification passed!");
+    }
+    
+    /**
+     * @notice Log deployment summary for documentation
+     */
+    function logDeploymentSummary(address payable factory, DeployConfig memory config) internal view {
+        SimplifiedEscrowFactory deployedFactory = SimplifiedEscrowFactory(factory);
+        
+        console.log("\n=== Deployment Complete ===");
+        console.log("\nContract Addresses:");
+        console.log("- Factory:", factory);
+        console.log("- Src Implementation:", deployedFactory.ESCROW_SRC_IMPLEMENTATION());
+        console.log("- Dst Implementation:", deployedFactory.ESCROW_DST_IMPLEMENTATION());
+        if (config.useMockProtocol) {
+            console.log("- Mock Protocol:", config.limitOrderProtocol);
+        }
+        
+        console.log("\nConfiguration:");
+        console.log("- Owner:", deployedFactory.owner());
+        console.log("- Whitelist Bypassed:", deployedFactory.whitelistBypassed());
+        console.log("- Emergency Paused:", deployedFactory.emergencyPaused());
+        console.log("- Resolver Count:", deployedFactory.resolverCount());
+        
+        console.log("\nProxy Bytecode Hashes:");
+        console.log("- Src:", vm.toString(deployedFactory.ESCROW_SRC_PROXY_BYTECODE_HASH()));
+        console.log("- Dst:", vm.toString(deployedFactory.ESCROW_DST_PROXY_BYTECODE_HASH()));
+        
+        console.log("\n1inch Integration:");
+        console.log("- SimpleSettlement inheritance active");
+        console.log("- postInteraction() entry point ready");
+        console.log("- Limit Order Protocol:", config.limitOrderProtocol);
+        
+        console.log("\nResolver Integration:");
+        console.log("- Resolvers must approve factory for token transfers");
+        console.log("- Resolvers must read block.timestamp from event blocks");
+        console.log("- See docs/ for integration guide");
+        
+        console.log("\nVerification Commands:");
+        if (block.chainid == 8453) {
+            console.log("forge verify-contract --watch \\");
+            console.log("  --chain base \\");
+            console.log("  ", factory, " \\");
+            console.log("  contracts/SimplifiedEscrowFactory.sol:SimplifiedEscrowFactory \\");
+            console.log("  --constructor-args $(cast abi-encode \"constructor(address,address,uint32,address,address)\" ...) \\");
+            console.log("  Args:", config.limitOrderProtocol, config.owner);
+            console.log("       ", config.rescueDelay, config.accessToken, config.weth);
+            console.log("  --verifier etherscan \\");
+            console.log("  --etherscan-api-key $BASESCAN_API_KEY");
+        } else if (block.chainid == 10) {
+            console.log("forge verify-contract --watch \\");
+            console.log("  --chain optimism \\");
+            console.log("  ", factory, " \\");
+            console.log("  contracts/SimplifiedEscrowFactory.sol:SimplifiedEscrowFactory \\");
+            console.log("  --constructor-args $(cast abi-encode \"constructor(address,address,uint32,address,address)\" ...) \\");
+            console.log("  Args:", config.limitOrderProtocol, config.owner);
+            console.log("       ", config.rescueDelay, config.accessToken, config.weth);
+            console.log("  --verifier etherscan \\");
+            console.log("  --etherscan-api-key $OPTIMISM_ETHERSCAN_API_KEY");
+        }
+    }
+    
+    /**
+     * @notice Verify existing deployment
+     * @dev Run with: FACTORY_ADDRESS=0x... forge script script/Deploy.s.sol:Deploy --sig "verify()"
+     */
+    function verify() external view {
+        address payable factoryAddress = payable(vm.envAddress("FACTORY_ADDRESS"));
+        
+        console.log("=== Verifying SimplifiedEscrowFactory ===");
+        console.log("Factory Address:", factoryAddress);
+        
+        // Check factory exists
+        require(factoryAddress.code.length > 0, "Factory not deployed at this address");
+        
+        SimplifiedEscrowFactory factory = SimplifiedEscrowFactory(factoryAddress);
+        
+        // Basic checks
+        console.log("\nBasic Configuration:");
+        console.log("- Owner:", factory.owner());
+        console.log("- Whitelist Bypassed:", factory.whitelistBypassed());
+        console.log("- Emergency Paused:", factory.emergencyPaused());
+        
+        // Implementation checks
+        console.log("\nImplementations:");
+        console.log("- Src Implementation:", factory.ESCROW_SRC_IMPLEMENTATION());
+        console.log("- Dst Implementation:", factory.ESCROW_DST_IMPLEMENTATION());
+        
+        require(factory.ESCROW_SRC_IMPLEMENTATION() != address(0), "Src implementation not set");
+        require(factory.ESCROW_DST_IMPLEMENTATION() != address(0), "Dst implementation not set");
+        
+        // Proxy bytecode hashes
+        console.log("\nProxy Bytecode Hashes:");
+        console.log("- Src:", vm.toString(factory.ESCROW_SRC_PROXY_BYTECODE_HASH()));
+        console.log("- Dst:", vm.toString(factory.ESCROW_DST_PROXY_BYTECODE_HASH()));
+        
+        require(factory.ESCROW_SRC_PROXY_BYTECODE_HASH() != bytes32(0), "Src proxy hash not set");
+        require(factory.ESCROW_DST_PROXY_BYTECODE_HASH() != bytes32(0), "Dst proxy hash not set");
+        
+        console.log("\nVerification passed!");
     }
 }

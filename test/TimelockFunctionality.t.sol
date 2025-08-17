@@ -230,7 +230,7 @@ contract TimelockFunctionalityTest is Test {
      * @notice Test 6: Timestamp tolerance handling (srcWithdrawal acts as tolerance)
      */
     function testTimestampTolerance() public pure {
-        // In the SimplifiedEscrowFactoryV4, srcWithdrawal is used as timestamp tolerance
+        // In the SimplifiedEscrowFactory, srcWithdrawal is used as timestamp tolerance
         // This test verifies that the pack() function correctly handles this
         
         TimelocksLib.TimelocksStruct memory timelocksStruct = TimelocksLib.TimelocksStruct({
@@ -344,7 +344,7 @@ contract TimelockFunctionalityTest is Test {
      * @dev Tests how the pack() function would be used in a factory context
      */
     function testSimulatedFactoryUsage() public pure {
-        // Simulate how SimplifiedEscrowFactoryV4 would use pack()
+        // Simulate how SimplifiedEscrowFactory would use pack()
         
         // Factory receives individual timelock values from order parameters
         uint32 srcWithdrawal = TIMESTAMP_TOLERANCE; // Used as tolerance
@@ -556,13 +556,13 @@ contract TimelockFunctionalityTest is Test {
         console2.log("");
         console2.log("Key Findings:");
         console2.log("- Bit layout: 7 stages (32 bits each) + deployedAt (32 bits)");
-        console2.log("- srcWithdrawal doubles as timestamp tolerance in V4");
+        console2.log("- srcWithdrawal doubles as timestamp tolerance");
         console2.log("- All 256 bits utilized, no room for additional data");
         console2.log("- Arithmetic is unchecked but safe (uint32 + uint32 < uint256)");
         console2.log("- Pack function simplifies factory implementation");
         console2.log("");
         console2.log("Verified Bit Layout:");
-        console2.log("  Bits 0-31:    srcWithdrawal (tolerance in V4)");
+        console2.log("  Bits 0-31:    srcWithdrawal (tolerance)");
         console2.log("  Bits 32-63:   srcPublicWithdrawal");
         console2.log("  Bits 64-95:   srcCancellation");
         console2.log("  Bits 96-127:  srcPublicCancellation");

@@ -4,11 +4,11 @@ pragma solidity 0.8.23;
 import "forge-std/Script.sol";
 
 /**
- * @title DeployConfigV4
- * @notice Configuration helper for SimplifiedEscrowFactoryV4 deployments
+ * @title DeployConfig
+ * @notice Configuration helper for SimplifiedEscrowFactory deployments
  * @dev Provides chain-specific configurations and helper functions
  */
-contract DeployConfigV4 is Script {
+contract DeployConfig is Script {
     
     // Known 1inch SimpleLimitOrderProtocol addresses (v4)
     struct ChainConfig {
@@ -232,7 +232,7 @@ contract DeployConfigV4 is Script {
             "forge verify-contract --watch \\\n",
             "  --chain ", chainName, " \\\n",
             "  ", vm.toString(contractAddress), " \\\n",
-            "  contracts/SimplifiedEscrowFactoryV4.sol:SimplifiedEscrowFactoryV4 \\\n",
+            "  contracts/SimplifiedEscrowFactory.sol:SimplifiedEscrowFactory \\\n",
             "  --constructor-args $(cast abi-encode \"constructor(address,address,uint32,address,address)\" ",
             vm.toString(params.limitOrderProtocol), " ",
             vm.toString(params.owner), " ",

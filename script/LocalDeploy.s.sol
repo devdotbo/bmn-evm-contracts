@@ -2,17 +2,17 @@
 pragma solidity 0.8.23;
 
 import "forge-std/Script.sol";
-import "../contracts/SimplifiedEscrowFactoryV4.sol";
+import "../contracts/SimplifiedEscrowFactory.sol";
 import "../test/mocks/MockLimitOrderProtocol.sol";
 import "../contracts/mocks/TokenMock.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 /**
- * @title LocalDeployV4
- * @notice Local deployment script for SimplifiedEscrowFactoryV4 with test setup
+ * @title LocalDeploy
+ * @notice Local deployment script for SimplifiedEscrowFactory with test setup
  * @dev Deploys factory with mock protocol and test tokens for local development
  */
-contract LocalDeployV4 is Script {
+contract LocalDeploy is Script {
     // Known Anvil test accounts
     address constant ALICE = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
     address constant BOB = 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC;
@@ -38,7 +38,7 @@ contract LocalDeployV4 is Script {
             uint256(0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80));
         address deployer = vm.addr(deployerPrivateKey);
         
-        console.log("=== Local SimplifiedEscrowFactoryV4 Deployment ===");
+        console.log("=== Local SimplifiedEscrowFactory Deployment ===");
         console.log("Deployer:", deployer);
         console.log("Chain ID:", block.chainid);
         console.log("Alice:", ALICE);
@@ -59,9 +59,9 @@ contract LocalDeployV4 is Script {
         MockLimitOrderProtocol mockProtocol = new MockLimitOrderProtocol();
         console.log("- Mock Protocol:", address(mockProtocol));
         
-        // 3. Deploy SimplifiedEscrowFactoryV4
-        console.log("\n3. Deploying SimplifiedEscrowFactoryV4...");
-        SimplifiedEscrowFactoryV4 factory = new SimplifiedEscrowFactoryV4(
+        // 3. Deploy SimplifiedEscrowFactory
+        console.log("\n3. Deploying SimplifiedEscrowFactory...");
+        SimplifiedEscrowFactory factory = new SimplifiedEscrowFactory(
             address(mockProtocol),  // limitOrderProtocol
             deployer,                // owner
             7 days,                  // rescueDelay
@@ -131,7 +131,7 @@ contract LocalDeployV4 is Script {
     }
     
     function logDeploymentSummary(
-        SimplifiedEscrowFactoryV4 factory,
+        SimplifiedEscrowFactory factory,
         MockLimitOrderProtocol mockProtocol,
         TokenMock tokenA,
         TokenMock tokenB
@@ -181,7 +181,7 @@ contract LocalDeployV4 is Script {
     
     /**
      * @notice Helper function to get deployment addresses from existing deployment
-     * @dev Run with: forge script script/LocalDeployV4.s.sol:LocalDeployV4 --sig "getDeployment()"
+     * @dev Run with: forge script script/LocalDeploy.s.sol:LocalDeploy --sig "getDeployment()"
      */
     function getDeployment() external view {
         address payable factoryAddress = payable(vm.envAddress("FACTORY_ADDRESS"));
@@ -189,7 +189,7 @@ contract LocalDeployV4 is Script {
         console.log("=== Existing Deployment Info ===");
         console.log("Factory:", factoryAddress);
         
-        SimplifiedEscrowFactoryV4 factory = SimplifiedEscrowFactoryV4(factoryAddress);
+        SimplifiedEscrowFactory factory = SimplifiedEscrowFactory(factoryAddress);
         console.log("- Src Implementation:", factory.ESCROW_SRC_IMPLEMENTATION());
         console.log("- Dst Implementation:", factory.ESCROW_DST_IMPLEMENTATION());
         console.log("- Owner:", factory.owner());

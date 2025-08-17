@@ -2,7 +2,7 @@
 pragma solidity 0.8.23;
 
 import { Test } from "forge-std/Test.sol";
-import { SimplifiedEscrowFactoryV4 } from "../contracts/SimplifiedEscrowFactoryV4.sol";
+import { SimplifiedEscrowFactory } from "../contracts/SimplifiedEscrowFactory.sol";
 import { IEscrowFactory } from "../contracts/interfaces/IEscrowFactory.sol";
 import { IBaseEscrow } from "../contracts/interfaces/IBaseEscrow.sol";
 import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
@@ -15,11 +15,11 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 contract ParametersEncodingTest is Test {
     using AddressLib for Address;
     
-    SimplifiedEscrowFactoryV4 public factory;
+    SimplifiedEscrowFactory public factory;
     
     function setUp() public {
         // Deploy factory with minimal settings
-        factory = new SimplifiedEscrowFactoryV4(
+        factory = new SimplifiedEscrowFactory(
             address(0x1), // limitOrderProtocol
             address(this), // owner
             86400, // rescueDelay

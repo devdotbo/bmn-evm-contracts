@@ -2,7 +2,7 @@
 pragma solidity 0.8.23;
 
 import { Test, Vm } from "forge-std/Test.sol";
-import { SimplifiedEscrowFactoryV4 } from "../contracts/SimplifiedEscrowFactoryV4.sol";
+import { SimplifiedEscrowFactory } from "../contracts/SimplifiedEscrowFactory.sol";
 import { IEscrowFactory } from "../contracts/interfaces/IEscrowFactory.sol";
 import { IBaseEscrow } from "../contracts/interfaces/IBaseEscrow.sol";
 import { TokenMock } from "../contracts/mocks/TokenMock.sol";
@@ -13,15 +13,15 @@ import { Timelocks, TimelocksLib } from "../contracts/libraries/TimelocksLib.sol
 import { MakerTraits } from "../dependencies/limit-order-protocol/contracts/libraries/MakerTraitsLib.sol";
 
 /**
- * @title ParameterEncodingV4Test
- * @notice Comprehensive tests for parameter encoding/decoding functionality in SimplifiedEscrowFactoryV4
+ * @title ParameterEncodingTest
+ * @notice Comprehensive tests for parameter encoding/decoding functionality in SimplifiedEscrowFactory
  * @dev Tests ensure 1inch compatibility through proper fee structure encoding while maintaining BMN's zero-fee model
  */
-contract ParameterEncodingV4Test is Test {
+contract ParameterEncodingTest is Test {
     using AddressLib for Address;
     using TimelocksLib for Timelocks;
     
-    SimplifiedEscrowFactoryV4 public factory;
+    SimplifiedEscrowFactory public factory;
     TokenMock public tokenA;
     TokenMock public tokenB;
     
@@ -48,7 +48,7 @@ contract ParameterEncodingV4Test is Test {
     
     function setUp() public {
         // Deploy factory with test configuration
-        factory = new SimplifiedEscrowFactoryV4(
+        factory = new SimplifiedEscrowFactory(
             PROTOCOL, // limitOrderProtocol
             address(this), // owner
             86400, // rescueDelay (1 day)

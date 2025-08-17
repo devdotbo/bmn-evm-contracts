@@ -1,14 +1,14 @@
-# SimplifiedEscrowFactoryV4 Deployment Scripts
+# SimplifiedEscrowFactory Deployment Scripts
 
-This directory contains deployment scripts for SimplifiedEscrowFactoryV4, the 1inch-compatible version of the BMN atomic swap protocol.
+This directory contains deployment scripts for SimplifiedEscrowFactory, the 1inch-compatible version of the BMN atomic swap protocol.
 
 ## Scripts Overview
 
-### DeployV4.s.sol
-Main deployment script for SimplifiedEscrowFactoryV4 with full 1inch integration.
+### Deploy.s.sol
+Main deployment script for SimplifiedEscrowFactory with full 1inch integration.
 
 **Features:**
-- Deploys SimplifiedEscrowFactoryV4 with SimpleSettlement inheritance
+- Deploys SimplifiedEscrowFactory with SimpleSettlement inheritance
 - Supports both CREATE3 (deterministic addresses) and direct deployment
 - Auto-configures for multiple chains (Mainnet, Optimism, Base, Polygon, Arbitrum, BSC)
 - Deploys mock LimitOrderProtocol for testing when needed
@@ -17,16 +17,16 @@ Main deployment script for SimplifiedEscrowFactoryV4 with full 1inch integration
 **Usage:**
 ```bash
 # Local deployment (Anvil)
-forge script script/DeployV4.s.sol --rpc-url http://localhost:8545 --broadcast
+forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast
 
 # Mainnet deployment (with CREATE3)
-source .env && forge script script/DeployV4.s.sol --rpc-url $MAINNET_RPC_URL --broadcast
+source .env && forge script script/Deploy.s.sol --rpc-url $MAINNET_RPC_URL --broadcast
 
 # Verify existing deployment
-FACTORY_ADDRESS=0x... forge script script/DeployV4.s.sol:DeployV4 --sig "verify()" --rpc-url $RPC_URL
+FACTORY_ADDRESS=0x... forge script script/Deploy.s.sol:Deploy --sig "verify()" --rpc-url $RPC_URL
 ```
 
-### LocalDeployV4.s.sol
+### LocalDeploy.s.sol
 Specialized script for local testing with complete test environment setup.
 
 **Features:**
@@ -40,13 +40,13 @@ Specialized script for local testing with complete test environment setup.
 **Usage:**
 ```bash
 # Deploy complete test environment
-forge script script/LocalDeployV4.s.sol --rpc-url http://localhost:8545 --broadcast
+forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8545 --broadcast
 
 # Get deployment info
-FACTORY_ADDRESS=0x... forge script script/LocalDeployV4.s.sol:LocalDeployV4 --sig "getDeployment()"
+FACTORY_ADDRESS=0x... forge script script/LocalDeploy.s.sol:LocalDeploy --sig "getDeployment()"
 ```
 
-### DeployConfigV4.s.sol
+### DeployConfig.s.sol
 Configuration helper for multi-chain deployments.
 
 **Features:**
@@ -58,7 +58,7 @@ Configuration helper for multi-chain deployments.
 **Usage:**
 ```bash
 # Show all supported chains
-forge script script/DeployConfigV4.s.sol --sig "showAllChains()"
+forge script script/DeployConfig.s.sol --sig "showAllChains()"
 ```
 
 ## Environment Variables
@@ -93,7 +93,7 @@ forge script script/DeployConfigV4.s.sol --sig "showAllChains()"
 
 ## Constructor Parameters
 
-SimplifiedEscrowFactoryV4 requires:
+SimplifiedEscrowFactory requires:
 1. `limitOrderProtocol`: Address of 1inch SimpleLimitOrderProtocol
 2. `owner`: Factory owner who can manage whitelists and pause
 3. `rescueDelay`: Delay for rescue operations (e.g., 7 days)
@@ -114,10 +114,10 @@ SimplifiedEscrowFactoryV4 requires:
    anvil --hardfork shanghai
    
    # Deploy test environment
-   forge script script/LocalDeployV4.s.sol --rpc-url http://localhost:8545 --broadcast
+   forge script script/LocalDeploy.s.sol --rpc-url http://localhost:8545 --broadcast
    
    # Run tests
-   forge test --match-contract SimplifiedEscrowFactoryV4Test -vvv
+   forge test --match-contract SimplifiedEscrowFactoryTest -vvv
    ```
 
 2. **Production Deployment:**
@@ -128,12 +128,12 @@ SimplifiedEscrowFactoryV4 requires:
    export BASESCAN_API_KEY=YOUR_BASESCAN_API_KEY_HERE
    
    # Deploy to Base
-   forge script script/DeployV4.s.sol --rpc-url $BASE_RPC_URL --broadcast
+   forge script script/Deploy.s.sol --rpc-url $BASE_RPC_URL --broadcast
    
    # Verify on Basescan (command will be shown in output)
    ```
 
-## Key Differences from V3
+## Key Implementation Features
 
 - **Constructor-based implementation deployment**: Implementations are deployed in the factory constructor to ensure correct FACTORY immutable capture
 - **SimpleSettlement inheritance**: Factory inherits from 1inch SimpleSettlement for protocol integration

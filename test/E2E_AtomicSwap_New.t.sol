@@ -6,7 +6,7 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 import { SafeERC20 } from "solidity-utils/contracts/libraries/SafeERC20.sol";
 import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
 
-import { SimplifiedEscrowFactoryV4 } from "../contracts/SimplifiedEscrowFactoryV4.sol";
+import { SimplifiedEscrowFactory } from "../contracts/SimplifiedEscrowFactory.sol";
 import { EscrowSrc } from "../contracts/EscrowSrc.sol";
 import { EscrowDst } from "../contracts/EscrowDst.sol";
 import { BaseEscrow } from "../contracts/BaseEscrow.sol";
@@ -22,11 +22,11 @@ import { IOrderMixin } from "../dependencies/limit-order-protocol/contracts/inte
 import { MakerTraits } from "../dependencies/limit-order-protocol/contracts/libraries/MakerTraitsLib.sol";
 
 /**
- * @title E2E_V4_AtomicSwapTest
- * @notice Comprehensive E2E tests for the complete atomic swap flow using SimplifiedEscrowFactoryV4
+ * @title E2E_AtomicSwapTest
+ * @notice Comprehensive E2E tests for the complete atomic swap flow using SimplifiedEscrowFactory
  * @dev Tests the full cross-chain swap scenario including order creation, escrow deployment, secret reveal, and withdrawals
  */
-contract E2E_V4_AtomicSwapTest is Test {
+contract E2E_AtomicSwapTest is Test {
     using AddressLib for Address;
     using ImmutablesLib for IBaseEscrow.Immutables;
     using TimelocksLib for Timelocks;
@@ -60,8 +60,8 @@ contract E2E_V4_AtomicSwapTest is Test {
     address deployer = address(0xDE9107E2);
     
     // === Contracts ===
-    SimplifiedEscrowFactoryV4 factorySrc;
-    SimplifiedEscrowFactoryV4 factoryDst;
+    SimplifiedEscrowFactory factorySrc;
+    SimplifiedEscrowFactory factoryDst;
     MockLimitOrderProtocol limitOrderProtocol;
     TokenMock tokenA; // Token on source chain
     TokenMock tokenB; // Token on destination chain
@@ -114,7 +114,7 @@ contract E2E_V4_AtomicSwapTest is Test {
         
         // Deploy factories for both chains
         vm.prank(deployer);
-        factorySrc = new SimplifiedEscrowFactoryV4(
+        factorySrc = new SimplifiedEscrowFactory(
             address(limitOrderProtocol),
             deployer,
             RESCUE_DELAY,
@@ -123,7 +123,7 @@ contract E2E_V4_AtomicSwapTest is Test {
         );
         
         vm.prank(deployer);
-        factoryDst = new SimplifiedEscrowFactoryV4(
+        factoryDst = new SimplifiedEscrowFactory(
             address(limitOrderProtocol),
             deployer,
             RESCUE_DELAY,

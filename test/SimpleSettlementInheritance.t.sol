@@ -2,7 +2,7 @@
 pragma solidity 0.8.23;
 
 import { Test } from "forge-std/Test.sol";
-import { SimplifiedEscrowFactoryV4 } from "../contracts/SimplifiedEscrowFactoryV4.sol";
+import { SimplifiedEscrowFactory } from "../contracts/SimplifiedEscrowFactory.sol";
 import { TokenMock } from "../contracts/mocks/TokenMock.sol";
 import { MockLimitOrderProtocol } from "./mocks/MockLimitOrderProtocol.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
@@ -13,7 +13,7 @@ import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressL
 contract SimpleSettlementInheritanceTest is Test {
     using AddressLib for Address;
 
-    SimplifiedEscrowFactoryV4 factory;
+    SimplifiedEscrowFactory factory;
     MockLimitOrderProtocol limitOrderProtocol;
     TokenMock srcToken;
     TokenMock dstToken;
@@ -26,7 +26,7 @@ contract SimpleSettlementInheritanceTest is Test {
         limitOrderProtocol = new MockLimitOrderProtocol();
         
         // Deploy factory with SimpleSettlement inheritance
-        factory = new SimplifiedEscrowFactoryV4(
+        factory = new SimplifiedEscrowFactory(
             address(limitOrderProtocol),  // limit order protocol
             address(this),  // owner
             7 days,         // rescueDelay

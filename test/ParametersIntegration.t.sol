@@ -2,7 +2,7 @@
 pragma solidity 0.8.23;
 
 import { Test, Vm } from "forge-std/Test.sol";
-import { SimplifiedEscrowFactoryV4 } from "../contracts/SimplifiedEscrowFactoryV4.sol";
+import { SimplifiedEscrowFactory } from "../contracts/SimplifiedEscrowFactory.sol";
 import { IEscrowFactory } from "../contracts/interfaces/IEscrowFactory.sol";
 import { IBaseEscrow } from "../contracts/interfaces/IBaseEscrow.sol";
 import { TokenMock } from "../contracts/mocks/TokenMock.sol";
@@ -13,20 +13,20 @@ import { Timelocks } from "../contracts/libraries/TimelocksLib.sol";
 import { MakerTraits } from "../dependencies/limit-order-protocol/contracts/libraries/MakerTraitsLib.sol";
 
 /**
- * @title V4ParametersIntegrationTest
+ * @title ParametersIntegrationTest
  * @notice Integration test to verify parameters encoding in actual _postInteraction flow
  */
-contract V4ParametersIntegrationTest is Test {
+contract ParametersIntegrationTest is Test {
     using AddressLib for Address;
     
-    SimplifiedEscrowFactoryV4 public factory;
+    SimplifiedEscrowFactory public factory;
     TokenMock public token;
     address public maker = address(0x1234);
     address public resolver = address(0x5678);
     
     function setUp() public {
         // Deploy factory with minimal settings
-        factory = new SimplifiedEscrowFactoryV4(
+        factory = new SimplifiedEscrowFactory(
             address(this), // limitOrderProtocol (this contract acts as it)
             address(this), // owner
             86400, // rescueDelay

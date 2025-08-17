@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Codebase Refactoring**: Promoted V4 implementation as main SimplifiedEscrowFactory
+  - Removed version suffixes from all filenames for cleaner API
+  - Deleted legacy buggy SimplifiedEscrowFactory implementation  
+  - Renamed SimplifiedEscrowFactoryV4 to SimplifiedEscrowFactory
+  - Updated all imports, type references, and contract names
+  - Renamed test files to remove V4 references
+  - Renamed deployment scripts to remove V4 references
+  - Moved incompatible legacy tests to .old files
+  - All 133 tests passing with new clean naming
+
 ### Investigated
 - **Dependency Management**: Investigated `@1inch/limit-order-protocol-contract` remapping
   - Confirmed remapping is required by `limit-order-settlement/contracts/SimpleSettlement.sol`

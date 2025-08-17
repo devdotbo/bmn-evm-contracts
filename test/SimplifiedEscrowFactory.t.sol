@@ -6,7 +6,7 @@ import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol"
 import { Clones } from "openzeppelin-contracts/contracts/proxy/Clones.sol";
 import { Address, AddressLib } from "solidity-utils/contracts/libraries/AddressLib.sol";
 
-import { SimplifiedEscrowFactoryV4 } from "../contracts/SimplifiedEscrowFactoryV4.sol";
+import { SimplifiedEscrowFactory } from "../contracts/SimplifiedEscrowFactory.sol";
 import { EscrowSrc } from "../contracts/EscrowSrc.sol";
 import { EscrowDst } from "../contracts/EscrowDst.sol";
 import { IBaseEscrow } from "../contracts/interfaces/IBaseEscrow.sol";
@@ -19,11 +19,11 @@ import { IOrderMixin } from "../dependencies/limit-order-protocol/contracts/inte
 import { MakerTraits } from "../dependencies/limit-order-protocol/contracts/libraries/MakerTraitsLib.sol";
 
 /**
- * @title SimplifiedEscrowFactoryV4Test
- * @notice Comprehensive unit tests for SimplifiedEscrowFactoryV4
- * @dev Tests all V4.0 fixes including constructor deployment, timelock packing, and 1inch integration
+ * @title SimplifiedEscrowFactoryTest
+ * @notice Comprehensive unit tests for SimplifiedEscrowFactory
+ * @dev Tests all fixes including constructor deployment, timelock packing, and 1inch integration
  */
-contract SimplifiedEscrowFactoryV4Test is Test {
+contract SimplifiedEscrowFactoryTest is Test {
     using AddressLib for Address;
     using ImmutablesLib for IBaseEscrow.Immutables;
     using TimelocksLib for Timelocks;
@@ -42,7 +42,7 @@ contract SimplifiedEscrowFactoryV4Test is Test {
     address unauthorizedUser = address(0x4);
     
     // Contracts
-    SimplifiedEscrowFactoryV4 factory;
+    SimplifiedEscrowFactory factory;
     MockLimitOrderProtocol limitOrderProtocol;
     TokenMock tokenA;
     TokenMock tokenB;
@@ -82,7 +82,7 @@ contract SimplifiedEscrowFactoryV4Test is Test {
         
         // Deploy factory with constructor-based implementation deployment
         vm.prank(deployer);
-        factory = new SimplifiedEscrowFactoryV4(
+        factory = new SimplifiedEscrowFactory(
             address(limitOrderProtocol),
             deployer,
             RESCUE_DELAY,
@@ -139,8 +139,8 @@ contract SimplifiedEscrowFactoryV4Test is Test {
     }
     
     /**
-     * @notice Test that FACTORY immutable in escrows points to SimplifiedEscrowFactoryV4
-     * @dev This is the key V4.0 fix - FACTORY should be our factory, not CREATE3 proxy
+     * @notice Test that FACTORY immutable in escrows points to SimplifiedEscrowFactory
+     * @dev This is the key fix - FACTORY should be our factory, not CREATE3 proxy
      */
     function testFactoryImmutableInEscrows() public {
         // Create immutables for source escrow
@@ -168,7 +168,7 @@ contract SimplifiedEscrowFactoryV4Test is Test {
         EscrowSrc escrowContract = EscrowSrc(payable(srcEscrow));
         address escrowFactory = address(escrowContract.FACTORY());
         
-        assertEq(escrowFactory, address(factory), "FACTORY immutable should point to SimplifiedEscrowFactoryV4");
+        assertEq(escrowFactory, address(factory), "FACTORY immutable should point to SimplifiedEscrowFactory");
         assertNotEq(escrowFactory, address(0), "FACTORY should not be zero address");
         
         // Also test destination escrow
@@ -178,7 +178,7 @@ contract SimplifiedEscrowFactoryV4Test is Test {
         EscrowDst dstEscrowContract = EscrowDst(payable(dstEscrow));
         address dstEscrowFactory = address(dstEscrowContract.FACTORY());
         
-        assertEq(dstEscrowFactory, address(factory), "Destination escrow FACTORY should also point to SimplifiedEscrowFactoryV4");
+        assertEq(dstEscrowFactory, address(factory), "Destination escrow FACTORY should also point to SimplifiedEscrowFactory");
     }
     
     /**
@@ -269,7 +269,7 @@ contract SimplifiedEscrowFactoryV4Test is Test {
     
     /**
      * @notice Test that timelocks are packed correctly using the new pack() function
-     * @dev Verifies the V4.0 fix for proper timelock packing
+     * @dev Verifies the fix for proper timelock packing
      */
     function testTimelockPacking() public {
         // Create timelocks struct
