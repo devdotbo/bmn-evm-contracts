@@ -5,6 +5,14 @@ All notable changes to the BMN EVM Contracts will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Investigated
+- **Dependency Management**: Investigated `@1inch/limit-order-protocol-contract` remapping
+  - Confirmed remapping is required by `limit-order-settlement/contracts/SimpleSettlement.sol`
+  - Dependencies manually added to `dependencies/` directory (not via Soldeer or git submodules)
+  - Remapping maps to same location as `limit-order-protocol/` for 1inch import compatibility
+
 ## [4.0.0] - 2025-01-17
 
 ### Added
