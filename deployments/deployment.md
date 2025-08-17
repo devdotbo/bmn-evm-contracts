@@ -5,7 +5,7 @@
 **SimplifiedEscrowFactory v4.0.0**: `0x5782442ED775a6FF7DA5FBcD8F612C8Bc4b285d3`
 - **Base (Chain ID 8453)**: `0x5782442ED775a6FF7DA5FBcD8F612C8Bc4b285d3`
 - **Optimism (Chain ID 10)**: `0x5782442ED775a6FF7DA5FBcD8F612C8Bc4b285d3`
-- **Deployment Date**: January 17, 2025
+- **Deployment Date**: August 17, 2025
 - **Deployed via**: CREATE3 (same address on both chains)
 
 ### Implementation Contracts (Same on Both Chains)
