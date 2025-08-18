@@ -10,7 +10,7 @@ import "forge-std/Script.sol";
  */
 contract DeployConfig is Script {
     
-    // Known 1inch SimpleLimitOrderProtocol addresses (v4)
+    // Bridge-Me-Not SimpleLimitOrderProtocol addresses (custom implementation)
     struct ChainConfig {
         uint256 chainId;
         string name;
@@ -51,7 +51,7 @@ contract DeployConfig is Script {
             return ChainConfig({
                 chainId: 10,
                 name: "Optimism",
-                limitOrderProtocol: 0x119c71D3BbAC22029622cbaEc24854d3D32D2828,
+                limitOrderProtocol: 0xe767105dcfB3034a346578afd2aFD8e583171489, // Bridge-Me-Not SimpleLimitOrderProtocol
                 weth: 0x4200000000000000000000000000000000000006,
                 oneInchToken: address(0), // No 1INCH on Optimism yet
                 rpcEnvKey: "OPTIMISM_RPC_URL",
@@ -61,7 +61,7 @@ contract DeployConfig is Script {
             return ChainConfig({
                 chainId: 8453,
                 name: "Base",
-                limitOrderProtocol: 0x119c71D3BbAC22029622cbaEc24854d3D32D2828,
+                limitOrderProtocol: 0xe767105dcfB3034a346578afd2aFD8e583171489, // Bridge-Me-Not SimpleLimitOrderProtocol
                 weth: 0x4200000000000000000000000000000000000006,
                 oneInchToken: address(0), // No 1INCH on Base yet
                 rpcEnvKey: "BASE_RPC_URL",

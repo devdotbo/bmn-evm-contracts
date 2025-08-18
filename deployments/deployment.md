@@ -17,7 +17,7 @@
 - ✅ **Optimism**: All contracts verified on [Optimistic Etherscan](https://optimistic.etherscan.io/address/0x5782442ED775a6FF7DA5FBcD8F612C8Bc4b285d3#code)
 
 ### Key Configuration
-- **1inch Limit Order Protocol**: `0x119c71D3BbAC22029622cbaEc24854d3D32D2828`
+- **SimpleLimitOrderProtocol**: `0xe767105dcfB3034a346578afd2aFD8e583171489` (Bridge-Me-Not custom implementation on both chains)
 - **Owner**: `0x5f29827e25dc174a6A51C99e6811Bbd7581285b0`
 - **Rescue Delay**: 604800 seconds (7 days)
 - **Whitelisted Resolver**: `0xfdF1dDeB176BEA06c7430166e67E615bC312b7B5` (Bob)
@@ -110,10 +110,10 @@ function _postInteraction(
 
 ```javascript
 // v4.0.0 Integration Pattern
-const limitOrderProtocol = "0x119c71D3BbAC22029622cbaEc24854d3D32D2828";
+const limitOrderProtocol = "0xe767105dcfB3034a346578afd2aFD8e583171489"; // Bridge-Me-Not SimpleLimitOrderProtocol
 const factory = "0x5782442ED775a6FF7DA5FBcD8F612C8Bc4b285d3";
 
-// 1. Maker creates order via 1inch
+// 1. Maker creates order via Bridge-Me-Not SimpleLimitOrderProtocol
 const order = {
     salt: generateSalt(),
     maker: makerAddress,
